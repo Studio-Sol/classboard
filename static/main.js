@@ -1,6 +1,8 @@
+// BASIC PAGE MAKE
 $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
 
 
+// FETCH WITH USER INTERACTION
 $("td.class, th.dayofweek").on("click", (event) => {
     $(".active").removeClass("active")
     $(`*[data-date='${event.target.attributes["data-date"].value}']`).addClass("active")
@@ -13,11 +15,8 @@ $("td.class, th.dayofweek").on("click", (event) => {
 });
 
 
-function addMeta() {
-    $("#add-meta").css("display", "flex");
-    $("#overlay").show()
-}
 
+// Date to NeisDate
 function formatDate(date) {
     var date = new Date(date);
     var year = date.getFullYear();
@@ -27,6 +26,10 @@ function formatDate(date) {
     return year + month + day;
 }
 
+
+
+
+// FETCH FUNC
 function fetchMeal(date) {
     $("#meal").html("로드중...");
     $("#meal-date").html(date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6));
@@ -73,6 +76,7 @@ function fetchMeal(date) {
     })
 }
 
+
 function fetchpost() {
     $("#metadata").html("로드중...");
 
@@ -95,6 +99,8 @@ function fetchpost() {
         }
     })
 }
+
+
 function fetchNotice() {
     $("#notice").html("로드중...");
 
@@ -117,6 +123,8 @@ function fetchNotice() {
         }
     })
 }
+
+
 function fetchTimeTable(monday, refresh) {
     $.ajax({
         url: `/api/timetable?monday=${monday}&school_name=${school_name}&grade=${grade}&class_num=${class_}&refresh=${refresh ?? ""}`,
@@ -149,6 +157,8 @@ function fetchTimeTable(monday, refresh) {
 }
 
 
+
+// ADD POST
 $("#form-cancel").on("click", (event) => {
     $("#add-meta").hide();
     $("#overlay").hide()
@@ -169,14 +179,21 @@ $("form").on("submit", (event) => {
     $("#add-meta").hide();
     $("#overlay").hide()
 })
+function addMeta() {
+    $("#add-meta").css("display", "flex");
+    $("#overlay").show()
+}
+
+// FETCH CACHE STORAGE
 var cache = {
     meal: {},
     meta: {}
 }
 var today = formatDate(new Date());
-
 var currentDate = today;
 
+
+// FETCH
 fetchTimeTable(monday)
 fetchMeal(today);
 fetchpost();
@@ -191,6 +208,8 @@ function openPost(link) {
 }
 
 
+
+// THEME
 const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
 const currentTheme = localStorage.getItem('theme');
 
