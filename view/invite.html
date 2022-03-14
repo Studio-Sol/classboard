@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<title>클래스 가입</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="/static/find-school/image/icons/favicon.ico"/>
+	<link rel="stylesheet" type="text/css" href="/static/find-school/vendor/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/vendor/animate/animate.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/vendor/css-hamburgers/hamburgers.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/vendor/select2/select2.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/static/find-school/css/main.css">
+<style>
+    [data-theme="dark"] {
+        --bg: #3b424f;
+        --box-bg: #2a2e37;
+        --text: #c9d1d9;
+        --border: #464646;
+        --hover: rgba(255, 255, 255,0.1);
+    }
+
+    [data-theme="light"] {
+        --bg: #f3f5f7;
+        --box-bg: #ffffff;
+        --text: #202124;
+        --border: #777f86;
+        --hover: rgba(0,0,0,0.1);
+    }
+</style>
+</head>
+<body>
+
+	<div class="contact1">
+		<div class="container-contact1">
+			<div class="contact1-pic js-tilt" data-tilt>
+				<img src="https://cdn-icons-png.flaticon.com/512/1904/1904200.png" alt="IMG">
+			</div>
+
+			<form class="contact1-form validate-form">
+				<span class="contact1-form-title">
+					클래스 초대 코드 입력
+				</span>
+
+				<div class="wrap-input1 validate-input" data-validate = "필수사항입니다.">
+					<input class="input1" type="text" id="code" placeholder="초대 코드">
+					<span class="shadow-input1"></span>
+				</div>
+
+				<div class="container-contact1-form-btn">
+					<button class="contact1-form-btn">
+						<span>
+							제출
+							<i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+						</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+    <script>
+        if ("<%= error %>") {
+            alert("존재하지 않는 초대코드입니다.");
+        }
+
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+    </script>
+
+	<script src="/static/find-school/vendor/jquery/jquery-3.2.1.min.js"></script>
+	<script src="/static/find-school/vendor/bootstrap/js/popper.js"></script>
+	<script src="/static/find-school/vendor/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/static/find-school/vendor/select2/select2.min.js"></script>
+    <script>
+        $("form").on("submit", (e) => {
+            console.log("hi")
+            e.preventDefault();
+            location = "/invite/" + $("#code").val()
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+[data-theme="dark"] {
+    --bg: #3b424f;
+    --box-bg: #2a2e37;
+    --text: #c9d1d9;
+    --border: #464646;
+    --hover: rgba(255, 255, 255,0.1);
+    --link: #5b64bb;
+}
+
+[data-theme="light"] {
+    --bg: #f3f5f7;
+    --box-bg: #ffffff;
+    --text: #202124;
+    --border: #777f86;
+    --hover: rgba(0,0,0,0.1);
+    --link: #4e5cde;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap');
+
+* {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    background-color: var(--bg);
+}
+td.class:hover,
+th.dayofweek:hover {
+    background-color: var(--hover);
+    cursor: pointer;
+}
+
+
+
+.box {
+    border-radius: 1rem;
+    background-color: var(--box-bg);
+}
+
+td,
+th {
+    text-align: center;
+}
+
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 34px;
+    position: relative;
+    width: 60px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+}
+
+.slider:before {
+    background-color: #fff;
+    bottom: 4px;
+    content: "";
+    height: 26px;
+    left: 4px;
+    position: absolute;
+    transition: .4s;
+    width: 26px;
+}
+
+input:checked+.slider {
+    background-color: #66bb6a;
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+
+.active {
+    background-color: var(--hover);
+}
+li {
+    cursor: pointer;
+}
+a > h3 > strong {
+    text-decoration: none;
+    color: var(--link);
+}
+a {
+    text-decoration: none;
+}
