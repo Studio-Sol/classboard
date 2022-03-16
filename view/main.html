@@ -113,8 +113,8 @@
                     </ul>
                 </div>
                 <div class="row p-4 mt-3 shadow box">
-                    <a href="/post" target="__blank"><h3 style="display: inline-block; width:fit-content;"><strong>게시물</strong></h3></a>
-                    <button class="btn p-0" style="width: 2em;" onclick="addMeta()">
+                    <a href="/post" target="__blank" style="width:fit-content;"><h3 style="display: inline-block; width:fit-content;"><strong>게시물</strong></h3></a>
+                    <button class="btn p-0" style="width: 2em;" onclick="newPost();">
                         <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
                     </button>
                     <ul id="metadata" class="list-group">
@@ -128,28 +128,6 @@
                 <p style="margin: 0px; height: fit-content;">&copy; 2022. Sol-Studio. All Rights Reserved.</p>
                 <button class="btn btn-primary" onclick="location = 'https:\/\/toss.me/SolStudio'">후원</button>
             </div>
-        </div>
-    </div>
-    <div style="display:none;z-index: 999; position:fixed;height: 100%;width: 100%; top: 0px; left: 0px; flex-direction: column; align-content: center; justify-content: center;" id="add-meta">
-        <div class="container-lg" style="height: fit-content;">
-            <form class="shadow box p-lg-4 p-3" style="min-height: 50vh; display: flex;flex-direction: column;justify-content: space-between;">
-                <div>
-                    <h1>게시물 추가하기</h1>
-                    <div class="form-group mt-2">
-                        <label for="form-content">제목</label>
-                        <input type="text" class="form-control" id="form-title" aria-describedby="contentHelp" required>
-                    </div>
-                    <div class="form-group mt-2">
-                        <label for="form-content">내용</label>
-                        <textarea type="text" class="form-control" id="form-content" aria-describedby="contentHelp" style="height: 10rem;" required></textarea>
-                        <small id="contentHelp" class="form-text text-danger">입력된 내용은 즉시 모두에게 공개됩니다. 주의해주세요.</small>
-                    </div>
-                </div>
-                <div style="display: flex;justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary me-2" id="form-cancel">취소</button>
-                    <button type="submit" class="btn btn-primary">제출</button>
-                </div>
-            </form>
         </div>
     </div>
     <div id="overlay" style="position:fixed; height: 100%; width: 100%; background-color: rgba(0,0,0,0.3);top: 0px; left:0px; display: none;">

@@ -6,14 +6,10 @@ $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
 $("td.class, th.dayofweek").on("click", (event) => {
     $(".active").removeClass("active")
     $(`*[data-date='${event.target.attributes["data-date"].value}']`).addClass("active")
-
     var date = formatDate(parseInt(event.target.attributes["data-date"].value))
-    fetchpost(date)
     fetchMeal(date)
     currentDate = date
-
 });
-
 
 
 // Date to NeisDate
@@ -81,7 +77,7 @@ function fetchpost() {
     $("#metadata").html("로드중...");
 
     $.ajax({
-        url: `/api/post?_=${Math.random()}`,
+        url: `/api/post?size=5&skip=0&_=${Math.random()}`,
         method: "GET",
         success: (data) => {
             if (data.success) {
@@ -127,28 +123,24 @@ function fetchNotice() {
 
 function fetchTimeTable(monday, refresh) {
     $.ajax({
-        url: `/api/timetable?monday=${monday}&school_name=${school_name}&grade=${grade}&class_num=${class_}&refresh=${refresh ?? ""}`,
+        url: `/api/timetable?monday=${monday}&refresh=${refresh ?? ""}`,
         method: "GET",
         beforeSend : () => {
             $("#loading-overlay").hide();
         },
         success: (data) => {
-            if (data.success) {
-                data.timedata.forEach(a => {
-                    a.forEach(b=> {
-                        $(`tbody > tr:nth-child(${b.classTime}) > td:nth-child(${b.weekday + 2})`).html(`${b.subject}<br>${b.teacher}`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * b.weekday)
-                        $(`thead > tr > th:nth-child(${b.weekday + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * b.weekday)
-                    })
-                })
-                var tmp = 0;
-                data.classtime.forEach(a => {
-                    tmp++;
-                    $(`tbody > tr:nth-child(${tmp}) > td:nth-child(1)`).html(a.split("(")[0] + "<br>(" + a.split("(")[1])
-                })
-            }
-            else {
-                throw Error("fetchTimeTable.ajax.success.false\n" + data.message)
-            }
+            var lastDate = ""
+            var tmp = 0
+            data.forEach(b => {
+                if (lastDate != b.ALL_TI_YMD) {
+                    tmp++
+                    lastDate = b.ALL_TI_YMD
+                }
+                $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
+                $(`thead > tr > th:nth-child(${tmp + 1})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
+            })
+
+
             if (refresh) {
                 alert("새로고침을 완료했습니다.")
             }
@@ -157,32 +149,6 @@ function fetchTimeTable(monday, refresh) {
 }
 
 
-
-// ADD POST
-$("#form-cancel").on("click", (event) => {
-    $("#add-meta").hide();
-    $("#overlay").hide()
-})
-$("form").on("submit", (event) => {
-    event.preventDefault();
-    $.ajax({
-        url: `/api/post`,
-        method: "POST",
-        data: {
-            title: $("#form-title").val(),
-            content: $("#form-content").val()
-        },
-        success: (data) => {
-            fetchpost(currentDate)
-        }
-    });
-    $("#add-meta").hide();
-    $("#overlay").hide()
-})
-function addMeta() {
-    $("#add-meta").css("display", "flex");
-    $("#overlay").show()
-}
 
 // FETCH CACHE STORAGE
 var cache = {
@@ -198,6 +164,7 @@ fetchTimeTable(monday)
 fetchMeal(today);
 fetchpost();
 fetchNotice();
+$("#editor").load("/api/smart-editor")
 
 
 function openNotice(link) {
@@ -206,7 +173,9 @@ function openNotice(link) {
 function openPost(link) {
     open("/post/" + link, "__blank")
 }
-
+function newPost() {
+    open("/new-post", "__blank")
+}
 
 
 // THEME

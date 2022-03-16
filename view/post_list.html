@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="/static/style.css", rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글 목록</title>
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <div class="container-lg" style="height: 100%;" id="main">
+        <div class="row mb-2" style="height: 7em;">
+            <div class="p-lg-4 mt-3 m-lg-3" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin: 0px;"><strong id="school-grade-class"><%= school_name %> <%= grade %>학년 <%= classroom %>반 글 목록</strong></h2>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="list">
+            <div class="p-lg-4 mt-3 m-lg-3 shadow box" id="tmp">
+                <h4>로드중</h4>
+                <p>로드중..</p>
+            </div>
+        </div>
+    </div>
+    <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+    <script>
+        const currentTheme = localStorage.getItem('theme');
+
+    if (currentTheme) {
+        document.documentElement.setAttribute('data-theme', currentTheme);
+    }
+    </script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        var page = 0;
+        var stop = false;
+        var fetching = false;
+        function fetchList() {
+            fetching = true;
+            $.ajax({
+                url: "/api/post",
+                method: "GET",
+                data: {
+                    skip: page * 10,
+                    size: 10,
+                    preview: true
+                },
+                success: (data) => {            
+                    $("#tmp").remove();
+                    if (data.success) {
+                        if (data.post.length == 0) {
+                            stop = true;
+                        }
+                        for (const d of data.post) {
+                            $("#list").append(`
+                                <div class="p-lg-4 mt-3 m-lg-3 shadow box">
+                                    <div>
+                                        <h4>${d.title ?? "제목 없음"}</h4>
+                                        <p>${d.preview ?? "미리보기 없음"}</p>
+                                    </div>
+                                    <hr>
+                                    <div style="display: flex;justify-content: space-between;">
+                                        <div>
+                                            <img src="${d.author.avatar}" style="width: 2rem">
+                                            ${d.author.name}
+                                        </div>
+                                        <div>
+                                            ${moment(new Date(d.timestamp)).format("YYYY-MM-DD HH:mm:SS")}
+                                        </div>
+                                    </div>
+                                </div>
+                            `)
+                            const article = document.querySelector('#list');
+                            const docFrag = document.createDocumentFragment();
+                            article.appendChild(docFrag);
+                        }
+                    }
+                    else {
+                        alert("오류 : Fail GET /api/post")
+                    }; 
+                    page++;
+                    fetching = false;
+                }
+            })
+        }
+        fetchList();
+        (function() {
+            window.onscroll = function(e) {
+                if((window.innerHeight + window.scrollY) >= document.body.offsetHeight && !stop && !fetching) {
+                    fetchList();
+                }
+            };
+        })();
+    </script>
+</body>
+</html>

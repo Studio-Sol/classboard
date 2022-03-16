@@ -39,6 +39,15 @@ function choice (a, k=1) {
     return return_array
 }
 
+function formatDate(date) {
+    var date = new Date(date);
+    var year = date.getFullYear();
+    var month = ("0" + (1 + date.getMonth())).slice(-2);
+    var day = ("0" + date.getDate()).slice(-2);
+
+    return year + month + day;
+}
+
 
 
 
@@ -116,6 +125,19 @@ app.get("/login", (req, res) => {
 });
 
 
+app.get("/login/naver", (req, res) => {
+    var client_id = 'ryaIsyjhpXC5VWERXxdB';
+    var state = new Date().getTime() + Math.floor(Math.random() * 1000);
+    var redirectURI = encodeURI("https://sol-studio.shop/login/callback/naver");
+    res.render("login/naver.html", {url: 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=' + client_id + '&redirect_uri=' + redirectURI + '&state=' + state, error: req.query.error});
+});
+
+
+app.get("/login/google", (req, res) => {
+    res.render("login/google.html");
+});
+
+
 app.get("/login/callback/google", async (req, res) => {
     const googleClient = new OAuth2Client("349199124039-jrrvfbb7cerksel6s9d5uoq3ta9p0lak.apps.googleusercontent.com");
     try {
@@ -155,6 +177,66 @@ app.get("/login/callback/google", async (req, res) => {
 });
 
 
+app.get("/login/callback/naver", async (req, res) => {
+    var client_id = 'ryaIsyjhpXC5VWERXxdB';
+    var client_secret = 'u9BbEVK09k';
+    var state = "";
+    var redirectURI = encodeURI("https://sol-studio.shop/login/callback/naver");
+    var api_url = "";
+    code = req.query.code;
+    state = req.query.state;
+    api_url = 'https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id='
+     + client_id + '&client_secret=' + client_secret + '&redirect_uri=' + redirectURI + '&code=' + code + '&state=' + state;
+    var request = require('request');
+    var options = {
+        url: api_url,
+        headers: {'X-Naver-Client-Id':client_id, 'X-Naver-Client-Secret': client_secret}
+     };
+    request.get(options, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            body = JSON.parse(body)
+            var api_url2 = 'https://openapi.naver.com/v1/nid/me';
+            var options2 = {
+                url: api_url2,
+                headers: {'Authorization': "Bearer " + body["access_token"]}
+            };
+            request.get(options2, async function (error2, response2, body2) {
+            if (!error2 && response2.statusCode == 200) {
+                var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+                var payload = JSON.parse(body2).response
+                var user = await client.db("school").collection("user").findOne({ email: payload.email })
+                if (user != null) {
+                    req.session.user_id = user._id;
+                    res.redirect("/")
+                }
+                else {
+                    user = await client.db("school").collection("user").insertOne({
+                        type: null,
+                        auth: "naver",
+                        email: payload.email,
+                        name: payload.name,
+                        avatar: payload.profile_image,
+                        class: null,
+                        waiting: false
+                    });
+                    req.session.user_id = user.insertedId;
+                    req.session.save(() => {
+                        res.redirect("/login/type");
+                    })
+                }
+            } else {
+                if(response2 != null) {
+                res.redirect("/login/naver?error=2");
+                }
+            }
+            });
+        } else {
+            res.send("/login/naver?error=1");
+        }
+    });
+})
+
+
 app.get("/login/type", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({ _id: new ObjectId(req.session.user_id) })
@@ -164,7 +246,6 @@ app.get("/login/type", async (req, res) => {
     else {
         res.render("login/type.html", {id: req.session.user_id})
     }
-    
 });
 
 
@@ -177,7 +258,7 @@ app.get("/login/type/callback", async (req, res) => {
             res.redirect("/register-class");
             return;
         }
-        if (req.query.type == "student") {
+        else if (req.query.type == "student") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "student"}})
             res.redirect("/invite");
             return;
@@ -311,9 +392,23 @@ app.get("/logout", (req, res) => {
 
 
 // POST and NOTICE
+app.get("/new-post", (req, res) => {
+    res.render("new_post.html")
+});
+
+
 app.get("/post", async (req, res) => {
-    res.end()
-})
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    var classroom = await client.db("school").collection("class").findOne({
+        _id: new ObjectId(user.class)
+    })
+    res.render("post_list.html", {grade: classroom.class.GRADE, classroom: classroom.class.CLASS_NM, school_name: classroom.school.SCHUL_NM});
+
+});
+
 
 app.get("/post/:id", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
@@ -338,6 +433,7 @@ app.get("/post/:id", async (req, res) => {
     var author =  await client.db("school").collection("user").findOne({
         _id: new ObjectId(data.author)
     });
+    data.content = data.content.replaceAll("<script", "&lt;script").replaceAll("</script>", "&lt;/script&gt;")
     res.render("post.html", {data: data, author: author})
 });
 
@@ -415,28 +511,42 @@ app.post("/api/post", async (req, res) => {
     client.db("school").collection("post").insertOne({
         title: req.body.title,
         content: req.body.content,
+        preview: req.body.content.replace(/<[^>]*>?/gm, '').slice(0, 20),
         author: user._id,
         class: user.class,
         timestamp: new Date().getTime()
     })
-    res.json({success: true})
+    res.redirect("/post")
 });
 
 
 app.get("/api/post", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
-    })
-    var data = await client.db("school").collection("post").find({
-        class: user.class
-    }).limit(5).toArray();
-
-    var result = []
-    for (const d of data) {
-        result.push({title: d.title, id: d._id})
+    try {
+        var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+        var user = await client.db("school").collection("user").findOne({
+            _id: new ObjectId(req.session.user_id)
+        })
+        var data = await client.db("school").collection("post").find({
+            class: user.class
+        }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(parseInt(req.query.size)).toArray();
+    
+        var result = []
+        for (const d of data) {
+            if (req.query.preview) {
+                var author = await client.db("school").collection("user").findOne({
+                    _id: new ObjectId(d.author)
+                })
+                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: author})
+            }
+            else {
+                result.push({title: d.title, id: d._id})
+            }
+        }
+        res.json({success: true, post: result})
     }
-    res.json({success: true, post: result})
+    catch {
+        res.json({success: false, message: "알 수 없는 에러 (GET 파라미터를 확인해주세요)"})
+    }
 });
 
 
@@ -458,10 +568,30 @@ app.get("/api/notice", async (req, res) => {
 
 
 app.get("/api/timetable", async (req, res) => {
+    var friday = new Date(new Date(`${req.query.monday.slice(0, 4)}-${req.query.monday.slice(4, 6)}-${req.query.monday.slice(6, 8)}`).getTime() + 1000 * 60 * 60 * 24 * 4)
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var data = await client.db("school").collection("timetable").findOne({
-
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    });
+    var classroom = await client.db("school").collection("class").findOne({
+        _id: new ObjectId(user.class)
     })
+    var timetable = await neis.getTimetable(
+        {
+            ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE
+        },
+        {
+            TI_FROM_YMD: req.query.monday,
+            TI_TO_YMD: formatDate(friday),
+            CLASS_NM: classroom.class.CLASS_NM,
+            GRADE: classroom.class.GRADE
+        },
+        {
+            pSize: 100
+        }
+    )
+    res.send(timetable)
 });
 
 
@@ -469,7 +599,12 @@ app.get("/api/error", (req, res) => {
     res.end();
 });
 
-
+app.get("/privacy", (req, res) => {
+    res.render("privacy.html")
+})
+app.get("/terms", (req, res) => {
+    res.render("terms.html")
+})
 
 app.listen(3000, () => {
     console.log("hi")
