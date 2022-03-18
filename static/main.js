@@ -137,12 +137,13 @@ async function fetchTimeTable(monday, refresh) {
                         tmp++
                         lastDate = b.ALL_TI_YMD
                     }
-                    $(`thead > tr > th:nth-child(${b.PERIO + 1})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
-                    $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp);
+                    $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`);
                 })
                 for (var i=0; i<5; i++) {
+                    $(`thead > tr > th:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
+
                     for (var j=0; j<7; j++) {
-                        $(`tbody > tr:nth-child(${j + 2}) > td:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
+                        $(`tbody > tr:nth-child(${j + 1}) > td:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
                     }
                 }
                 
