@@ -8,7 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
     <style>
-        #students > tr:hover {
+        tbody {
+            cursor: pointer;
+        }
+        .badge {
             cursor: pointer;
         }
     </style>
@@ -42,7 +45,7 @@
                     </thead>
                     <tbody id="students">
                         <% for (const student of students) { %>
-                            <tr onclick="openProfile('<%= student._id %>')">
+                            <tr onclick="openProfile(event, '<%= student._id %>')" data-id="<%= student._id %>">
                                 <td>
                                     <img style="width: 2rem;" src="<%= student.avatar %>">
                                 </td>
@@ -51,9 +54,9 @@
                                 </td>
                                 <td><%= student.auth %></td>
                                 <td>
-                                    <span class="badge bg-danger">
+                                    <button class="btn btn-sm bg-danger" onclick="ban(event, '<%= student._id %>')">
                                         <i class="fa fa-ban" title="추방하기"></i>
-                                    </span>
+                                    </button>
                                 </td>
                             </tr>
                         <% } %>
@@ -61,18 +64,114 @@
                 </table>
             </div>
         </div>
-
+        <div class="row">
+            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2>가입 요청</h2>
+                <table class="table">
+                    <thead>
+                        <th class="col-1"></th>
+                        <th class="col-2">이름</th>
+                        <th class="col-1">로그인 방법</th>
+                        <th class="col-1">수락/거절</th>
+                    </thead>
+                    <tbody id="join-request">
+                        <% for (const student of join_request) { %>
+                            <tr onclick="openProfile(event, '<%= student._id %>')" data-id="<%= student._id %>">
+                                <td>
+                                    <img style="width: 2rem;" src="<%= student.avatar %>">
+                                </td>
+                                <td>
+                                    <%= student.name ?? "실명 없음" %>
+                                </td>
+                                <td><%= student.auth %></td>
+                                <td>
+                                    <button class="btn btn-sm bg-primary" onclick="accept(event, '<%= student._id %>')">
+                                        <i class="fa fa-check" title="거절"></i>
+                                    </button>
+                                    <button class="btn btn-sm bg-danger" onclick="reject(event, '<%= student._id %>')">
+                                        <i class="fa fa-x" title="거절"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script>
         const currentTheme = localStorage.getItem('theme');
 
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-    }
-    function openProfile(id) {
-        open("/user/" + id)
-    }
+        if (currentTheme) {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        }
+
+        function openProfile(event, id) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (event.path[0].tagName == "I" || event.path[0].tagName == "BUTTON") {
+                return;
+            }
+            open("/user/" + id)
+        }
+        function ban(event, id) {
+            $.ajax({
+                url: "/api/teacher/student.ban",
+                data: {
+                    user: id
+                },
+                method: "GET"
+            });
+            $("tr[data-id='" + id + "']").remove();
+        }
+        function reject(event, id) {
+            $.ajax({
+                url: "/api/teacher/join.reject",
+                data: {
+                    user: id
+                },
+                method: "GET"
+            });
+            $("tr[data-id='" + id + "']").remove();
+        }
+        function accept(event, id) {
+            $.ajax({
+                url: "/api/teacher/join.accept",
+                data: {
+                    user: id
+                },
+                method: "GET"
+            });
+            $("tr[data-id='" + id + "']").remove();
+            $.ajax({
+                url: "/api/user",
+                data: {
+                    user: id
+                },
+                method: "GET",
+                success: (data) => {
+                    $("#students").append(`
+                        <tr onclick="openProfile(event, '${data.user._id}')" data-id="${data.user._id}">
+                            <td>
+                                <img style="width: 2rem;" src="${data.user.avatar}">
+                            </td>
+                            <td>
+                                ${data.user.name ?? "실명 없음"}
+                            </td>
+                            <td>${data.user.auth}</td>
+                            <td>
+                                <button class="btn btn-sm bg-danger" onclick="ban(event, '${data.user._id}')">
+                                    <i class="fa fa-ban" title="추방하기"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `)
+                }
+            })
+            
+        }
     </script>
 </body>
 </html>

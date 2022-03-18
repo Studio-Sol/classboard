@@ -172,7 +172,7 @@ var currentDate = today;
 
 // FETCH
 setTimeout(async () => {
-    await fetchTimeTable(monday);
+    fetchTimeTable(monday);
     fetchMeal(today);
     fetchpost();
     fetchNotice();

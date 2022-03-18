@@ -92,6 +92,15 @@ app.use((req, res, next) => {
     }
 })
 
+
+
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+
+
+
 // MAIN
 app.get("/", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
@@ -343,8 +352,8 @@ app.post("/register-class", async (req, res) => {
     if (!classroom) {
         res.redirect("/register-class?error=noclass")
     }
-    var sem = classroom.AY
-    var ay = await client.db("school").collection("class").findOne({
+    var ay = classroom.AY
+    var tmp = await client.db("school").collection("class").findOne({
         school: {
             SD_SCHUL_CODE: school.SD_SCHUL_CODE,
             ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
@@ -358,7 +367,8 @@ app.post("/register-class", async (req, res) => {
         ay: ay
     })
     if (tmp != null) {
-
+        res.send("이미 클래스가 존재합니다!");
+        return;
     }
     var i = await client.db("school").collection("class").insertOne({
         school: {
@@ -423,8 +433,9 @@ app.get("/teacher", async (req, res) => {
         res.redirect("/");
         return;
     }
-    var students = await client.db("school").collection("user").find({class: user.class}).toArray();
-    res.render("teacher/teacher.html", {classroom: classroom, user: user, students: students})
+    var students = await client.db("school").collection("user").find({class: user.class, waiting: false, type: "student"}).toArray();
+    var join_request = await client.db("school").collection("user").find({class: user.class, waiting: true, type: "student"}).toArray();
+    res.render("teacher/teacher.html", {classroom: classroom, user: user, students: students, join_request: join_request})
 });
 
 
@@ -719,6 +730,86 @@ app.get("/api/timetable", async (req, res) => {
 });
 
 
+app.get("/api/teacher/student.ban", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    await client.db("school").collection("user").updateOne(
+        {
+            _id: new ObjectId(req.query.user)
+        },
+        {$set: {
+            class: null
+        }}
+    );
+    res.json({success: true})
+})
+
+
+app.get("/api/teacher/join.accept", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    await client.db("school").collection("user").updateOne(
+        {
+            _id: new ObjectId(req.query.user)
+        },
+        {$set: {
+            waiting: false
+        }}
+    );
+    res.json({success: true})
+});
+
+
+app.get("/api/teacher/join.reject", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    await client.db("school").collection("user").updateOne(
+        {
+            _id: new ObjectId(req.query.user)
+        },
+        {$set: {
+            class: null,
+            waiting: false
+        }}
+    );
+    res.json({success: true})
+})
+
+
+app.get("/api/user", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    var target = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.query.user)
+    });
+    res.json({success: true, user: target})
+})
+
+
 app.get("/api/error", (req, res) => {
     res.end();
 });
@@ -738,6 +829,8 @@ app.get("/terms", (req, res) => {
 
 
 
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 
