@@ -51,8 +51,19 @@
         if (currentTheme) {
             document.documentElement.setAttribute('data-theme', currentTheme);
         }
-        if ("<%= error %>") {
-            alert("오류가 발생했습니다. 다시 시도해주세요. \n이런 현상이 반복될 경우, 개발자에게 알려주세요.")
+        switch ("<%= error %>") {
+            case "1": {
+                alert("오류가 발생했습니다. 다시 시도해주세요. \n이런 현상이 반복될 경우, 개발자에게 알려주세요.");
+                break;
+            }
+            case "2": {
+                alert("오류가 발생했습니다. 다시 시도해주세요. \n이런 현상이 반복될 경우, 개발자에게 알려주세요.");
+                break;
+            }
+            case "3": {
+                alert("이름, 닉네임, 이메일, 프로필 사진은 필수 제공 항목입니다.");
+                break;
+            }
         }
     </script>  
 </body>

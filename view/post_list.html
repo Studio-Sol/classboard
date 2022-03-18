@@ -7,7 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>글 목록</title>
     <style>
-        
+        .item {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -58,7 +60,7 @@
                         }
                         for (const d of data.post) {
                             $("#list").append(`
-                                <div class="p-lg-4 mt-3 m-lg-3 shadow box">
+                                <div class="p-lg-4 mt-3 m-lg-3 shadow box item" onclick="openPost('${d.id}')">
                                     <div>
                                         <h4>${d.title ?? "제목 없음"}</h4>
                                         <p>${d.preview ?? "미리보기 없음"}</p>
@@ -96,6 +98,9 @@
                 }
             };
         })();
+        function openPost(link) {
+            open("/post/" + link)
+        }
     </script>
 </body>
 </html>

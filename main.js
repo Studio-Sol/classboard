@@ -18,6 +18,10 @@ var ObjectId = require("mongodb").ObjectId;
 const {OAuth2Client} = require('google-auth-library');
 
 
+// LOG
+const winston = require('./config/winston')
+const morgan = require("morgan")
+
 // UTILS
 function getMondayDate(d) {
     var paramDate = new Date(d);
@@ -62,6 +66,7 @@ app.set('views', __dirname + '/view');
 app.set('view engine', 'ejs');
 app.engine('html', require('ejs').renderFile);
 app.use("/static", express.static(__dirname + '/static'));
+app.use(morgan('combined', {stream: winston.stream}));
 app.use(session({
     secret: 'ehighsdofkjmseo',  // 암호화
     resave: false,
@@ -164,7 +169,8 @@ app.get("/login/callback/google", async (req, res) => {
             type: null,
             auth: "google",
             email: payload.email,
-            name: payload.name,
+            name: null,
+            nick: payload.name,
             avatar: payload.picture,
             class: null,
             waiting: false
@@ -203,18 +209,25 @@ app.get("/login/callback/naver", async (req, res) => {
             request.get(options2, async function (error2, response2, body2) {
             if (!error2 && response2.statusCode == 200) {
                 var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-                var payload = JSON.parse(body2).response
+                var payload = JSON.parse(body2).response;
+                var keys = Object.keys(payload)
+                if (!keys.includes("email") || !keys.includes("nickname") || !keys.includes("name") || !keys.includes("profile_image")) {
+                    res.redirect("/login/naver?error=3");
+                    return;
+                }
                 var user = await client.db("school").collection("user").findOne({ email: payload.email })
                 if (user != null) {
                     req.session.user_id = user._id;
                     res.redirect("/")
                 }
                 else {
+                    console.log(payload)
                     user = await client.db("school").collection("user").insertOne({
                         type: null,
                         auth: "naver",
                         email: payload.email,
                         name: payload.name,
+                        nick: payload.nickname,
                         avatar: payload.profile_image,
                         class: null,
                         waiting: false
@@ -271,7 +284,7 @@ app.get("/register-class", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
 
     var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
-    if (user.type != "teacher") {
+    if (user.type != "teacher" || user.class != null) {
         res.redirect("/");
         return;
     }
@@ -306,6 +319,9 @@ app.post("/register-class", async (req, res) => {
             break;
         }
     }
+    if (!school) {
+        res.redirect("/register-class?error=noschool")
+    }
     var classrooms = await neis.getClassInfo(
         {
             SD_SCHUL_CODE: school.SD_SCHUL_CODE,
@@ -324,44 +340,52 @@ app.post("/register-class", async (req, res) => {
             break;
         }
     }
-
-    if (!schools.length == 100) {
-        res.redirect("/register-class?error=toomanyschool")
-    }
-    else if (schools.length == 0) {
-        res.redirect("/register-class?error=noschool")
-    }
-
     if (!classroom) {
         res.redirect("/register-class?error=noclass")
     }
-    else {
-        var i = await client.db("school").collection("class").insertOne({
-            school: {
-                SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-                ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-                SCHUL_NM: school.SCHUL_NM
-            },
-            class: {
-                MADE: user._id,
-                GRADE: classroom.GRADE,
-                CLASS_NM: classroom.CLASS_NM
-            },
-            invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join("")
-        })
-        await client.db("school").collection("user").updateOne(
-            {
-                _id: new ObjectId(req.session.user_id)
-            },
-            {
-                $set: {
-                    class: i.insertedId
-                }
-            }
-        )
+    var sem = classroom.AY
+    var ay = await client.db("school").collection("class").findOne({
+        school: {
+            SD_SCHUL_CODE: school.SD_SCHUL_CODE,
+            ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
+            SCHUL_NM: school.SCHUL_NM
+        },
+        class: {
+            MADE: user._id,
+            GRADE: classroom.GRADE,
+            CLASS_NM: classroom.CLASS_NM
+        },
+        ay: ay
+    })
+    if (tmp != null) {
 
-        res.redirect("/")
     }
+    var i = await client.db("school").collection("class").insertOne({
+        school: {
+            SD_SCHUL_CODE: school.SD_SCHUL_CODE,
+            ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
+            SCHUL_NM: school.SCHUL_NM
+        },
+        class: {
+            MADE: user._id,
+            GRADE: classroom.GRADE,
+            CLASS_NM: classroom.CLASS_NM
+        },
+        ay: ay,
+        invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join("")
+    })
+    await client.db("school").collection("user").updateOne(
+        {
+            _id: new ObjectId(req.session.user_id)
+        },
+        {
+            $set: {
+                class: i.insertedId
+            }
+        }
+    )
+
+    res.redirect("/")
 });
 
 
@@ -387,6 +411,31 @@ app.get("/logout", (req, res) => {
     delete req.session.user_id
     res.redirect("/login")
 });
+
+
+
+// 선생님 페이지
+app.get("/teacher", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)});
+    var classroom = await client.db("school").collection("class").findOne({_id: new ObjectId(user.class)});
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    var students = await client.db("school").collection("user").find({class: user.class}).toArray();
+    res.render("teacher/teacher.html", {classroom: classroom, user: user, students: students})
+});
+
+
+// 소셜 기능
+app.get('/user/:id', async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.params.id)});
+    var classroom = await client.db("school").collection("class").findOne({_id: new ObjectId(user.class)})
+    res.render("user.html", {user: user, classroom: classroom})
+})
+
 
 
 
@@ -568,6 +617,17 @@ app.get("/api/notice", async (req, res) => {
 
 
 app.get("/api/timetable", async (req, res) => {
+    function refine(data) {
+        var result = []
+        for (const d of data) {
+            result.push({
+                ITRT_CNTNT: d.ITRT_CNTNT,
+                PERIO: d.PERIO,
+                ALL_TI_YMD: d.ALL_TI_YMD
+            })
+        }
+        return result
+    }
     var friday = new Date(new Date(`${req.query.monday.slice(0, 4)}-${req.query.monday.slice(4, 6)}-${req.query.monday.slice(6, 8)}`).getTime() + 1000 * 60 * 60 * 24 * 4)
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({
@@ -575,23 +635,87 @@ app.get("/api/timetable", async (req, res) => {
     });
     var classroom = await client.db("school").collection("class").findOne({
         _id: new ObjectId(user.class)
-    })
-    var timetable = await neis.getTimetable(
-        {
-            ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE
-        },
-        {
-            TI_FROM_YMD: req.query.monday,
-            TI_TO_YMD: formatDate(friday),
-            CLASS_NM: classroom.class.CLASS_NM,
-            GRADE: classroom.class.GRADE
-        },
-        {
-            pSize: 100
+    });
+    if (!req.query.refresh) {
+        var cache = []
+        for (var i = 0; i < 5; i++) {
+            var tmp = new Date(new Date(`${req.query.monday.slice(0, 4)}-${req.query.monday.slice(4, 6)}-${req.query.monday.slice(6, 8)}`).getTime() + 1000 * 60 * 60 * 24 * i)
+    
+            cache.push.apply(cache, await client.db("school").collection("timetable").find({
+                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                ALL_TI_YMD: formatDate(tmp),
+                CLASS_NM: classroom.class.CLASS_NM,
+                GRADE: classroom.class.GRADE
+            }).toArray());
         }
-    )
-    res.send(timetable)
+        if (cache.length != 0) {
+            res.json({success: true, table: refine(cache)});
+            return;
+        }
+        try {
+            var timetable = await neis.getTimetable(
+                {
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE
+                },
+                {
+                    TI_FROM_YMD: req.query.monday,
+                    TI_TO_YMD: formatDate(friday),
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE
+                },
+                {
+                    pSize: 100
+                }
+            );
+        }
+        catch {
+            res.json({success: false})
+            return;
+        }
+
+        client.db("school").collection("timetable").insertMany(timetable)
+        res.json({success: true, table: refine(timetable)})
+    }
+    else {
+        for (var i = 0; i < 5; i++) {
+            var tmp = new Date(new Date(`${req.query.monday.slice(0, 4)}-${req.query.monday.slice(4, 6)}-${req.query.monday.slice(6, 8)}`).getTime() + 1000 * 60 * 60 * 24 * i)
+            cache, await client.db("school").collection("timetable").deleteMany({
+                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                ALL_TI_YMD: formatDate(tmp),
+                CLASS_NM: classroom.class.CLASS_NM,
+                GRADE: classroom.class.GRADE
+            });
+        }
+        try {
+            var timetable = await neis.getTimetable(
+                {
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE
+                },
+                {
+                    TI_FROM_YMD: req.query.monday,
+                    TI_TO_YMD: formatDate(friday),
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE
+                },
+                {
+                    pSize: 100
+                }
+            );
+        }
+        catch {
+            res.json({
+                success: false
+            });
+            return;
+        }
+
+        client.db("school").collection("timetable").insertMany(timetable)
+        res.json({success: true, table: refine(timetable)})
+    }
 });
 
 
@@ -599,13 +723,26 @@ app.get("/api/error", (req, res) => {
     res.end();
 });
 
+
+
+
+// ETC
 app.get("/privacy", (req, res) => {
     res.render("privacy.html")
-})
+});
+
+
 app.get("/terms", (req, res) => {
     res.render("terms.html")
-})
+});
 
+
+
+
+
+
+
+// RUN
 app.listen(3000, () => {
     console.log("hi")
 })

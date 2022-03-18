@@ -26,7 +26,7 @@ function formatDate(date) {
 
 
 // FETCH FUNC
-function fetchMeal(date) {
+async function fetchMeal(date) {
     $("#meal").html("로드중...");
     $("#meal-date").html(date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6));
 
@@ -73,7 +73,7 @@ function fetchMeal(date) {
 }
 
 
-function fetchpost() {
+async function fetchpost() {
     $("#metadata").html("로드중...");
 
     $.ajax({
@@ -97,7 +97,7 @@ function fetchpost() {
 }
 
 
-function fetchNotice() {
+async function fetchNotice() {
     $("#notice").html("로드중...");
 
     $.ajax({
@@ -121,28 +121,38 @@ function fetchNotice() {
 }
 
 
-function fetchTimeTable(monday, refresh) {
-    $.ajax({
+async function fetchTimeTable(monday, refresh) {
+    await $.ajax({
         url: `/api/timetable?monday=${monday}&refresh=${refresh ?? ""}`,
         method: "GET",
         beforeSend : () => {
             $("#loading-overlay").hide();
         },
         success: (data) => {
-            var lastDate = ""
-            var tmp = 0
-            data.forEach(b => {
-                if (lastDate != b.ALL_TI_YMD) {
-                    tmp++
-                    lastDate = b.ALL_TI_YMD
+            if (data.success) {
+                var lastDate = ""
+                var tmp = 0;
+                data.table.forEach(b => {
+                    if (lastDate != b.ALL_TI_YMD) {
+                        tmp++
+                        lastDate = b.ALL_TI_YMD
+                    }
+                    $(`thead > tr > th:nth-child(${b.PERIO + 1})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
+                    $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp);
+                })
+                for (var i=0; i<5; i++) {
+                    for (var j=0; j<7; j++) {
+                        $(`tbody > tr:nth-child(${j + 2}) > td:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
+                    }
                 }
-                $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
-                $(`thead > tr > th:nth-child(${tmp + 1})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * tmp)
-            })
-
-
-            if (refresh) {
-                alert("새로고침을 완료했습니다.")
+                
+    
+                if (refresh) {
+                    alert("새로고침을 완료했습니다.")
+                }
+            }
+            else {
+                throw Error("fetchTimeTable.data.success : false")
             }
         }
     })
@@ -160,21 +170,25 @@ var currentDate = today;
 
 
 // FETCH
-fetchTimeTable(monday)
-fetchMeal(today);
-fetchpost();
-fetchNotice();
+setTimeout(async () => {
+    await fetchTimeTable(monday);
+    fetchMeal(today);
+    fetchpost();
+    fetchNotice();
+}, 0)
+
+
 $("#editor").load("/api/smart-editor")
 
 
 function openNotice(link) {
-    open("/notice/" + link, "__blank")
+    open("/notice/" + link)
 }
 function openPost(link) {
-    open("/post/" + link, "__blank")
+    open("/post/" + link)
 }
 function newPost() {
-    open("/new-post", "__blank")
+    open("/new-post")
 }
 
 
