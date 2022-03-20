@@ -16,6 +16,7 @@
         }
     </style>
     <title>선생님 페이지</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -38,8 +39,7 @@
                 <h2>학생 관리</h2>
                 <table class="table">
                     <thead>
-                        <th class="col-1"></th>
-                        <th class="col-2">이름</th>
+                        <th class="col-1">이름</th>
                         <th class="col-1">로그인 방법</th>
                         <th class="col-1">관리</th>
                     </thead>
@@ -48,8 +48,6 @@
                             <tr onclick="openProfile(event, '<%= student._id %>')" data-id="<%= student._id %>">
                                 <td>
                                     <img style="width: 2rem;" src="<%= student.avatar %>">
-                                </td>
-                                <td>
                                     <%= student.name ?? "실명 없음" %>
                                 </td>
                                 <td><%= student.auth %></td>
@@ -69,18 +67,15 @@
                 <h2>가입 요청</h2>
                 <table class="table">
                     <thead>
-                        <th class="col-1"></th>
-                        <th class="col-2">이름</th>
+                        <th class="col-1">이름</th>
                         <th class="col-1">로그인 방법</th>
                         <th class="col-1">수락/거절</th>
                     </thead>
                     <tbody id="join-request">
                         <% for (const student of join_request) { %>
                             <tr onclick="openProfile(event, '<%= student._id %>')" data-id="<%= student._id %>">
-                                <td>
+                                <td> 
                                     <img style="width: 2rem;" src="<%= student.avatar %>">
-                                </td>
-                                <td>
                                     <%= student.name ?? "실명 없음" %>
                                 </td>
                                 <td><%= student.auth %></td>
@@ -98,14 +93,23 @@
                 </table>
             </div>
         </div>
+        <div class="row" style="display: flex;align-items: center;">
+            <div class="col p-4 m-lg-3 mt-0 shadow box" style="display: flex; justify-content: space-between;align-items: center;">
+                <p style="margin: 0px; height: fit-content;">&copy; 2022. Sol-Studio. All Rights Reserved.</p>
+                <button class="btn btn-primary" onclick="location = 'https:\/\/toss.me/SolStudio'">후원</button>
+            </div>
+        </div>
     </div>
     <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script>
-        const currentTheme = localStorage.getItem('theme');
-
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
+        // THEME
+        let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) {
+            document.documentElement.setAttribute('data-theme', "dark");
+        }
+        else {
+            document.documentElement.setAttribute('data-theme', "light");
         }
 
         function openProfile(event, id) {

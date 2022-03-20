@@ -11,6 +11,7 @@
             cursor: pointer;
         }
     </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -31,11 +32,14 @@
     </div>
     <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
     <script>
-        const currentTheme = localStorage.getItem('theme');
-
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-    }
+        // THEME
+        let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) {
+            document.documentElement.setAttribute('data-theme', "dark");
+        }
+        else {
+            document.documentElement.setAttribute('data-theme', "light");
+        }
     </script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script>
@@ -49,7 +53,6 @@
                 method: "GET",
                 data: {
                     skip: page * 10,
-                    size: 10,
                     preview: true
                 },
                 success: (data) => {            
@@ -57,6 +60,16 @@
                     if (data.success) {
                         if (data.post.length == 0) {
                             stop = true;
+                        }
+                        if (data.post.length == 0) {
+                            $("#list").append(`
+                                <div class="p-lg-4 mt-3 m-lg-3 shadow box">
+                                    <div>
+                                        <h4>게시글 없음</h4>
+                                        <p>등록된 게시글이 없습니다.</p>
+                                    </div>
+                                </div>
+                            `)
                         }
                         for (const d of data.post) {
                             $("#list").append(`

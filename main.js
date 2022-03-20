@@ -1,8 +1,11 @@
 // Express
 const express = require("express");
-const session = require('express-session');
-const FileStore = require('session-file-store')(session);
+const express_session = require('express-session');
+const FileStore = require('session-file-store')(express_session);
 
+
+// Rate Limit
+const rateLimit = require('express-rate-limit')
 
 // Neis
 const Neis = require("@my-school.info/neis-api").default;
@@ -27,7 +30,13 @@ function getMondayDate(d) {
     var paramDate = new Date(d);
 
     var day = paramDate.getDay();
-    var diff = paramDate.getDate() - day + (day == 0 ? -6 : 1);
+    if (day < 6) {
+        var diff = paramDate.getDate() - day + 1;
+    }
+    else {
+        var diff = paramDate.getDate() + (8-day);
+    }
+    
     var result = new Date(paramDate.setDate(diff)).toISOString().substring(0, 10)
     return result;
 }
@@ -59,15 +68,7 @@ function formatDate(date) {
 
 // EXPRESS SETTING
 const app = express();
-app.set('trust proxy',1)
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.set('views', __dirname + '/view');
-app.set('view engine', 'ejs');
-app.engine('html', require('ejs').renderFile);
-app.use("/static", express.static(__dirname + '/static'));
-app.use(morgan('combined', {stream: winston.stream}));
-app.use(session({
+var session = express_session({
     secret: 'ehighsdofkjmseo',  // 암호화
     resave: false,
     saveUninitialized: true,
@@ -77,14 +78,34 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24 * 30 // 세션 30일
     },
     key: "sid"
-}));
+})
+var httpServer = require("http").createServer(app);
+const io = require('socket.io')(httpServer);
+var ios = require("express-socket.io-session");
+io.use(ios(session, { autoSave:true }));
+
+
+
+app.set('trust proxy',1)
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.set('views', __dirname + '/view');
+app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
+app.use("/static", express.static(__dirname + '/static'));
+app.use(morgan('combined', {stream: winston.stream}));
+app.use(session);
 app.use((req, res, next) => {
     if (!req.session.user_id) {
         if (req.path.startsWith("/login") || req.path.startsWith("/static")) {
             next();
         }
         else {
-            res.redirect("/login")
+            req.session.next = req.url;
+            req.session.save(() => {
+                res.redirect("/login");
+            })
+            
         }
     }
     else {
@@ -92,7 +113,16 @@ app.use((req, res, next) => {
     }
 })
 
-
+// 5분(300초)동안 100호출 제한
+const apiRatelimiter = rateLimit({
+	windowMs: 5 * 60 * 1000,
+	max: 100,
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: {success: false, message: "요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요."},
+    statusCode: 200
+});
+app.use("/api/", apiRatelimiter)
 
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -126,7 +156,7 @@ app.get("/", async (req, res) => {
     }
     else {
         var monday = getMondayDate(new Date());
-        res.render("main.html", {monday: monday, grade: classroom.class.GRADE, classroom: classroom.class.CLASS_NM, school_name: classroom.school.SCHUL_NM});
+        res.render("main.html", {monday: monday, grade: classroom.class.GRADE, classroom: classroom.class.CLASS_NM, school_name: classroom.school.SCHUL_NM, user: user});
     }
 });
 
@@ -141,8 +171,8 @@ app.get("/login", (req, res) => {
 
 app.get("/login/naver", (req, res) => {
     var client_id = 'ryaIsyjhpXC5VWERXxdB';
-    var state = new Date().getTime() + Math.floor(Math.random() * 1000);
     var redirectURI = encodeURI("https://sol-studio.shop/login/callback/naver");
+    var state = Math.round(Math.random() * 1000)
     res.render("login/naver.html", {url: 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=' + client_id + '&redirect_uri=' + redirectURI + '&state=' + state, error: req.query.error});
 });
 
@@ -230,7 +260,7 @@ app.get("/login/callback/naver", async (req, res) => {
                     res.redirect("/")
                 }
                 else {
-                    console.log(payload)
+                    
                     user = await client.db("school").collection("user").insertOne({
                         type: null,
                         auth: "naver",
@@ -282,11 +312,19 @@ app.get("/login/type/callback", async (req, res) => {
         }
         else if (req.query.type == "student") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "student"}})
-            res.redirect("/invite");
+            var next = req.session.next ?? "/";
+            delete req.session.next;
+            console.log(next)
+            res.redirect(next);
             return;
         }
+
     }
-    res.redirect("/")
+    else {
+        res.redirect("/")
+    }
+
+
 });
 
 app.get("/register-class", async (req, res) => {
@@ -399,14 +437,26 @@ app.post("/register-class", async (req, res) => {
 });
 
 
-app.get("/invite", (req, res) => {
+app.get("/invite", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    if (user.class) {
+        res.redirect("/")
+        return;
+    }
     res.render("invite.html", {error: req.query.error ?? ""})
 });
 
 
 app.get("/invite/:code", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    if (user.class != null) {
+        res.redirect("/");
+        return;
+    }
     var classroom = await client.db("school").collection("class").findOne({invite: req.params.code})
+    
     if (classroom) {
         client.db("school").collection("user").updateOne({_id: new ObjectId(req.session.user_id)}, {$set: {class: classroom._id, waiting: true}})
         res.redirect("/")
@@ -494,7 +544,7 @@ app.get("/post/:id", async (req, res) => {
         _id: new ObjectId(data.author)
     });
     data.content = data.content.replaceAll("<script", "&lt;script").replaceAll("</script>", "&lt;/script&gt;")
-    res.render("post.html", {data: data, author: author})
+    res.render("post.html", {data: data, author: author, user: {name: user.name, avatar: user.avatar}})
 });
 
 
@@ -588,7 +638,7 @@ app.get("/api/post", async (req, res) => {
         })
         var data = await client.db("school").collection("post").find({
             class: user.class
-        }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(parseInt(req.query.size)).toArray();
+        }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(10).toArray();
     
         var result = []
         for (const d of data) {
@@ -687,7 +737,7 @@ app.get("/api/timetable", async (req, res) => {
         }
 
         client.db("school").collection("timetable").insertMany(timetable)
-        res.json({success: true, table: refine(timetable)})
+        res.json({success: true, table: refine(timetable), friday: formatDate(friday)})
     }
     else {
         for (var i = 0; i < 5; i++) {
@@ -725,7 +775,7 @@ app.get("/api/timetable", async (req, res) => {
         }
 
         client.db("school").collection("timetable").insertMany(timetable)
-        res.json({success: true, table: refine(timetable)})
+        res.json({success: true, table: refine(timetable), friday: formatDate(friday)})
     }
 });
 
@@ -810,6 +860,61 @@ app.get("/api/user", async (req, res) => {
 })
 
 
+app.get("/api/comment", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var raw = await client.db("school").collection("comment").find({
+        id: req.query.id,
+        reply: req.query.reply ?? null
+    }).limit(30).skip(parseInt(req.query.skip)).toArray();
+
+    var comments = []
+
+    for (const r of raw) {
+        var author = await client.db("school").collection("user").findOne({
+            _id: r.author
+        })
+        comments.push({
+            _id: r._id,
+            author: {
+                name: author.name,
+                avatar: author.avatar
+            },
+            content: r.content,
+            timestamp: r.timestamp,
+            reply: r.reply,
+            reply_count: await client.db("school").collection("comment").count({reply: String(r._id)})
+        })
+    }
+
+    res.json({success: true, comment: comments, total: await client.db("school").collection("comment").count({id: req.query.id, reply: req.query.reply ?? null})})
+})
+
+
+app.post("/api/comment", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    var comment = await client.db("school").collection("comment").insertOne({
+        id: req.body.id,
+        author: user._id,
+        content: req.body.content,
+        timestamp: new Date().getTime(),
+        reply: req.body.reply ?? null
+    })
+
+    res.json({success: true, comment: {
+        _id: comment.insertedId,
+        id: req.body.id,
+        author: {
+            name: user.name,
+            avatar: user.avatar
+        },
+        content: req.body.content,
+        timestamp: new Date().getTime(),
+        reply: req.body.reply ?? null
+    }})
+})
+
+
 app.get("/api/error", (req, res) => {
     res.end();
 });
@@ -831,11 +936,29 @@ app.get("/terms", (req, res) => {
 
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
+// Socket.io
+var online = {}
+io.on("connection", async (socket) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(socket.handshake.session.user_id)});
+    if (!online[String(user.class)]) {
+        online[String(user.class)] = []
+    }
+    if (!online[String(user.class)].includes(String(user._id))) {
+        online[String(user.class)].push(String(user._id))
+    }
+    socket.join("class-" + String(user.class));
+    io.to("class-" + String(user.class)).emit("online-count", online[String(user.class)].length);
+    socket.on("disconnect", () => {
+        const idx = online[String(user.class)].indexOf(String(user._id))
+        if (idx > -1) online[String(user.class)].splice(idx, 1)
+        io.to("class-" + String(user.class)).emit("online-count", online[String(user.class)].length);
+    })
+})
 
 
 
 // RUN
-app.listen(3000, () => {
-    console.log("hi")
+httpServer.listen(3000, () => {
+    console.log("hi");
 })

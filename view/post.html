@@ -6,6 +6,7 @@
     <link href="/static/style.css", rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= data.title %></title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -33,24 +34,43 @@
                 <div class="p-3">
                     <%- data.content %>
                 </div>
-                
             </div>
+
         </div>
         <div class="row">
-            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
-                댓글 구현(나아아중에)
+            <div  class="col p-lg-4 mt-3 m-lg-3 shadow box">
+                <div>
+                    <h2>댓글 달기</h2>
+                    <textarea id="content-" style="width: 100%;" placeholder="댓글을 남겨보세요"></textarea>
+                    <div style="display: flex;justify-content: space-between">
+                        <div></div>
+                        <button class="btn btn-primary" onclick="addComment()">등록</button>
+                    </div>
+                </div>
+                <div id="comment">
+    
+                </div>
             </div>
         </div>
     </div>
     <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
     <script>
-        const currentTheme = localStorage.getItem('theme');
-
-    if (currentTheme) {
-        document.documentElement.setAttribute('data-theme', currentTheme);
-    }
+        // THEME
+        let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (dark) {
+            document.documentElement.setAttribute('data-theme', "dark");
+        }
+        else {
+            document.documentElement.setAttribute('data-theme', "light");
+        }
         moment.locale("ko");
         document.querySelector("#timestamp").innerHTML = moment(new Date(<%= data.timestamp %>)).fromNow()
     </script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        var id = '<%= data._id %>'
+        var user = <%- JSON.stringify(user) %>
+    </script>
+    <script src="/static/comment.js" onload="loadComment()" async></script>
 </body>
 </html>

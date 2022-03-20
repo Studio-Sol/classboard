@@ -53,21 +53,24 @@ async function fetchMeal(date) {
         url: "/api/meal?date=" + date,
         method: "GET",
         success: (data) => {
-            cache.meal[date] = data;
-            if (data.meal.length == 0) {
-                $("#meal").html("데이터 없음");
+            if (data.success) {
+                cache.meal[date] = data;
                 $("#meal-date").html(date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6))
+                if (data.meal.length == 0) {
+                    $("#meal").html("데이터 없음");
+                }
+                else {
+                    $("#meal").html("")
+                    data.meal.forEach(d => {
+                        $("#meal").append(`<strong>${d.MMEAL_SC_NM}</strong><br>`);
+                        $("#meal").append(d.DDISH_NM);
+                    })
+                }
             }
             else {
-                $("#meal").html("")
-                data.meal.forEach(d => {
-                    $("#meal").append(`<strong>${d.MMEAL_SC_NM}</strong><br>`);
-                    $("#meal").append(d.DDISH_NM);
-                })
-                
-                $("#meal-date").html(date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6))
+                $("#meal").html("Error");
+                throw Error(data.message ?? "fetchMeal:success->false, no message");
             }
-
         }
     })
 }
@@ -86,11 +89,11 @@ async function fetchpost() {
                     $("#metadata").append(`<li class="list-group-item" onclick="openPost('${d.id}')">${d.title}</li>`)
                 }
                 if (data.post.length == 0) {
-                    $("#metadata").append(`<strong class="list-group-item">메모 없음</strong>`)
+                    $("#metadata").append(`<strong class="list-group-item">게시글 없음</strong>`)
                 }
             } else {
                 $("#metadata").html("오류가 발생했습니다.");
-                throw Error("fetchpost.ajax.success.false");
+                throw Error(data.message ?? "fetchpost:success->false, no message");
             }
         }
     })
@@ -114,7 +117,7 @@ async function fetchNotice() {
                 }
             } else {
                 $("#notice").html("오류가 발생했습니다.");
-                throw Error("fetchNotice.ajax.success.false");
+                throw Error(data.message ?? "fetchNotice:success->false, no message");
             }
         }
     })
@@ -153,7 +156,7 @@ async function fetchTimeTable(monday, refresh) {
                 }
             }
             else {
-                throw Error("fetchTimeTable.data.success : false")
+                throw Error(data.message ?? "fetchTimetable:success->false, no message")
             }
         }
     })
@@ -194,36 +197,36 @@ function newPost() {
 
 
 // THEME
-const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-const currentTheme = localStorage.getItem('theme');
-
-if (currentTheme) {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-
-    if (currentTheme === 'dark') {
-        toggleSwitch.checked = true;
-    }
+let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+if (dark) {
+    document.documentElement.setAttribute('data-theme', "dark");
+}
+else {
+    document.documentElement.setAttribute('data-theme', "light");
 }
 
-function switchTheme(e) {
-    if (e.target.checked) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem('theme', 'light');
-    }
-}
-
-toggleSwitch.addEventListener('change', switchTheme, false);
 
 window.onerror = (message, url, lineNumber) => {
     $("#error").addClass("show").show();
     $("#overlay").show()
-    $("#error-message").html(message);
+    if (message.includes("요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요.")) {
+        $("#error-message").html(message);
+        return;
+    }
+
+    $("#error-message").html("문제가 보고되었습니다. <br>" + message);
     $.ajax({
         url: `/api/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
         method: "GET"
     })
     return true;
 }
+
+
+
+// Socket.io
+var socket = io()
+
+socket.on("online-count", (count) => {
+    $("#online").text(count)
+})

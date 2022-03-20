@@ -21,6 +21,7 @@
                 background-color: var(--bg);
             }
         </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -57,10 +58,13 @@
 
 
         <script>
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme) {
-                document.documentElement.setAttribute('data-theme', currentTheme);
+            // THEME
+            let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (dark) {
+                document.documentElement.setAttribute('data-theme', "dark");
+            }
+            else {
+                document.documentElement.setAttribute('data-theme', "light");
             }
             $(document).ready(function() {
                 //여기 아래 부분
