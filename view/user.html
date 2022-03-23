@@ -12,7 +12,7 @@
             cursor: pointer;
         }
     </style>
-    <title><%= user.name ?? user.nick %></title>
+    <title><%= user.name %></title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
 </head>
 
@@ -21,7 +21,7 @@
         <div class="row mb-2" style="height: 7em;">
             <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
                 <img style="height: 5rem;" src="<%= user.avatar %>">
-                <h1><%= user.name ?? user.nick %></h1>
+                <h1><%= user.name %></h1>
             </div>
         </div>
     </div>

@@ -9,7 +9,7 @@
         <style>
 
         </style>
-        <title>글 작성</title>
+        <title>공지 작성</title>
         <style>
             input, .note-editing-area {
                 background-color: var(--bg);
@@ -25,22 +25,49 @@
     </head>
 
     <body>
+        <div id="reply-type-choose" style="display: none; background: rgba(0,0,0,0.5);width: 100%; height: 100%; position: fixed; align-items: center; justify-content: center; z-index: 999;">
+            <div class="box shadow p-5 w-75 h-50" style="display: flex; align-items: center; justify-content: center;flex-direction: column;">
+                <h2>회신항목 추가</h2>
+                <select class="form-select" id="reply-type">
+                    <option value="null" selected>회신 유형을 선택해주세요</option>
+                    <option value="text">텍스트형 응답</option>
+                    <option value="select">선택형 응답</option>
+                </select>
+                <div class="mt-3" style="display: flex; width: 100%;justify-content: flex-end;">
+                    <button class="btn btn-secondary me-3" onclick="$('#reply-type-choose').css('display', 'none');">
+                        취소
+                    </button>
+                    <button class="btn btn-primary" onclick="addReply();">
+                        확인
+                    </button>
+                </div>
+            </div>
+        </div>
         <div class="container-xxl" style="height: 100%;" id="main">
             <div class="row mb-2" style="height: 7em;">
                 <div class="col p-lg-4 mt-3 m-lg-3 shadow box" style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 style="margin: 0px;"><strong id="school-grade-class">학급 글쓰기</strong></h2>
+                        <h2 style="margin: 0px;"><strong id="school-grade-class">학급 공지 작성</strong></h2>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
-                    <form action="/api/post" method="post">
+                    <form action="/api/notice" method="post">
                         <div class="p-3">
                             <input type="text" id="title" name="title" style="width: 100%;font-size: x-large;" placeholder="제목을 입력해주세요">
                         </div>
                         <div class="p-3">
                             <textarea id="summernote" name="content"></textarea>
+                        </div>
+                        <hr>
+                        <div class="p-3" id="replies" style="border-style: solid;">
+                            <div class="reply">
+                                <input type="text" placeholder="질문을 입력해주세요">
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <button class="btn btn-primary" onclick="event.preventDefault(); $('#reply-type-choose').css('display', 'flex'); $('#main').css('filter', 'blur(3px);')">회신 추가</button>
                         </div>
                         <hr>
                         <div class="p-3">
@@ -86,6 +113,37 @@
                 if ($($('#summernote').summernote('code')).text().length > 4096) {
                     event.preventDefault();
                     alert("내용은 4096자 이하만 가능합니다")
+                }
+            })
+            function addReply() {
+                if ($("#reply-type").val() == "null") {
+                    alert("회신 유형을 선택해주세요.")
+                    return;
+                }
+                $('#reply-type-choose').css('display', 'none');
+                
+                if ($(".reply").length != 0) {
+                    $("#replies").append("<hr>")
+                }
+                if ($(".reply").length == 3) {
+                    alert("회신은 3개까지만 첨부할 수 있습니다.");
+                    return;
+                }
+
+
+                if ($("#reply-type").val() == "text") {
+                    $("#replies").append()
+                }
+
+
+                else if ($("#reply-type").val() == "select") {
+                    $("#replies").append()
+                }
+                
+            }
+            $("#reply-type-choose").on("click", (event) => {
+                if (event.target == document.querySelector("#reply-type-choose")) {
+                    $('#reply-type-choose').css('display', 'none');
                 }
             })
         </script>

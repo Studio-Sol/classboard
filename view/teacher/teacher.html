@@ -7,6 +7,7 @@
     <link href="/static/style.css", rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/76a19131cd.js" crossorigin="anonymous"></script>
     <style>
         tbody {
             cursor: pointer;
@@ -31,7 +32,12 @@
         <div class="row">
             <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
                 <h2>초대코드</h2>
-                <%= classroom.invite %>
+                <a href="#" onclick="copy('<%= classroom.invite %>')"><%= classroom.invite %></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2><a href="/new-notice">공지 작성 <i class="fa fa-pencil"></i></a></h2>
             </div>
         </div>
         <div class="row">
@@ -40,7 +46,7 @@
                 <table class="table">
                     <thead>
                         <th class="col-1">이름</th>
-                        <th class="col-1">로그인 방법</th>
+                        <th class="col-1">이메일</th>
                         <th class="col-1">관리</th>
                     </thead>
                     <tbody id="students">
@@ -50,7 +56,7 @@
                                     <img style="width: 2rem;" src="<%= student.avatar %>">
                                     <%= student.name ?? "실명 없음" %>
                                 </td>
-                                <td><%= student.auth %></td>
+                                <td><%= student.email %></td>
                                 <td>
                                     <button class="btn btn-sm bg-danger" onclick="ban(event, '<%= student._id %>')">
                                         <i class="fa fa-ban" title="추방하기"></i>
@@ -68,7 +74,7 @@
                 <table class="table">
                     <thead>
                         <th class="col-1">이름</th>
-                        <th class="col-1">로그인 방법</th>
+                        <th class="col-1">이메일</th>
                         <th class="col-1">수락/거절</th>
                     </thead>
                     <tbody id="join-request">
@@ -78,7 +84,7 @@
                                     <img style="width: 2rem;" src="<%= student.avatar %>">
                                     <%= student.name ?? "실명 없음" %>
                                 </td>
-                                <td><%= student.auth %></td>
+                                <td><%= student.email %></td>
                                 <td>
                                     <button class="btn btn-sm bg-primary" onclick="accept(event, '<%= student._id %>')">
                                         <i class="fa fa-check" title="거절"></i>
@@ -160,8 +166,6 @@
                         <tr onclick="openProfile(event, '${data.user._id}')" data-id="${data.user._id}">
                             <td>
                                 <img style="width: 2rem;" src="${data.user.avatar}">
-                            </td>
-                            <td>
                                 ${data.user.name ?? "실명 없음"}
                             </td>
                             <td>${data.user.auth}</td>
@@ -175,6 +179,16 @@
                 }
             })
             
+        }
+        function copy(text) {
+            var tempElem = document.createElement('textarea');
+            tempElem.value = text;  
+            document.body.appendChild(tempElem);
+
+            tempElem.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempElem);
+            alert("초대코드가 복사되었습니다. 원하시는 곳에 붙여넣어주세요.")
         }
     </script>
 </body>

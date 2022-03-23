@@ -41,6 +41,8 @@ function getMondayDate(d) {
     return result;
 }
 
+
+// python random.choice
 function choice (a, k=1) {
     if (k == 1) {
         return a[Math.floor(Math.random() * a.length)];
@@ -52,6 +54,8 @@ function choice (a, k=1) {
     return return_array
 }
 
+
+// neis date format
 function formatDate(date) {
     var date = new Date(date);
     var year = date.getFullYear();
@@ -113,7 +117,7 @@ app.use((req, res, next) => {
     }
 })
 
-// 5분(300초)동안 100호출 제한
+// API 호추 5분(300초)동안 100호출로 제한
 const apiRatelimiter = rateLimit({
 	windowMs: 5 * 60 * 1000,
 	max: 100,
@@ -130,9 +134,13 @@ app.use("/api/", apiRatelimiter)
 
 
 
+app.get("/", (req, res) => {
+    res.render("index.html", {user_id: req.session.user_id ?? false});
+})
+
 
 // MAIN
-app.get("/", async (req, res) => {
+app.get("/main", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({
         _id: new ObjectId(req.session.user_id)
@@ -208,8 +216,7 @@ app.get("/login/callback/google", async (req, res) => {
             type: null,
             auth: "google",
             email: payload.email,
-            name: null,
-            nick: payload.name,
+            name: payload.name,
             avatar: payload.picture,
             class: null,
             waiting: false
@@ -250,7 +257,7 @@ app.get("/login/callback/naver", async (req, res) => {
                 var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
                 var payload = JSON.parse(body2).response;
                 var keys = Object.keys(payload)
-                if (!keys.includes("email") || !keys.includes("nickname") || !keys.includes("name") || !keys.includes("profile_image")) {
+                if (!keys.includes("email") || !keys.includes("name") || !keys.includes("profile_image")) {
                     res.redirect("/login/naver?error=3");
                     return;
                 }
@@ -266,7 +273,6 @@ app.get("/login/callback/naver", async (req, res) => {
                         auth: "naver",
                         email: payload.email,
                         name: payload.name,
-                        nick: payload.nickname,
                         avatar: payload.profile_image,
                         class: null,
                         waiting: false
@@ -444,6 +450,10 @@ app.get("/invite", async (req, res) => {
         res.redirect("/")
         return;
     }
+    if (user.type != "student") {
+        res.redirect("/");
+        return;
+    }
     res.render("invite.html", {error: req.query.error ?? ""})
 });
 
@@ -452,6 +462,10 @@ app.get("/invite/:code", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
     if (user.class != null) {
+        res.redirect("/");
+        return;
+    }
+    if (user.type != "student") {
         res.redirect("/");
         return;
     }
@@ -548,6 +562,15 @@ app.get("/post/:id", async (req, res) => {
 });
 
 
+app.get("/new-notice", (req, res) => {
+    if (user.type != "teacher") {
+        res.redirect("/");
+        return;
+    }
+    res.render("new_notice.html")
+});
+
+
 app.get("/notice", async (req, res) => {
     res.end()
 });
@@ -577,11 +600,18 @@ app.get("/notice/:id", async (req, res) => {
         return;
     }
     res.render("notice.html", {data: data, author: author})
-
-    
 });
 
 
+app.get("/online", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    var result = []
+    for (const o of online[user.class]) {
+        result.push(await client.db("school").collection("user").findOne({_id: new ObjectId(o)}))
+    }
+    res.render("online.html", {online: result})
+})
 
 
 
@@ -605,7 +635,7 @@ app.get("/api/meal", async (req, res) => {
         }
     );
     if (meal.success) {
-        res.json({meal: meal.meal})
+        res.json({success: true, meal: meal.meal})
     }
     else {
         res.json({success: true, meal: []})
@@ -933,6 +963,10 @@ app.get("/terms", (req, res) => {
 });
 
 
+// 404 NOT FOUND
+app.use((req, res) => {
+    res.render("404.html", {user_id: req.session.user_id});
+});
 
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
