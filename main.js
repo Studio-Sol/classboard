@@ -1,3 +1,11 @@
+var inspecting = false;
+
+
+
+
+
+
+
 // Express
 const express = require("express");
 const express_session = require('express-session');
@@ -13,8 +21,7 @@ const neis = new Neis({ KEY: "451d037d3e6343f097c4d6ff75d543f1", Type: "json" })
 
 
 // mongoDB
-var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require("mongodb").ObjectId;
+var { MongoClient, ObjectId } = require('mongodb');
 
 
 // GOOGLE CLIENT
@@ -100,6 +107,10 @@ app.use("/static", express.static(__dirname + '/static'));
 app.use(morgan('combined', {stream: winston.stream}));
 app.use(session);
 app.use((req, res, next) => {
+    if (req.ip != "114.207.98.231" && inspecting) {
+        res.render("inspect.html");
+        return;
+    }
     if (!req.session.user_id) {
         if (req.path.startsWith("/login") || req.path.startsWith("/static")) {
             next();
@@ -109,7 +120,6 @@ app.use((req, res, next) => {
             req.session.save(() => {
                 res.redirect("/login");
             })
-            
         }
     }
     else {
@@ -117,7 +127,7 @@ app.use((req, res, next) => {
     }
 })
 
-// API 호추 5분(300초)동안 100호출로 제한
+// API 호출 5분(300초)동안 100호출로 제한
 const apiRatelimiter = rateLimit({
 	windowMs: 5 * 60 * 1000,
 	max: 100,
@@ -320,7 +330,6 @@ app.get("/login/type/callback", async (req, res) => {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "student"}})
             var next = req.session.next ?? "/";
             delete req.session.next;
-            console.log(next)
             res.redirect(next);
             return;
         }
@@ -562,7 +571,11 @@ app.get("/post/:id", async (req, res) => {
 });
 
 
-app.get("/new-notice", (req, res) => {
+app.get("/new-notice", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
     if (user.type != "teacher") {
         res.redirect("/");
         return;
@@ -572,7 +585,15 @@ app.get("/new-notice", (req, res) => {
 
 
 app.get("/notice", async (req, res) => {
-    res.end()
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    var classroom = await client.db("school").collection("class").findOne({
+        _id: new ObjectId(user.class)
+    })
+    res.render("notice_list.html", {grade: classroom.class.GRADE, classroom: classroom.class.CLASS_NM, school_name: classroom.school.SCHUL_NM});
+
 });
 
 
@@ -592,6 +613,22 @@ app.get("/notice/:id", async (req, res) => {
         class: user.class,
         _id: new ObjectId(req.params.id)
     });
+    if (data.question) {
+        if (data.question.type == "select") {
+            var raw = await client.db("school").collection("reply").find({
+                id: String(data._id)
+            }).toArray();
+            var items = {}
+            for (const r of raw) {
+                if (Object.keys(items).includes(r.answer)) {
+                    items[r.answer] += 1
+                }
+                else {
+                    items[r.answer] = 1
+                }
+            }
+        }
+    }
     var author =  await client.db("school").collection("user").findOne({
         _id: new ObjectId(data.author)
     });
@@ -599,19 +636,8 @@ app.get("/notice/:id", async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    res.render("notice.html", {data: data, author: author})
+    res.render("notice.html", {data: data, author: author, items: items??null})
 });
-
-
-app.get("/online", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
-    var result = []
-    for (const o of online[user.class]) {
-        result.push(await client.db("school").collection("user").findOne({_id: new ObjectId(o)}))
-    }
-    res.render("online.html", {online: result})
-})
 
 
 
@@ -648,16 +674,99 @@ app.post("/api/post", async (req, res) => {
     var user = await client.db("school").collection("user").findOne({
         _id: new ObjectId(req.session.user_id)
     })
-    client.db("school").collection("post").insertOne({
+    var post_new = await client.db("school").collection("post").insertOne({
         title: req.body.title,
         content: req.body.content,
         preview: req.body.content.replace(/<[^>]*>?/gm, '').slice(0, 20),
         author: user._id,
         class: user.class,
         timestamp: new Date().getTime()
+    });
+    process.emit("class-" + String(user.class) + ".new-post", {
+        title: req.body.title,
+        _id: post_new.insertedId
     })
-    res.redirect("/post")
+    res.redirect("/post");
 });
+
+
+app.post("/api/notice", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    
+    var body = JSON.parse(req.body.body)
+    if (body.question.type == "text") {
+        var question = {
+            type: body.question.type,
+            content: body.question.content,
+        }
+    }
+    else if (body.question.type == "select") {
+        var question = {
+            type: body.question.type,
+            content: body.question.content,
+            items: body.question.items
+        }
+    }
+    else {
+        var question = null;
+    }
+
+    var notice_new = await client.db("school").collection("notice").insertOne({
+        title: body.title,
+        content: body.content,
+        preview: body.content.replace(/<[^>]*>?/gm, '').slice(0, 20),
+        author: user._id,
+        class: user.class,
+        timestamp: new Date().getTime(),
+        question: question
+    });
+    process.emit("class-" + String(user.class) + ".new-notice", {
+        title: body.title,
+        _id: notice_new.insertedId
+    })
+    res.json({status: "success", id: notice_new.insertedId});
+});
+
+
+app.post("/api/notice/question/reply", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
+    var question = (await client.db("school").collection("notice").findOne({_id: new ObjectId(req.body.id)})).question
+    console.log(question.items[parseInt(req.body.answer)].limit)
+    if (question.type == "select") {
+        if (question.items[parseInt(req.body.answer)].limit != null) {
+            if ((await client.db("school").collection("reply").count({id: req.body.id, answer: req.body.answer})) >=  question.items[parseInt(req.body.answer)].limit) {
+                res.json({success: false, message: "해당 항목의 회신 최대 수 제한을 초과했습니다."});
+                return;
+            }
+        }
+
+        if (await client.db("school").collection("reply").findOne({user: user._id, id: req.body.id})) {
+            await client.db("school").collection("reply").updateOne({
+                user: user._id,
+                id: req.body.id
+            }, {$set: {
+                answer: req.body.answer,
+                timestamp: new Date().getTime()
+            }})
+        }
+        else {
+            await client.db("school").collection("reply").insertOne({
+                user: user._id,
+                id: req.body.id,
+                answer: req.body.answer,
+                timestamp: new Date().getTime()
+            })
+        }
+    }
+
+    res.json({success: true});
+})
 
 
 app.get("/api/post", async (req, res) => {
@@ -691,19 +800,32 @@ app.get("/api/post", async (req, res) => {
 
 
 app.get("/api/notice", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
-    })
-    var data = await client.db("school").collection("notice").find({
-        class: user.class
-    }).limit(5).toArray();
-
-    var result = []
-    for (const d of data) {
-        result.push({title: d.title, id: d._id})
+    try {
+        var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+        var user = await client.db("school").collection("user").findOne({
+            _id: new ObjectId(req.session.user_id)
+        })
+        var data = await client.db("school").collection("notice").find({
+            class: user.class
+        }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(10).toArray();
+    
+        var result = []
+        for (const d of data) {
+            if (req.query.preview) {
+                var author = await client.db("school").collection("user").findOne({
+                    _id: new ObjectId(d.author)
+                })
+                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: author})
+            }
+            else {
+                result.push({title: d.title, id: d._id})
+            }
+        }
+        res.json({success: true, notice: result})
     }
-    res.json({success: true, notice: result})
+    catch {
+        res.json({success: false, message: "알 수 없는 에러 (GET 파라미터를 확인해주세요)"})
+    }
 });
 
 
@@ -951,7 +1073,6 @@ app.get("/api/error", (req, res) => {
 
 
 
-
 // ETC
 app.get("/privacy", (req, res) => {
     res.render("privacy.html")
@@ -971,22 +1092,16 @@ app.use((req, res) => {
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Socket.io
-var online = {}
 io.on("connection", async (socket) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({_id: new ObjectId(socket.handshake.session.user_id)});
-    if (!online[String(user.class)]) {
-        online[String(user.class)] = []
-    }
-    if (!online[String(user.class)].includes(String(user._id))) {
-        online[String(user.class)].push(String(user._id))
-    }
+
     socket.join("class-" + String(user.class));
-    io.to("class-" + String(user.class)).emit("online-count", online[String(user.class)].length);
-    socket.on("disconnect", () => {
-        const idx = online[String(user.class)].indexOf(String(user._id))
-        if (idx > -1) online[String(user.class)].splice(idx, 1)
-        io.to("class-" + String(user.class)).emit("online-count", online[String(user.class)].length);
+    process.on("class-" + String(user.class) + ".new-post", (data) => {
+        socket.emit("new-post", data)
+    })
+    process.on("class-" + String(user.class) + ".new-notice", (data) => {
+        socket.emit("new-post", data)
     })
 })
 

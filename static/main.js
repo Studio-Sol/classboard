@@ -1,6 +1,18 @@
 // BASIC PAGE MAKE
-$("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
-
+if (window.innerWidth > 1200) {
+    $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
+}
+else {
+    $("#school-grade-class").html(`${school_name} ${grade}-${class_}`)
+}
+window.onresize = (event) => {
+    if (window.innerWidth > 1200) {
+        $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
+    }
+    else {
+        $("#school-grade-class").html(`${school_name} ${grade}-${class_}`)
+    }
+}
 
 // FETCH WITH USER INTERACTION
 $("td.class, th.dayofweek").on("click", (event) => {
@@ -226,7 +238,3 @@ window.onerror = (message, url, lineNumber) => {
 
 // Socket.io
 var socket = io()
-
-socket.on("online-count", (count) => {
-    $("#online").text(count)
-})
