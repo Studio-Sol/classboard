@@ -10,24 +10,7 @@
 
         </style>
         <title>공지 작성</title>
-        <style>
-            input, .note-editing-area {
-                background-color: var(--bg);
-                border: solid;
-                border-color: var(--text);
-                border-width: 1px;
-            }
-            .note-editable, .note-toolbar {
-                background-color: var(--bg);
-            }
-            li {
-                list-style: none;
-                margin-top: 0.5rem;
-            }
-            ul {
-                padding: 0px;
-            }
-        </style>
+        <link rel="stylesheet" href="/static/style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
     </head>
 
@@ -87,14 +70,6 @@
 
 
         <script>
-            // THEME
-            let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            if (dark) {
-                document.documentElement.setAttribute('data-theme', "dark");
-            }
-            else {
-                document.documentElement.setAttribute('data-theme', "light");
-            }
             $(document).ready(function() {
                 //여기 아래 부분
                 $('#summernote').summernote({
@@ -116,9 +91,10 @@
                     event.preventDefault();
                     alert("내용은 4096자 이하만 가능합니다")
                 }
+                var question = null;
                 if ($("#reply")) {
                     if ($("#reply-type").val() == "text") {
-                        var question = {
+                        question = {
                             type: "text",
                             content: $("#reply-content").val()
                         }
@@ -132,15 +108,12 @@
                                 limit: parseInt(item.children[1].value)
                             })
                         })
-                        var question = {
+                        question = {
                             type: "select",
                             content: $("#reply-content").val(),
                             items: items
                         }
                     }
-                }
-                else {
-                    var question = null;
                 }
                 $.ajax({
                     url: "/api/notice",
@@ -154,6 +127,9 @@
                     },
                     success: (data) => {
                         location = "/notice/" + data.id
+                    },
+                    error: (err) => {
+                        alert("오류가 발생했습니다. 잠시 후에 다시 시도해주세요.")
                     }
                 });
             })

@@ -4,8 +4,6 @@ var inspecting = false;
 
 
 
-
-
 // Express
 const express = require("express");
 const express_session = require('express-session');
@@ -107,12 +105,12 @@ app.use("/static", express.static(__dirname + '/static'));
 app.use(morgan('combined', {stream: winston.stream}));
 app.use(session);
 app.use((req, res, next) => {
-    if (req.ip != "114.207.98.231" && inspecting) {
+    if (req.ip != "114.207.98.231-" && inspecting) {
         res.render("inspect.html");
         return;
     }
     if (!req.session.user_id) {
-        if (req.path.startsWith("/login") || req.path.startsWith("/static")) {
+        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static")) {
             next();
         }
         else {
@@ -697,23 +695,24 @@ app.post("/api/notice", async (req, res) => {
     })
     
     var body = JSON.parse(req.body.body)
-    if (body.question.type == "text") {
-        var question = {
-            type: body.question.type,
-            content: body.question.content,
+    if (body.question) {
+        if (body.question.type == "text") {
+            var question = {
+                type: body.question.type,
+                content: body.question.content,
+            }
         }
-    }
-    else if (body.question.type == "select") {
-        var question = {
-            type: body.question.type,
-            content: body.question.content,
-            items: body.question.items
+        else if (body.question.type == "select") {
+            var question = {
+                type: body.question.type,
+                content: body.question.content,
+                items: body.question.items
+            }
         }
-    }
-    else {
-        var question = null;
-    }
-
+        else {
+            var question = null;
+        }  
+    } 
     var notice_new = await client.db("school").collection("notice").insertOne({
         title: body.title,
         content: body.content,
@@ -1111,3 +1110,8 @@ io.on("connection", async (socket) => {
 httpServer.listen(3000, () => {
     console.log("hi");
 })
+
+
+
+
+// TODO:과목별 메모

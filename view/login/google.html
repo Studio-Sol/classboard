@@ -21,34 +21,7 @@
         }
     </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
-<style>
-    [data-theme="dark"] {
-        --bg: #3b424f;
-        --box-bg: #2a2e37;
-        --text: #c9d1d9;
-        --border: #464646;
-        --hover: rgba(255, 255, 255,0.1);
-    }
-
-    [data-theme="light"] {
-        --bg: #f3f5f7;
-        --box-bg: #ffffff;
-        --text: #202124;
-        --border: #777f86;
-        --hover: rgba(0,0,0,0.1);
-    }
-    html, body {
-        width: 100%;
-        margin: 0px;
-        height: 100%;
-        background-color: var(--bg);
-        color: var(--text);
-    }
-    .box {
-        border-radius: 1rem;
-        background-color: var(--box-bg);
-    }
-</style>
+    <link rel="stylesheet" href="/static/style.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.css">
 </head>
 <body>
@@ -61,13 +34,5 @@
             </div>
         </div>
     </div>
-
-	<script>
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme) {
-            document.documentElement.setAttribute('data-theme', currentTheme);
-        }
-
-    </script>
 </body>
 </html>

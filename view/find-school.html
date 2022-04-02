@@ -12,23 +12,7 @@
 	<link rel="stylesheet" type="text/css" href="/static/find-school/vendor/select2/select2.min.css">
 	<link rel="stylesheet" type="text/css" href="/static/find-school/css/util.css">
 	<link rel="stylesheet" type="text/css" href="/static/find-school/css/main.css">
-<style>
-    [data-theme="dark"] {
-        --bg: #3b424f;
-        --box-bg: #2a2e37;
-        --text: #c9d1d9;
-        --border: #464646;
-        --hover: rgba(255, 255, 255,0.1);
-    }
-
-    [data-theme="light"] {
-        --bg: #f3f5f7;
-        --box-bg: #ffffff;
-        --text: #202124;
-        --border: #777f86;
-        --hover: rgba(0,0,0,0.1);
-    }
-</style>
+	<link rel="stylesheet" href="/static/style.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -87,16 +71,6 @@
                 break;
             }
         }
-
-        // THEME
-		let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-		if (dark) {
-			document.documentElement.setAttribute('data-theme', "dark");
-		}
-		else {
-			document.documentElement.setAttribute('data-theme', "light");
-		}
-
     </script>
 
 	<script src="/static/find-school/vendor/jquery/jquery-3.2.1.min.js"></script>

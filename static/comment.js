@@ -76,7 +76,7 @@ function renderComment(d) {
         $("#comment").append(`
             <div class="mt-4 p-1" id="${d._id}">
                 <div style="display: flex;">
-                    <img style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${d.author.avatar}">
+                    <img class="rounded" style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${d.author.avatar}">
                     <h4 style="width: fit-content; margin: 0px; padding: 0px;"><strong>${d.author.name}</strong></h4>
                 </div>
                 <div style="margin-left: 2rem">
@@ -104,7 +104,7 @@ function renderComment(d) {
         $("#" + d.reply).append(`
             <div class="ms-5 p-1" id="${d._id}">
                 <div style="display: flex;">
-                    <img style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${d.author.avatar}">
+                    <img class="rounded" style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${d.author.avatar}">
                     <h4 style="width: fit-content; margin: 0px; padding: 0px;"><strong>${d.author.name}</strong></h4>
                 </div>
                 <div style="margin-left: 2rem">

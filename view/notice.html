@@ -11,9 +11,16 @@
         .reply-item {
             display: flex;
             justify-content: space-between;
+            background-color: var(--box-bg);
+            border-style: solid;
+            border-color: var(--text);
         }
         .selected {
             background-color: var(--hover);
+        }
+        .list-group {
+            border-style: solid;
+            border-color: var(--text);
         }
     </style>
 </head>
@@ -21,14 +28,14 @@
 <body>
     <div class="container-xxl" style="height: 100%;" id="main">
         <div class="row mb-2" style="height: 7em;">
-            <div class="col p-lg-4 mt-3 m-lg-3 shadow box" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="col p-4 mt-3 m-lg-3 shadow box" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h2 style="margin: 0px;"><strong id="school-grade-class"><%= data.title %></strong></h2>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
+            <div class="col p-4 mt-3 m-lg-3 shadow box">
 
                 <div style="float: left">
                     <img style="width: 4rem; height: 4rem; margin-right: 1rem;" src="<%= author.avatar %>">
@@ -74,14 +81,6 @@
     <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script>
-        // THEME
-        let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (dark) {
-            document.documentElement.setAttribute('data-theme', "dark");
-        }
-        else {
-            document.documentElement.setAttribute('data-theme', "light");
-        }
         moment.locale("ko");
         document.querySelector("#timestamp").innerHTML = moment(new Date(<%= data.timestamp %>)).fromNow();
         var id = "<%= data._id %>"

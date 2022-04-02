@@ -1,18 +1,18 @@
 // BASIC PAGE MAKE
-if (window.innerWidth > 1200) {
-    $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
-}
-else {
-    $("#school-grade-class").html(`${school_name} ${grade}-${class_}`)
-}
-window.onresize = (event) => {
+function window_onresize() {
     if (window.innerWidth > 1200) {
+        var i = 0
+        Array.from($("th[scope='row']")).forEach(e => {i++; $(e).text(i + "교시");})
         $("#school-grade-class").html(`${school_name} ${grade}학년 ${class_}반`)
     }
     else {
-        $("#school-grade-class").html(`${school_name} ${grade}-${class_}`)
+        var i = 0
+        Array.from($("th[scope='row']")).forEach(e => {i++; $(e).text(i)})
+        $("#school-grade-class").html(`${school_name.replace("학교", "")} ${grade}-${class_}`)
     }
 }
+window_onresize();
+window.onresize = window_onresize
 
 // FETCH WITH USER INTERACTION
 $("td.class, th.dayofweek").on("click", (event) => {
@@ -141,9 +141,13 @@ async function fetchTimeTable(monday, refresh) {
         url: `/api/timetable?monday=${monday}&refresh=${refresh ?? ""}`,
         method: "GET",
         beforeSend : () => {
-            $("#loading-overlay").hide();
+            
         },
         success: (data) => {
+            $("#loading").addClass("fadeout");
+            setTimeout(() => {
+                $("#loading").hide();
+            }, 500)
             if (data.success) {
                 var lastDate = ""
                 var tmp = 0;
@@ -208,19 +212,9 @@ function newPost() {
 }
 
 
-// THEME
-let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-if (dark) {
-    document.documentElement.setAttribute('data-theme', "dark");
-}
-else {
-    document.documentElement.setAttribute('data-theme', "light");
-}
-
 
 window.onerror = (message, url, lineNumber) => {
     $("#error").addClass("show").show();
-    $("#overlay").show()
     if (message.includes("요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요.")) {
         $("#error-message").html(message);
         return;
@@ -233,8 +227,3 @@ window.onerror = (message, url, lineNumber) => {
     })
     return true;
 }
-
-
-
-// Socket.io
-var socket = io()
