@@ -6,7 +6,7 @@
     <link href="/static/style.css", rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= data.title %></title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
+    
     <style>
         .reply-item {
             display: flex;
@@ -51,21 +51,25 @@
                     <%- data.content %>
                 </div>
                 
+                <% if (user.type == "student") { %>
                 <div>
                     <% if (data.question) { %>
                         <hr>
                         <h1>회신</h1>
                         <% if (data.question.type == "text") { %>
                             <h3>질문 : <%= data.question.content %></h3>
-                            <input type="text" id="reply-reply" placeholder="응답을 입력해주세요.">
-                            <button class="btn btn-primary" onclick="submitText();">제출</button>
+                            <div class="input-group">
+                                <textarea style="width: 100%; background-color: var(--box-bg);" id="reply-reply" placeholder="응답을 입력해주세요."></textarea>
+                                <button class="btn btn-primary" onclick="submitText();">제출</button>
+                            </div>
+
                         <% } %>
                         <% if (data.question.type == "select") { %>
                             <h3>질문 : <%= data.question.content %></h3>
                             <ul class="list-group">
                                 <% var i = 0 %>
                                 <% for (const item of data.question.items) { %>
-                                    <li class="reply-item list-group-item" id="reply-item-<%= i %>"><span><%= item.content %></span><span><%= items[i]??0 %>/<%= item.limit??"∞" %></span></li>
+                                    <li class="reply-item list-group-item" id="reply-item-<%= i %>"><span><%= item.content %></span><% if (item.limit != null) { %><span><%= items[i]??0 %>/<%= item.limit??"∞" %></span><% } %></li>
                                     <% i++ %>
                                 <% } %>
                             </ul>
@@ -73,7 +77,58 @@
                         <% } %>
                     <% } %>
                 </div>
+                <% } else { %>
+                    <div>
+                        <% if (data.question) { %>
+                            <hr>
+                            <h1>회신</h1>
+                            <% if (data.question.type == "text") { %>
+                                <h3>질문 : <%= data.question.content %></h3>
+                                <div class="input-group">
+                                    <textarea style="width: 100%; background-color: var(--box-bg);" id="reply-reply" placeholder="응답을 입력해주세요."></textarea>
+                                    <button class="btn btn-primary" onclick="submitText();">제출</button>
+                                </div>
+    
+                            <% } %>
+                            <% if (data.question.type == "select") { %>
+                                <h3>질문 : <%= data.question.content %></h3>
+                                <ul class="list-group">
+                                    <% var i = 0 %>
+                                    <% for (const item of data.question.items) { %>
+                                        <li class="reply-item list-group-item"><span><%= item.content %></span><% if (item.limit != null) { %><span><%= items[i]??0 %>/<%= item.limit??"∞" %></span><% } %></li>
+                                        <% i++ %>
+                                    <% } %>
+                                </ul>
+                            <% } %>
+                            <hr class="mt-5" />
+                            <div class="mt-5">
+                                <div class="alert alert-info" role="alert">
+                                    이 부분은 선생님만 보입니다.
+                                </div>
+                                <h3>응답</h3>
+                                <table class="table table-active">
+                                    <thead>
+                                        <tr>
+                                            <th>이름</th>
+                                            <th>응답</th>
+                                            <th>시각</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% for (const reply of replies) { %>
+                                            <tr>
+                                                <td><%= reply.user.name %></td>
+                                                <td><%= data.question.items[reply.answer].content %></td>
+                                                <td><%= formatDate(new Date(reply.timestamp)) %></td>
+                                            </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
 
+                        <% } %>
+                    </div>
+                <% } %>
             </div>
 
         </div>

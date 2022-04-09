@@ -1,13 +1,17 @@
 var inspecting = false;
+var startAt = new Date();
 
+const request = require("request");
 
-
-
+const UID = require("uid-safe");
 
 // Express
 const express = require("express");
 const express_session = require('express-session');
-const FileStore = require('session-file-store')(express_session);
+const MongoStore = require('connect-mongo');
+const cors=require('cors');
+var cookieParser = require('cookie-parser');
+const serverTiming = require('server-timing');
 
 
 // Rate Limit
@@ -71,31 +75,56 @@ function formatDate(date) {
 }
 
 
-
+function discord_alert(content) {
+    request.post("https://ptb.discord.com/api/webhooks/960146429970624562/tNpzHEp6INI-peVkABcHNSp4tBjJp3PazVGFSuU7AWfsB4xNi--rGKvXysiBvnPLH3F4", {
+        form: {
+            username: "웹서버 알림",
+            content: content,
+            avatar_url: "https://brands-up.ch/public/images/uploads/4992df9efc2903c7cfb07e7a6824b6674064e9f6.png"
+        }
+    })
+}
 
 
 
 // EXPRESS SETTING
 const app = express();
+app.use(cookieParser());
+app.use(serverTiming());
 var session = express_session({
-    secret: 'ehighsdofkjmseo',  // 암호화
+    secret: 'dhibzxubgfueolw',
+    store: MongoStore.create({
+        mongoUrl: "mongodb://127.0.0.1:/",
+        dbName: "school",
+        collectionName: "session"
+    }),
     resave: false,
-    saveUninitialized: true,
-    store: new FileStore(),
-    cookie: {
-        domain: "sol-studio.shop",
-        maxAge: 1000 * 60 * 60 * 24 * 30 // 세션 30일
+    saveUninitialized: false,
+    genid: (req) => {
+        return UID.sync(24)
     },
-    key: "sid"
-})
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 30
+    }
+});
+
+
+app.set('trust proxy',1)
+app.use(cors({
+    origin:["sol-studio.shop"],//frontend server localhost:8080
+    methods:['GET','POST','PUT','DELETE'],
+    credentials: true // enable set cookie
+}));
+app.use(session);
+
 var httpServer = require("http").createServer(app);
 const io = require('socket.io')(httpServer);
 var ios = require("express-socket.io-session");
+const { start } = require("repl");
 io.use(ios(session, { autoSave:true }));
 
 
 
-app.set('trust proxy',1)
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('views', __dirname + '/view');
@@ -103,21 +132,22 @@ app.set('view engine', 'ejs');
 app.engine('html', require('ejs').renderFile);
 app.use("/static", express.static(__dirname + '/static'));
 app.use(morgan('combined', {stream: winston.stream}));
-app.use(session);
+app.disable('x-powered-by');
 app.use((req, res, next) => {
-    if (req.ip != "114.207.98.231-" && inspecting) {
+    res.startTime('total', 'total');
+
+    res.setHeader( 'X-Powered-By', 'Sol Studio Server' );
+    if (req.ip != "114.207.98.231" && inspecting) {
         res.render("inspect.html");
-        return;
     }
-    if (!req.session.user_id) {
-        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static")) {
+    else if (req.session.user_id == undefined) {
+        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static") || req.path == "/terms" || req.path == "/privacy") {
             next();
         }
         else {
-            req.session.next = req.url;
-            req.session.save(() => {
-                res.redirect("/login");
-            })
+            console.log("어이가없네")
+            res.cookie("next", req.url);
+            res.redirect("/login");
         }
     }
     else {
@@ -131,8 +161,11 @@ const apiRatelimiter = rateLimit({
 	max: 100,
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: {success: false, message: "요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요."},
-    statusCode: 200
+    statusCode: 200,
+    handler: (req, res) => {
+        discord_alert(`rateLimit 알림 : \`{ip: "${req.ip}"}\``)
+        res.send({success: false, message: "요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요."})
+    }
 });
 app.use("/api/", apiRatelimiter)
 
@@ -150,9 +183,7 @@ app.get("/", (req, res) => {
 // MAIN
 app.get("/main", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
-    })
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
     var classroom = await client.db("school").collection("class").findOne({
         _id: new ObjectId(user.class)
     })
@@ -189,7 +220,14 @@ app.get("/login/naver", (req, res) => {
     var client_id = 'ryaIsyjhpXC5VWERXxdB';
     var redirectURI = encodeURI("https://sol-studio.shop/login/callback/naver");
     var state = Math.round(Math.random() * 1000)
-    res.render("login/naver.html", {url: 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=' + client_id + '&redirect_uri=' + redirectURI + '&state=' + state, error: req.query.error});
+    var url = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=' + client_id + '&redirect_uri=' + redirectURI + '&state=' + state;
+    if (req.query.error) {
+        res.render("login/naver.html", {url: url, error: req.query.error});
+        return;
+    }
+    else {
+        res.redirect(url)
+    }
 });
 
 
@@ -217,7 +255,9 @@ app.get("/login/callback/google", async (req, res) => {
     var user = await client.db("school").collection("user").findOne({ email: payload.email })
     if (user != null) {
         req.session.user_id = user._id;
-        res.redirect("/")
+        var next = req.cookies.next ?? "/";
+        res.clearCookie("next");
+        res.redirect(next);
     }
     else {
         user = await client.db("school").collection("user").insertOne({
@@ -227,7 +267,8 @@ app.get("/login/callback/google", async (req, res) => {
             name: payload.name,
             avatar: payload.picture,
             class: null,
-            waiting: false
+            waiting: false,
+            signup_at: new Date().getTime()
         });
         req.session.user_id = user.insertedId;
         req.session.save(() => {
@@ -272,7 +313,9 @@ app.get("/login/callback/naver", async (req, res) => {
                 var user = await client.db("school").collection("user").findOne({ email: payload.email })
                 if (user != null) {
                     req.session.user_id = user._id;
-                    res.redirect("/")
+                    var next = req.cookies.next ?? "/";
+                    res.clearCookie("next");
+                    res.redirect(next);
                 }
                 else {
                     
@@ -283,7 +326,8 @@ app.get("/login/callback/naver", async (req, res) => {
                         name: payload.name,
                         avatar: payload.profile_image,
                         class: null,
-                        waiting: false
+                        waiting: false,
+                        signup_at: new Date().getTime()
                     });
                     req.session.user_id = user.insertedId;
                     req.session.save(() => {
@@ -326,8 +370,8 @@ app.get("/login/type/callback", async (req, res) => {
         }
         else if (req.query.type == "student") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "student"}})
-            var next = req.session.next ?? "/";
-            delete req.session.next;
+            var next = req.cookies.next ?? "/";
+            res.clearCookie("next");
             res.redirect(next);
             return;
         }
@@ -513,6 +557,13 @@ app.get("/teacher", async (req, res) => {
 // 소셜 기능
 app.get('/user/:id', async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    try {
+        new ObjectId(req.params.id);
+    }
+    catch {
+        res.sendStatus(404);
+        return;
+    }
     var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.params.id)});
     var classroom = await client.db("school").collection("class").findOne({_id: new ObjectId(user.class)})
     res.render("user.html", {user: user, classroom: classroom})
@@ -612,6 +663,7 @@ app.get("/notice/:id", async (req, res) => {
         _id: new ObjectId(req.params.id)
     });
     if (data.question) {
+        var raw = null;
         if (data.question.type == "select") {
             var raw = await client.db("school").collection("reply").find({
                 id: String(data._id)
@@ -626,6 +678,24 @@ app.get("/notice/:id", async (req, res) => {
                 }
             }
         }
+        else {
+            if (user.type == "teacher") {
+                var raw = await client.db("school").collection("reply").find({
+                    id: String(data._id)
+                }).toArray();
+            }
+        }
+
+    }
+    if (user.type == "teacher") {
+        var replies = []
+        for (const r of raw) {
+            replies.push({
+                timestamp: r.timestamp,
+                user: await client.db("school").collection("user").findOne({_id: new ObjectId(r.user)}),
+                answer: r.answer
+            })
+        }
     }
     var author =  await client.db("school").collection("user").findOne({
         _id: new ObjectId(data.author)
@@ -634,7 +704,10 @@ app.get("/notice/:id", async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    res.render("notice.html", {data: data, author: author, items: items??null})
+    res.render("notice.html", {replies:replies, user: user, data: data, author: author, items: items??null, formatDate: (date)=>{
+        let formatted_date = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes()
+         return formatted_date;
+        }})
 });
 
 
@@ -642,9 +715,7 @@ app.get("/notice/:id", async (req, res) => {
 // API
 app.get("/api/meal", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
-    })
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
     var classroom = await client.db("school").collection("class").findOne({
         _id: new ObjectId(user.class)
     })
@@ -735,26 +806,42 @@ app.post("/api/notice/question/reply", async (req, res) => {
     var user = await client.db("school").collection("user").findOne({
         _id: new ObjectId(req.session.user_id)
     })
+    try {
+        new ObjectId(req.body.id)
+    }
+    catch {
+        res.sendStatus(404);
+        return;
+    }
     var question = (await client.db("school").collection("notice").findOne({_id: new ObjectId(req.body.id)})).question
-    console.log(question.items[parseInt(req.body.answer)].limit)
-    if (question.type == "select") {
-        if (question.items[parseInt(req.body.answer)].limit != null) {
-            if ((await client.db("school").collection("reply").count({id: req.body.id, answer: req.body.answer})) >=  question.items[parseInt(req.body.answer)].limit) {
-                res.json({success: false, message: "해당 항목의 회신 최대 수 제한을 초과했습니다."});
-                return;
+    if (question) {
+        if (question.type == "select") {
+            if (question.items[parseInt(req.body.answer)].limit != null) {
+                if ((await client.db("school").collection("reply").count({id: req.body.id, answer: req.body.answer})) >=  question.items[parseInt(req.body.answer)].limit) {
+                    res.json({success: false, message: "해당 항목의 회신 최대 수 제한을 초과했습니다."});
+                    return;
+                }
+            }
+    
+            if (await client.db("school").collection("reply").findOne({user: user._id, id: req.body.id})) {
+                await client.db("school").collection("reply").updateOne({
+                    user: user._id,
+                    id: req.body.id
+                }, {$set: {
+                    answer: req.body.answer,
+                    timestamp: new Date().getTime()
+                }})
+            }
+            else {
+                await client.db("school").collection("reply").insertOne({
+                    user: user._id,
+                    id: req.body.id,
+                    answer: req.body.answer,
+                    timestamp: new Date().getTime()
+                })
             }
         }
-
-        if (await client.db("school").collection("reply").findOne({user: user._id, id: req.body.id})) {
-            await client.db("school").collection("reply").updateOne({
-                user: user._id,
-                id: req.body.id
-            }, {$set: {
-                answer: req.body.answer,
-                timestamp: new Date().getTime()
-            }})
-        }
-        else {
+        else if (question.type == "text") {
             await client.db("school").collection("reply").insertOne({
                 user: user._id,
                 id: req.body.id,
@@ -762,9 +849,11 @@ app.post("/api/notice/question/reply", async (req, res) => {
                 timestamp: new Date().getTime()
             })
         }
+        res.json({success: true});
     }
-
-    res.json({success: true});
+    else {
+        res.json({success: false});
+    }
 })
 
 
@@ -1083,10 +1172,69 @@ app.get("/terms", (req, res) => {
 });
 
 
+app.get("/jobs", (req, res) => {
+    res.render("jobs.html")
+})
+
+
+
+
+
+app.get("/dev/pw-762/db/:db/:collection/:query", async (req, res) => {
+    if (req.session.user_id == "6239eb77159ce0c9785100e4" || req.ip == "114.207.98.231") {
+        var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+        var result = {error: 1, message: "unknown query"}
+        if (req.params.query == "findOne") {
+            result = (await client.db(req.params.db).collection(req.params.collection).findOne(req.query))
+        }
+        if (req.params.query == "find") {
+            result = (await client.db(req.params.db).collection(req.params.collection).find(req.query).toArray())
+        }
+        if (req.params.query == "update") {
+            result = (await client.db(req.params.db).collection(req.params.collection).updateMany(JSON.parse(req.query.before), {$set: JSON.parse(req.query.after)}))
+        }
+        if (req.params.query == "delete") {
+            result = (await client.db(req.params.db).collection(req.params.collection).deleteMany(req.query))
+        }
+        if (req.params.query == "deleteSession") {
+            result = (await client.db(req.params.db).collection(req.params.collection).deleteMany({session: {user_id: { $exists: false }}}))
+        }
+        res.json(result)
+        discord_alert('webDB 알림 : `{query: "' + req.params.query + '", db:"' + req.params.db + '", collection:"' + req.params.collection + '", length:"' + (result.length ?? '?') + '", message: "확인됨"}`')    
+    }
+    else {
+        discord_alert('webDB 알림 : `{query: "' + req.params.query + '", db:"' + req.params.db + '", collection:"' + req.params.collection + '", message: "차단됨"}`')    
+        res.status(403).json({error: 1, message:"관리자만 접근 가능합니다."})
+    }
+    
+})
+
+
+app.get("/redirect", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    if (!user.class)
+        res.redirect("/invite/" + req.query.url)
+    else {
+        res.redirect("/main")
+    }
+})
+
+
+
 // 404 NOT FOUND
 app.use((req, res) => {
     res.render("404.html", {user_id: req.session.user_id});
 });
+
+
+
+
+
+
+
+
+
 
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -1109,9 +1257,11 @@ io.on("connection", async (socket) => {
 // RUN
 httpServer.listen(3000, () => {
     console.log("hi");
+    discord_alert("재시작 알림 : `{success: true, time: \"" + (new Date() - startAt)  + "ms\"}`")
 })
 
 
 
 
 // TODO:과목별 메모
+// TODO:선생님은 공지사항에서 응답 확인
