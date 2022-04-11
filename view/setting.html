@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/76a19131cd.js" crossorigin="anonymous"></script>
+    <style>
+        tbody {
+            cursor: pointer;
+        }
+        .badge {
+            cursor: pointer;
+        }
+        textarea {
+                background-color: var(--box-bg);
+            }
+    </style>
+    <title>설정</title>
+    
+</head>
+
+<body>
+    <div class="container-xxl" style="height: 100%;" id="main">
+        <div class="row mb-2" style="height: 7em;">
+            <div class="col p-lg-4 mt-3 m-lg-3 shadow box" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="margin: 0px;"><strong id="school-grade-class">설정</strong></h1>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2>이름</h2>
+                <textarea id="name"><%= user.name %></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2>프로필 사진</h2>
+                <img src="<%= user.avatar %>" style="width: 5rem; height: 5rem;" id="avatar-img"><br/>
+                <button class="btn btn-primary" onclick="selectAvatar();">업로드</button>
+                <input accept="image/*" type="file" style="display:none;" id="avatar_file" name="avatar">
+            </div>
+        </div>
+        <div class="row">
+            <div id="changed" class="col p-lg-4 mt-3 m-lg-3 shadow box" style="display: none; align-items: center;justify-content: space-between;">
+                <p style="margin: 0px;">변경사항이 있습니다.</p>
+                <button class="ms-3 btn btn-primary" onclick="save();">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        var original_name = "<%= user.name %>";
+        var original_avatar = "<%= user.avatar %>";
+        var submit = false;
+        $("#name").on("keyup", () => {
+            if ($("#name").val() != original_name) {
+                $("#changed").css("display", "flex");
+            }
+            else {
+                $("#changed").hide();
+            }
+        })
+        function selectAvatar() {
+            $("#avatar_file").click();
+        }
+        function save() {
+            $("#changed").hide();
+            var data = new FormData();
+            data.append("avatar", $("#avatar_file")[0].files[0] ?? null);
+            data.append("name", $("#name").val());
+            var oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", function() {
+                    
+                    if(oReq.status == 200){
+                        location.reload();
+                    }
+ 
+                });
+                oReq.open("POST", "/setting/save",true);
+                oReq.send(data);
+
+        }
+
+        $("#avatar_file").on("change", (e) => {
+            console.log($("#avatar_file").val())
+            $("#avatar-img").attr("src", URL.createObjectURL(e.target.files[0]));
+            $("#changed").css("display", "flex");
+        })
+    </script>
+</body>
+</html>

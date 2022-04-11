@@ -1,9 +1,6 @@
 var inspecting = false;
 var startAt = new Date();
 
-const request = require("request");
-
-const UID = require("uid-safe");
 
 // Express
 const express = require("express");
@@ -12,7 +9,7 @@ const MongoStore = require('connect-mongo');
 const cors=require('cors');
 var cookieParser = require('cookie-parser');
 const serverTiming = require('server-timing');
-
+const fileUpload = require('express-fileupload');
 
 // Rate Limit
 const rateLimit = require('express-rate-limit')
@@ -33,6 +30,18 @@ const {OAuth2Client} = require('google-auth-library');
 // LOG
 const winston = require('./config/winston')
 const morgan = require("morgan")
+
+
+// ETC
+// discord webhook
+const request = require("request");
+// uid
+const UID = require("uid-safe");
+// img resize&webp
+const sharp = require("sharp");
+// fs
+const fs = require("fs");
+
 
 // UTILS
 function getMondayDate(d) {
@@ -108,7 +117,7 @@ var session = express_session({
     }
 });
 
-
+app.use(fileUpload());
 app.set('trust proxy',1)
 app.use(cors({
     origin:["sol-studio.shop"],//frontend server localhost:8080
@@ -141,11 +150,10 @@ app.use((req, res, next) => {
         res.render("inspect.html");
     }
     else if (req.session.user_id == undefined) {
-        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static") || req.path == "/terms" || req.path == "/privacy") {
+        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static") || req.path == "/terms" || req.path == "/privacy" || req.path == "/favicon.ico") {
             next();
         }
         else {
-            console.log("어이가없네")
             res.cookie("next", req.url);
             res.redirect("/login");
         }
@@ -408,15 +416,20 @@ app.post("/register-class", async (req, res) => {
         res.redirect("/");
         return;
     }
+    try {
+        var schools = await neis.getSchoolInfo(
+            {
+                SCHUL_NM: req.body.school
+            },
+            {
+                pSize: 50
+            }
+        )
+    }
+    catch {
+        var schools = []
+    }
 
-    var schools = await neis.getSchoolInfo(
-        {
-            SCHUL_NM: req.body.school
-        },
-        {
-            pSize: 100
-        }
-    )
     for (const s of schools) {
         if (s.SCHUL_NM == req.body.school) {
             var school = s;
@@ -424,28 +437,44 @@ app.post("/register-class", async (req, res) => {
         }
     }
     if (!school) {
-        res.redirect("/register-class?error=noschool")
-    }
-    var classrooms = await neis.getClassInfo(
-        {
-            SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-            GRADE: req.body.grade,
-            ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-            DGHT_CRSE_SC_NM: school.DGHT_SC_NM,
-            CLASS_NM: req.body.class
-        },
-        {
-            pSize: 100
+        if (schools.length == 50) {
+            res.redirect("/register-class?error=noschool");
+            return;
         }
-    )
-    for (const s of classrooms) {
-        if (s.CLASS_NM == req.body.class) {
-            var classroom = s;
+        if (schools.length != 0) {
+            res.render("select-school.html", {schools: schools});
+            return;
+        }
+        else {
+            res.redirect("/register-class?error=noschool");
+            return;
+        }
+    }
+    try {
+        var classrooms = await neis.getClassInfo(
+            {
+                SD_SCHUL_CODE: school.SD_SCHUL_CODE,
+                ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
+                GRADE: req.body.grade
+            },
+            {
+                pSize: 100
+            }
+        );
+    }
+    catch {
+        var classrooms = []
+    }
+
+    for (const c of classrooms) {
+        if (c.CLASS_NM == req.body.class) {
+            var classroom = c;
             break;
         }
     }
     if (!classroom) {
-        res.redirect("/register-class?error=noclass")
+        res.redirect("/register-class?error=noclass");
+        return;
     }
     var ay = classroom.AY
     var tmp = await client.db("school").collection("class").findOne({
@@ -648,6 +677,9 @@ app.get("/notice", async (req, res) => {
 
 app.get("/notice/:id", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({
+        _id: new ObjectId(req.session.user_id)
+    })
     try {
         new ObjectId(req.params.id)
     }
@@ -655,13 +687,15 @@ app.get("/notice/:id", async (req, res) => {
         res.sendStatus(404);
         return;
     }
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
-    })
+
     var data = await client.db("school").collection("notice").findOne({
         class: user.class,
         _id: new ObjectId(req.params.id)
     });
+    if (!data) {
+        res.sendStatus(404)
+        return;
+    }
     if (data.question) {
         var raw = null;
         if (data.question.type == "select") {
@@ -1218,7 +1252,37 @@ app.get("/redirect", async (req, res) => {
     else {
         res.redirect("/main")
     }
+});
+
+
+app.get("/setting", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)})
+    res.render("setting.html", {user: user})
 })
+
+
+app.post("/setting/save", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    if (req.files) {
+        var uid = UID.sync(16)
+        var url = `https://sol-studio.shop/static/avatar/${req.session.user_id}-${uid}.webp`;
+        fs.writeFileSync(`/home/ubuntu/storage/school/static/avatar/${req.session.user_id}-${uid}.webp`, await sharp(req.files.avatar.data).resize({
+            width: 300,
+            height: 300
+        }).webp().rotate().toBuffer());
+        await client.db("school").collection("user").updateOne({_id: new ObjectId(req.session.user_id)}, {$set: {name: req.body.name, avatar: url}});
+    }
+    else {
+        await client.db("school").collection("user").updateOne({_id: new ObjectId(req.session.user_id)}, {$set: {name: req.body.name}});
+    }
+    
+    
+    res.json({status:"success"})
+})
+
+
+
 
 
 
@@ -1264,4 +1328,4 @@ httpServer.listen(3000, () => {
 
 
 // TODO:과목별 메모
-// TODO:선생님은 공지사항에서 응답 확인
+// TODO:공지, 게시물 공유
