@@ -14,6 +14,7 @@ const fileUpload = require('express-fileupload');
 // Rate Limit
 const rateLimit = require('express-rate-limit')
 
+
 // Neis
 const Neis = require("@my-school.info/neis-api").default;
 const neis = new Neis({ KEY: "451d037d3e6343f097c4d6ff75d543f1", Type: "json" });
@@ -41,6 +42,8 @@ const UID = require("uid-safe");
 const sharp = require("sharp");
 // fs
 const fs = require("fs");
+// JWT
+const jwt = require("./modules/jwt");
 
 
 // UTILS
@@ -95,6 +98,12 @@ function discord_alert(content) {
 }
 
 
+// log
+async function log(payload) {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    payload.timestamp = new Date().getTime();
+    await client.db("school").collection("log").insertOne(payload);
+}
 
 // EXPRESS SETTING
 const app = express();
@@ -282,6 +291,10 @@ app.get("/login/callback/google", async (req, res) => {
         req.session.save(() => {
             res.redirect("/login/type");
         })
+        log({
+            user: user.insertedId,
+            event_name: "register user"
+        })
     }
 });
 
@@ -341,6 +354,10 @@ app.get("/login/callback/naver", async (req, res) => {
                     req.session.save(() => {
                         res.redirect("/login/type");
                     })
+                    log({
+                        user: user.insertedId,
+                        event_name: "register user"
+                    })
                 }
             } else {
                 if(response2 != null) {
@@ -374,16 +391,13 @@ app.get("/login/type/callback", async (req, res) => {
         if (req.query.type == "teacher") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "teacher"}})
             res.redirect("/register-class");
-            return;
         }
         else if (req.query.type == "student") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "student"}})
             var next = req.cookies.next ?? "/";
             res.clearCookie("next");
             res.redirect(next);
-            return;
         }
-
     }
     else {
         res.redirect("/")
@@ -442,7 +456,7 @@ app.post("/register-class", async (req, res) => {
             return;
         }
         if (schools.length != 0) {
-            res.render("select-school.html", {schools: schools});
+            res.render("select-school.html", {schools: schools, grade: req.body.grade, classroom: req.body.class});
             return;
         }
         else {
@@ -473,25 +487,29 @@ app.post("/register-class", async (req, res) => {
         }
     }
     if (!classroom) {
+        if (req.body.select_school) {
+            res.json({success: false, redirect: "/register-class?error=noclass"});
+            return;
+        }
         res.redirect("/register-class?error=noclass");
         return;
     }
     var ay = classroom.AY
     var tmp = await client.db("school").collection("class").findOne({
-        school: {
-            SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-            ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-            SCHUL_NM: school.SCHUL_NM
-        },
-        class: {
-            MADE: user._id,
-            GRADE: classroom.GRADE,
-            CLASS_NM: classroom.CLASS_NM
-        },
-        ay: ay
-    })
+        "school.SD_SCHUL_CODE": school.SD_SCHUL_CODE,
+        "school.ATPT_OFCDC_SC_CODE": school.ATPT_OFCDC_SC_CODE,
+        "school.SCHUL_NM": school.SCHUL_NM,
+        "class.GRADE": classroom.GRADE,
+        "class.CLASS_NM": classroom.CLASS_NM,
+        "ay": ay
+    });
+    console.log(tmp)
     if (tmp != null) {
-        res.send("이미 클래스가 존재합니다!");
+        if (req.body.select_school) {
+            res.json({success: false, redirect: "/register-class?error=alreadyexist"});
+            return;
+        }
+        res.redirect("/register-class?error=alreadyexist");
         return;
     }
     var i = await client.db("school").collection("class").insertOne({
@@ -507,6 +525,11 @@ app.post("/register-class", async (req, res) => {
         },
         ay: ay,
         invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join("")
+    });
+    log({
+        user: user._id,
+        event_name: "register class",
+        class: i.insertedId
     })
     await client.db("school").collection("user").updateOne(
         {
@@ -517,8 +540,11 @@ app.post("/register-class", async (req, res) => {
                 class: i.insertedId
             }
         }
-    )
-
+    );
+    if (req.body.select_school) {
+        res.json({success: true, redirect: "/main"});
+        return;
+    }
     res.redirect("/")
 });
 
@@ -554,6 +580,11 @@ app.get("/invite/:code", async (req, res) => {
     if (classroom) {
         client.db("school").collection("user").updateOne({_id: new ObjectId(req.session.user_id)}, {$set: {class: classroom._id, waiting: true}})
         res.redirect("/")
+        log({
+            user: user._id,
+            event_name: "join class",
+            class: classroom._id
+        })
     }
     else {
         res.redirect("/invite?error=noinvite")
@@ -603,8 +634,12 @@ app.get('/user/:id', async (req, res) => {
 
 
 // POST and NOTICE
-app.get("/new-post", (req, res) => {
-    res.render("new_post.html")
+app.get("/new-post", async (req, res) => {
+    res.render("new_post.html", {token: await jwt.sign({
+        sub: "sol-img-upload-post",
+        iss: "sol-studio",
+        aud: req.session.user_id
+    })})
 });
 
 
@@ -658,7 +693,11 @@ app.get("/new-notice", async (req, res) => {
         res.redirect("/");
         return;
     }
-    res.render("new_notice.html")
+    res.render("new_notice.html", {token: await jwt.sign({
+        sub: "sol-img-upload-notice",
+        iss: "sol-studio",
+        aud: req.session.user_id
+    })})
 });
 
 
@@ -719,18 +758,18 @@ app.get("/notice/:id", async (req, res) => {
                 }).toArray();
             }
         }
-
-    }
-    if (user.type == "teacher") {
-        var replies = []
-        for (const r of raw) {
-            replies.push({
-                timestamp: r.timestamp,
-                user: await client.db("school").collection("user").findOne({_id: new ObjectId(r.user)}),
-                answer: r.answer
-            })
+        if (user.type == "teacher") {
+            var replies = []
+            for (const r of raw) {
+                replies.push({
+                    timestamp: r.timestamp,
+                    user: await client.db("school").collection("user").findOne({_id: new ObjectId(r.user)}),
+                    answer: r.answer
+                })
+            }
         }
     }
+
     var author =  await client.db("school").collection("user").findOne({
         _id: new ObjectId(data.author)
     });
@@ -850,6 +889,10 @@ app.post("/api/notice/question/reply", async (req, res) => {
     var question = (await client.db("school").collection("notice").findOne({_id: new ObjectId(req.body.id)})).question
     if (question) {
         if (question.type == "select") {
+            if (isNaN(parseInt(req.body.answer))) {
+                res.json({success: false, message: "정상적인 요청이 아닙니다."});
+                return;
+            }
             if (question.items[parseInt(req.body.answer)].limit != null) {
                 if ((await client.db("school").collection("reply").count({id: req.body.id, answer: req.body.answer})) >=  question.items[parseInt(req.body.answer)].limit) {
                     res.json({success: false, message: "해당 항목의 회신 최대 수 제한을 초과했습니다."});
@@ -897,6 +940,10 @@ app.get("/api/post", async (req, res) => {
         var user = await client.db("school").collection("user").findOne({
             _id: new ObjectId(req.session.user_id)
         })
+        if (isNaN(parseInt(req.query.skip))) {
+            res.json({success: false});
+            return;
+        }
         var data = await client.db("school").collection("post").find({
             class: user.class
         }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(10).toArray();
@@ -907,7 +954,10 @@ app.get("/api/post", async (req, res) => {
                 var author = await client.db("school").collection("user").findOne({
                     _id: new ObjectId(d.author)
                 })
-                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: author})
+                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: {
+                    name: author.name,
+                    avatar: author.avatar
+                }})
             }
             else {
                 result.push({title: d.title, id: d._id})
@@ -927,6 +977,10 @@ app.get("/api/notice", async (req, res) => {
         var user = await client.db("school").collection("user").findOne({
             _id: new ObjectId(req.session.user_id)
         })
+        if (isNaN(parseInt(req.query.skip))) {
+            res.json({success: false, message: "비정상적인 요청"});
+            return;
+        }
         var data = await client.db("school").collection("notice").find({
             class: user.class
         }).sort("_id", -1).skip(parseInt(req.query.skip)).limit(10).toArray();
@@ -937,7 +991,10 @@ app.get("/api/notice", async (req, res) => {
                 var author = await client.db("school").collection("user").findOne({
                     _id: new ObjectId(d.author)
                 })
-                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: author})
+                result.push({title: d.title, id: d._id, preview: d.preview, timestamp: d.timestamp, author: {
+                    name: author.name,
+                    avatar: author.avatar
+                }})
             }
             else {
                 result.push({title: d.title, id: d._id})
@@ -985,7 +1042,7 @@ app.get("/api/timetable", async (req, res) => {
             }).toArray());
         }
         if (cache.length != 0) {
-            res.json({success: true, table: refine(cache)});
+            res.json({success: true, table: refine(cache), friday: formatDate(friday)});
             return;
         }
         try {
@@ -1009,8 +1066,20 @@ app.get("/api/timetable", async (req, res) => {
             res.json({success: false})
             return;
         }
+        var result = []
+        for (t of timetable) {
+            result.push({
+                ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: t.SD_SCHUL_CODE,
+                ALL_TI_YMD: t.ALL_TI_YMD,
+                CLASS_NM: t.CLASS_NM,
+                GRADE: t.GRADE,
+                ITRT_CNTNT: t.ITRT_CNTNT.replaceAll("-", ""),
+                PERIO: t.PERIO
+            })
+        }
 
-        client.db("school").collection("timetable").insertMany(timetable)
+        client.db("school").collection("timetable").insertMany(result)
         res.json({success: true, table: refine(timetable), friday: formatDate(friday)})
     }
     else {
@@ -1047,9 +1116,20 @@ app.get("/api/timetable", async (req, res) => {
             });
             return;
         }
-
-        client.db("school").collection("timetable").insertMany(timetable)
-        res.json({success: true, table: refine(timetable), friday: formatDate(friday)})
+        var result = []
+        for (t of timetable) {
+            result.push({
+                ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: t.SD_SCHUL_CODE,
+                ALL_TI_YMD: t.ALL_TI_YMD,
+                CLASS_NM: t.CLASS_NM,
+                GRADE: t.GRADE,
+                ITRT_CNTNT: t.ITRT_CNTNT.replaceAll("-", ""),
+                PERIO: t.PERIO
+            })
+        }
+        client.db("school").collection("timetable").insertMany(result)
+        res.json({success: true, table: refine(result), friday: formatDate(friday)})
     }
 });
 
@@ -1063,15 +1143,28 @@ app.get("/api/teacher/student.ban", async (req, res) => {
         res.redirect("/");
         return;
     }
+    try {
+        new ObjectId(req.query.user)
+    }
+    catch {
+        res.json({success: false})
+        return;
+    }
     await client.db("school").collection("user").updateOne(
         {
-            _id: new ObjectId(req.query.user)
+            _id: new ObjectId(req.query.user),
+            class: user.class
         },
         {$set: {
             class: null
         }}
     );
     res.json({success: true})
+    log({
+        user: user.insertedId,
+        event_name: "ban student",
+        event_target: req.query.user
+    })
 })
 
 
@@ -1084,15 +1177,28 @@ app.get("/api/teacher/join.accept", async (req, res) => {
         res.redirect("/");
         return;
     }
+    try {
+        new ObjectId(req.query.user)
+    }
+    catch {
+        res.json({success: false})
+        return;
+    }
     await client.db("school").collection("user").updateOne(
         {
-            _id: new ObjectId(req.query.user)
+            _id: new ObjectId(req.query.user),
+            class: user.class
         },
         {$set: {
             waiting: false
         }}
     );
-    res.json({success: true})
+    res.json({success: true, user: await client.db("school").collection("user").findOne({_id: new ObjectId(req.query.user),class: user.class})});
+    log({
+        user: user.insertedId,
+        event_name: "accept student",
+        event_target: req.query.user
+    })
 });
 
 
@@ -1105,37 +1211,38 @@ app.get("/api/teacher/join.reject", async (req, res) => {
         res.redirect("/");
         return;
     }
+    try {
+        new ObjectId(req.query.user)
+    }
+    catch {
+        res.json({success: false})
+        return;
+    }
     await client.db("school").collection("user").updateOne(
         {
-            _id: new ObjectId(req.query.user)
+            _id: new ObjectId(req.query.user),
+            class: user.class
         },
         {$set: {
             class: null,
             waiting: false
         }}
     );
-    res.json({success: true})
-})
-
-
-app.get("/api/user", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.session.user_id)
+    res.json({success: true});
+    log({
+        user: user.insertedId,
+        event_name: "reject student",
+        event_target: req.query.user
     })
-    if (user.type != "teacher") {
-        res.redirect("/");
-        return;
-    }
-    var target = await client.db("school").collection("user").findOne({
-        _id: new ObjectId(req.query.user)
-    });
-    res.json({success: true, user: target})
 })
 
 
 app.get("/api/comment", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    if (isNaN(parseInt(req.query.skip))) {
+        res.json({success: false});
+        return;
+    }
     var raw = await client.db("school").collection("comment").find({
         id: req.query.id,
         reply: req.query.reply ?? null
@@ -1189,6 +1296,26 @@ app.post("/api/comment", async (req, res) => {
 })
 
 
+app.post("/api/upload-img", async (req, res) => {
+    var verify = await jwt.verify(req.query.token);
+    if (verify != -1) {
+        if (req.files) {
+            var uid = UID.sync(64)
+            var url = `https://sol-studio.shop/static/img/${req.session.user_id}-${uid}.webp`;
+            fs.writeFileSync(`/home/ubuntu/storage/school/static/img/${req.session.user_id}-${uid}.webp`, await sharp(req.files.file.data).webp().rotate().toBuffer());
+            res.json({url: url})
+        }
+        else {
+            res.json({url: null})
+        }
+    }
+    else {
+        res.json({code: -1, message:"JWT TOKEN IS INVALID!!"})
+    }
+})
+
+
+
 app.get("/api/error", (req, res) => {
     res.end();
 });
@@ -1215,7 +1342,7 @@ app.get("/jobs", (req, res) => {
 
 
 app.get("/dev/pw-762/db/:db/:collection/:query", async (req, res) => {
-    if (req.session.user_id == "6239eb77159ce0c9785100e4" || req.ip == "114.207.98.231") {
+    if (req.session.user_id == "62598aadfd76a772f952d4eb") {
         var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
         var result = {error: 1, message: "unknown query"}
         if (req.params.query == "findOne") {
@@ -1283,8 +1410,13 @@ app.post("/setting/save", async (req, res) => {
 
 
 
-
-
+// STATIC과 API는 404페이지 렌더링 안함
+app.use("/static/", (req, res) => {
+    res.sendStatus(404)
+})
+app.use("/api/", (req, res) => {
+    res.sendStatus(404)
+})
 
 // 404 NOT FOUND
 app.use((req, res) => {

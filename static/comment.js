@@ -69,7 +69,15 @@ function addComment(reply) {
         }
     })
 }
-
+function xsssafe(content) {
+	var result = "";
+	
+	result = content;
+	result = result.replaceAll("<", "&lt;");
+	result = result.replaceAll(">", "&gt;");
+	
+	return result;
+}
 function renderComment(d) {
     if (!d.reply) {
         console.log("no reply")
@@ -81,7 +89,7 @@ function renderComment(d) {
                 </div>
                 <div style="margin-left: 2rem">
                     <div class="p-3 pt-0 pb-1" style="font-size: large;">
-                        ${d.content}
+                        ${xsssafe(d.content).replaceAll("\n", "<br>")}
                     </div>
                     <div class="p-3 pt-0" style="font-size: small; color: #888;">
                         ${moment(new Date(d.timestamp)).format("YYYY.MM.DD HH:mm")} ${replycount(d)} <span class="btn" style="color: #888" onclick="$('#reply-${d._id}').show()">답글 달기</span>

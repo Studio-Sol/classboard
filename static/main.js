@@ -20,7 +20,6 @@ $("td.class, th.dayofweek").on("click", (event) => {
     $(`*[data-date='${event.target.attributes["data-date"].value}']`).addClass("active")
     var date = formatDate(parseInt(event.target.attributes["data-date"].value))
     fetchMeal(date)
-    currentDate = date
 });
 
 
@@ -116,7 +115,7 @@ async function fetchNotice() {
     $("#notice").html("로드중...");
 
     $.ajax({
-        url: `/api/notice?_=${Math.random()}`,
+        url: `/api/notice?_=${Math.random()}&skip=0`,
         method: "GET",
         success: (data) => {
             if (data.success) {
@@ -136,9 +135,9 @@ async function fetchNotice() {
 }
 
 
-async function fetchTimeTable(monday, refresh) {
+async function fetchTimeTable(fmonday, refresh) {
     await $.ajax({
-        url: `/api/timetable?monday=${monday}&refresh=${refresh ?? ""}`,
+        url: `/api/timetable?monday=${fmonday}&refresh=${refresh ?? ""}`,
         method: "GET",
         beforeSend : () => {
             
@@ -147,7 +146,10 @@ async function fetchTimeTable(monday, refresh) {
             $("#loading").addClass("fadeout");
             setTimeout(() => {
                 $("#loading").hide();
-            }, 500)
+            }, 500);
+            var tmp = new Date(fmonday.slice(0, 4) + "-" + fmonday.slice(4, 6) + "-" + fmonday.slice(6));
+            var tmp2 = new Date(tmp.getTime() + 1000 * 60 * 60 * 24 * 4);
+            $("#timetable-date").text(`${tmp.getMonth()+1}.${tmp.getDate()} ~ ${tmp2.getMonth()+1}.${tmp2.getDate()}`)
             if (data.success) {
                 var lastDate = ""
                 var tmp = 0;
@@ -159,14 +161,12 @@ async function fetchTimeTable(monday, refresh) {
                     $(`tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${tmp + 1})`).html(`${b.ITRT_CNTNT.replace("-", "")}`);
                 })
                 for (var i=0; i<5; i++) {
-                    $(`thead > tr > th:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
+                    $(`thead > tr > th:nth-child(${i + 2})`).attr("data-date", new Date(fmonday.slice(0,4) + "-" + fmonday.slice(4, 6) + "-" + fmonday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
 
                     for (var j=0; j<7; j++) {
-                        $(`tbody > tr:nth-child(${j + 1}) > td:nth-child(${i + 2})`).attr("data-date", new Date(monday.slice(0,4) + "-" + monday.slice(4, 6) + "-" + monday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
+                        $(`tbody > tr:nth-child(${j + 1}) > td:nth-child(${i + 2})`).attr("data-date", new Date(fmonday.slice(0,4) + "-" + fmonday.slice(4, 6) + "-" + fmonday.slice(6)).getTime() + 1000 * 60 * 60 * 24 * i)
                     }
                 }
-                
-    
                 if (refresh) {
                     alert("새로고침을 완료했습니다.")
                 }
@@ -186,7 +186,6 @@ var cache = {
     meta: {}
 }
 var today = formatDate(new Date());
-var currentDate = today;
 
 
 // FETCH
@@ -197,16 +196,30 @@ setTimeout(async () => {
     fetchNotice();
 }, 0)
 
+var currentMonday = monday
+function getLastMonday() {
+    var tmp = new Date(currentMonday.slice(0, 4) + "-" + currentMonday.slice(4, 6) + "-" + currentMonday.slice(6));
+    tmp.setDate(tmp.getDate() - 7);
+    currentMonday = formatDate(tmp);
 
-$("#editor").load("/api/smart-editor")
+    return currentMonday;
+}
 
+function getNextMonday() {
+    var tmp = new Date(currentMonday.slice(0, 4) + "-" + currentMonday.slice(4, 6) + "-" + currentMonday.slice(6));
+    tmp.setDate(tmp.getDate() + 7);
+    currentMonday = formatDate(tmp);
+    return currentMonday;
+}
 
 function openNotice(link) {
     open("/notice/" + link)
 }
+
 function openPost(link) {
     open("/post/" + link)
 }
+
 function newPost() {
     open("/new-post")
 }
