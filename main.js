@@ -8,8 +8,8 @@ const express_session = require('express-session');
 const MongoStore = require('connect-mongo');
 const cors=require('cors');
 var cookieParser = require('cookie-parser');
-const serverTiming = require('server-timing');
 const fileUpload = require('express-fileupload');
+var compression = require('compression');
 
 // Rate Limit
 const rateLimit = require('express-rate-limit')
@@ -107,8 +107,12 @@ async function log(payload) {
 
 // EXPRESS SETTING
 const app = express();
+app.use(compression());
+morgan.token("user", (req) => {
+    return req.session.user_id ?? '"' + req.header('User-Agent') + '"'
+})
+app.use(morgan(':remote-addr - :user - "HTTP/:http-version :method :url" :status :res[content-length]', {stream: winston.stream}));
 app.use(cookieParser());
-app.use(serverTiming());
 var session = express_session({
     secret: 'dhibzxubgfueolw',
     store: MongoStore.create({
@@ -119,7 +123,7 @@ var session = express_session({
     resave: false,
     saveUninitialized: false,
     genid: (req) => {
-        return UID.sync(24)
+        return req.ip + "-" + UID.sync(24)
     },
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30
@@ -138,7 +142,6 @@ app.use(session);
 var httpServer = require("http").createServer(app);
 const io = require('socket.io')(httpServer);
 var ios = require("express-socket.io-session");
-const { start } = require("repl");
 io.use(ios(session, { autoSave:true }));
 
 
@@ -149,17 +152,15 @@ app.set('views', __dirname + '/view');
 app.set('view engine', 'ejs');
 app.engine('html', require('ejs').renderFile);
 app.use("/static", express.static(__dirname + '/static'));
-app.use(morgan('combined', {stream: winston.stream}));
+
 app.disable('x-powered-by');
 app.use((req, res, next) => {
-    res.startTime('total', 'total');
-
     res.setHeader( 'X-Powered-By', 'Sol Studio Server' );
     if (req.ip != "114.207.98.231" && inspecting) {
         res.render("inspect.html");
     }
     else if (req.session.user_id == undefined) {
-        if (req.path == "/" || req.path.startsWith("/login") || req.path.startsWith("/static") || req.path == "/terms" || req.path == "/privacy" || req.path == "/favicon.ico") {
+        if (req.path == "/" || req.path.startsWith("/api/captcha") || req.path.startsWith("/login") || req.path.startsWith("/static") || req.path == "/terms" || req.path == "/privacy" || req.path == "/favicon.ico") {
             next();
         }
         else {
@@ -190,7 +191,10 @@ app.use("/api/", apiRatelimiter)
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-
+app.head("/", (req, res) => {
+    res.set("status", "success");
+    res.end();
+})
 
 app.get("/", (req, res) => {
     res.render("index.html", {user_id: req.session.user_id ?? false});
@@ -375,7 +379,7 @@ app.get("/login/callback/naver", async (req, res) => {
 app.get("/login/type", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({ _id: new ObjectId(req.session.user_id) })
-    if (user.type != null) {
+    if (user.class != null) {
         res.redirect("/")
     }
     else {
@@ -387,7 +391,7 @@ app.get("/login/type", async (req, res) => {
 app.get("/login/type/callback", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     var user = await client.db("school").collection("user").findOne({ _id: new ObjectId(req.session.user_id) })
-    if (user.type == null) {
+    if (user.class == null) {
         if (req.query.type == "teacher") {
             await client.db("school").collection("user").updateOne({ _id: new ObjectId(req.session.user_id) }, {$set: {type: "teacher"}})
             res.redirect("/register-class");
@@ -1337,8 +1341,15 @@ app.get("/jobs", (req, res) => {
     res.render("jobs.html")
 })
 
+app.get("/delete-user", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    await client.db("school").collection("user").deleteOne({_id: new ObjectId(req.session.user_id)});
+    res.json({success: true})
+})
 
-
+app.get("/contact", (req, res) => {
+    res.redirect("mailto:contact@sol-studio.shop")
+})
 
 
 app.get("/dev/pw-762/db/:db/:collection/:query", async (req, res) => {
@@ -1407,7 +1418,7 @@ app.post("/setting/save", async (req, res) => {
     
     res.json({status:"success"})
 })
-
+app.use(require("./router/api/captcha/captcha.js"));
 
 
 // STATIC과 API는 404페이지 렌더링 안함
@@ -1417,6 +1428,10 @@ app.use("/static/", (req, res) => {
 app.use("/api/", (req, res) => {
     res.sendStatus(404)
 })
+
+
+
+
 
 // 404 NOT FOUND
 app.use((req, res) => {

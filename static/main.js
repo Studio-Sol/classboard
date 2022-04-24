@@ -91,7 +91,7 @@ async function fetchpost() {
     $("#metadata").html("로드중...");
 
     $.ajax({
-        url: `/api/post?size=5&skip=0&_=${Math.random()}`,
+        url: `/api/post?skip=0&_=${Math.random()}`,
         method: "GET",
         success: (data) => {
             if (data.success) {

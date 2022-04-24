@@ -40,6 +40,15 @@
         </div>
         <div class="row">
             <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2>계정 유형</h2>
+                <div style="background-color: #313131; width: fit-content; padding: 8px; border-radius: 3px; border: 1px solid #3d3d3d;color: #7a7aff">
+                    <a><%= {"teacher": "선생님", "student": "학생"}[user.type] %></a>
+                </div>
+                <a class="btn btn-primary" target="_blank" href="/login/type">변경</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
                 <h2>프로필 사진</h2>
                 <img src="<%= user.avatar %>" style="width: 5rem; height: 5rem;" id="avatar-img"><br/>
                 <button class="btn btn-primary" onclick="selectAvatar();">업로드</button>
