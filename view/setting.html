@@ -56,6 +56,12 @@
             </div>
         </div>
         <div class="row">
+            <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
+                <h2>회원 탈퇴</h2>
+                <a class="btn btn-danger" target="_blank" onclick="if (confirm('정말 탈퇴하시겠습니까?'))location = '/delete-user'">탈퇴</a>
+            </div>
+        </div>
+        <div class="row">
             <div id="changed" class="col p-lg-4 mt-3 m-lg-3 shadow box" style="display: none; align-items: center;justify-content: space-between;">
                 <p style="margin: 0px;">변경사항이 있습니다.</p>
                 <button class="ms-3 btn btn-primary" onclick="save();">저장</button>
@@ -63,7 +69,6 @@
         </div>
     </div>
 
-    <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script>
         var original_name = "<%= user.name %>";

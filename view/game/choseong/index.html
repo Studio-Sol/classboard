@@ -1,0 +1,612 @@
+<style>
+    .flex-container {
+  display: flex;
+  justify-content: center;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.replayBtnGrp {
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  max-width: 380px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.emptySquare {
+  position: relative;
+  height: 75px;
+  width: 75px;
+  border: 1px solid #3a3a3c;
+  margin: 2px;
+}
+.emptySquare.correct {
+  background-color: #538d4e;
+}
+.emptySquare.incorrect {
+  background-color: #3a3a3c;
+}
+.emptySquare.incorrectPosition {
+  background-color: #b59f3b;
+}
+
+.letter {
+  color: white;
+  font-size: 40px;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.notice {
+  color: white;
+  margin: 5px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.buttonContainer {
+  display: inline-block;
+  margin: auto;
+}
+
+.postGameBtn {
+  margin: 5px;
+}
+
+.d-none {
+  display: none;
+}
+
+.keyboardContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.keyboardRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.keyboardKey {
+  position: relative;
+  height: 60px;
+  width: 50px;
+  margin: 4px 2.5px 4px 2.5px;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #818384;
+}
+.keyboardKey.correct {
+  background-color: #538d4e;
+}
+.keyboardKey.incorrect {
+  background-color: #3a3a3c;
+}
+.keyboardKey.incorrectPosition {
+  background-color: #b59f3b;
+}
+
+#enter, #del {
+  width: 65px;
+}
+
+.keyboardLetter {
+  color: white;
+  font-size: 14px;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media screen and (min-width: 0px) and (max-width: 575.98px) {
+  .emptySquare {
+    height: 60px;
+    width: 60px;
+  }
+
+  .keyboardKey {
+    height: 50px;
+    width: 30px;
+  }
+
+  #enter, #del {
+    width: 50px;
+  }
+
+  .keyboardLetter {
+    font-size: 12px;
+  }
+}
+</style>
+<div class="flex-container">	
+	<div id="guessGrid" class="grid">
+		<div class="input-group replayBtnGrp">
+		  <input id="playWordInput"
+				 class="form-control"
+				 placeholder="Word Number"
+				 type="tel"
+				 aria-label="Word Number"
+				 aria-describedby="basic-addon2" />
+		  <div class="input-group-append">
+		    <button id="playWordBtn"
+					class="btn btn-outline-success"
+					type="button">
+				Play Word
+			</button>
+		  </div>
+		</div>
+		<div id="r0" class="row">
+			<div id="r0l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r0l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r0l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r0l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r0l4" class="emptySquare"><span class="letter"></span></div>
+		</div>	
+		<div id="r1" class="row">
+			<div id="r1l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r1l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r1l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r1l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r1l4" class="emptySquare"><span class="letter"></span></div>
+		</div>
+		<div id="r2" class="row">
+			<div id="r2l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r2l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r2l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r2l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r2l4" class="emptySquare"><span class="letter"></span></div>
+		</div>
+		<div id="r3" class="row">
+			<div id="r3l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r3l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r3l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r3l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r3l4" class="emptySquare"><span class="letter"></span></div>
+		</div>	
+		<div id="r4" class="row">
+			<div id="r4l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r4l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r4l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r4l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r4l4" class="emptySquare"><span class="letter"></span></div>
+		</div>
+		<div id="r5" class="row">
+			<div id="r5l0" class="emptySquare"><span class="letter"></span></div>
+			<div id="r5l1" class="emptySquare"><span class="letter"></span></div>
+			<div id="r5l2" class="emptySquare"><span class="letter"></span></div>
+			<div id="r5l3" class="emptySquare"><span class="letter"></span></div>
+			<div id="r5l4" class="emptySquare"><span class="letter"></span></div>
+		</div>
+		<div id="notice" class="notice"></div>
+		<span id="buttonContainer" class="buttonContainer">
+			<button id="newGameBtn" class="btn btn-outline-success postGameBtn d-none">
+				New Game
+			</button>
+			<button id="shareBtn" class="btn btn-outline-primary postGameBtn d-none">
+				Share
+			</button>
+		</span>
+		<div id="keyboardContainer" class="keyboardContainer">
+			<div id="keyRow1" class="keyboardRow"></div>
+			<div id="keyRow2" class="keyboardRow"></div>
+			<div id="keyRow3" class="keyboardRow"></div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+    "use strict";
+    document.body.style.backgroundColor = '#121213';
+    // constants
+    const keyboardLayout = {
+        keyRow1: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+        keyRow2: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+        keyRow3: ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
+    };
+    const masterList = [
+        "above", "abuse", "acute", "admit", "adopt", "adult", "agent", "alive", "alter", "anger",
+        "angry", "argue", "arise", "avoid", "awful", "basic", "beach", "begin", "birth", "black",
+        "blame", "blind", "block", "board", "brain", "brave", "bread", "break", "brief", "bring",
+        "broad", "brown", "build", "burst", "buyer", "cause", "chain", "chair", "cheap", "chest",
+        "chief", "child", "china", "claim", "clean", "clear", "climb", "close", "coast", "count",
+        "court", "cover", "crazy", "cream", "crime", "crowd", "crown", "daily", "dance", "death",
+        "depth", "dirty", "doubt", "draft", "dream", "drink", "drive", "early", "earth", "empty",
+        "enjoy", "entry", "equal", "exact", "exist", "extra", "faint", "faith", "false", "fault",
+        "field", "fight", "final", "first", "focus", "force", "frame", "frank", "fresh", "front",
+        "fruit", "giant", "grand", "grant", "great", "group", "guide", "heart", "heavy",
+        "horse", "hotel", "house", "human", "ideal", "image", "imply", "index", "input", "joint",
+        "jones", "judge", "knife", "large", "laugh", "layer", "learn", "lewis", "light",
+        "lucky", "lunch", "magic", "major", "march", "match", "metal", "minor", "model", "money",
+        "month", "moral", "mouth", "music", "naked", "nasty", "night", "noise", "north", "novel",
+        "nurse", "other", "outer", "owner", "panel", "party", "phase", "phone", "pilot", "pitch",
+        "place", "plain", "plane", "plant", "plate", "point", "pound", "power"
+    ].map((word, index) => ({ word, index }));
+    const wordBank = masterList.slice(0);
+    const snarkyComments = [
+        "Cuttin' it a bit close, eh?",
+        "Don't worry I struggle too",
+        "Phew",
+        "https://www.amazon.com/dp/0877792011",
+        "Next one is going to be ezpz for sure!",
+        "Next one's gonna be a 3/6 I can feel it!",
+        "As sure as God wears sandles, you solved that one by the skin of yer teeth",
+        "Now yer gonna wanna have an eye,\ncause the next word's comin out meaner than spit\nand gonna go like a hot damn"
+    ];
+    const btnContainerEl = document.getElementById('buttonContainer');
+    const playWordInputEl = document.getElementById('playWordInput');
+    // initial state
+    setKeyboard();
+    let testCase = 'knoll';
+    let playWordAtIndex;
+    let gameOver = false;
+    let guesses = [];
+    let correctWordNumber;
+    let correctWord = [];
+    let guess = 0;
+    let letter = -1;
+    setCorrectWord();
+    // event handlers
+    const onKeyPress = (event) => {
+        if (gameOver || playWordInputEl === document.activeElement)
+            return;
+        // A key that was not alpha, backspace, or enter was pressed
+        if (!'abcdefghijklmnopqrstuvwxyz'.includes(event.key) && !['Backspace', 'Enter'].includes(event.key))
+            return;
+        // Backspace was pressed
+        if (event.key === 'Backspace' && letter >= 0) {
+            const squareEl = document.getElementById(`r${guess}l${letter}`);
+            squareEl.children.item(0).innerText = '';
+            letter--;
+            // Alphabet key was pressed and we don't have 5 letters yet
+        }
+        else if (letter < 4 && !['Backspace', 'Enter'].includes(event.key)) {
+            letter++;
+            const squareEl = document.getElementById(`r${guess}l${letter}`);
+            squareEl.children.item(0).innerText = event.key.toUpperCase();
+            // We have 5 letters and Enter was pressed
+        }
+        else if (letter === 4 && event.key === "Enter") {
+            const rowEl = document.getElementById(`r${guess}`);
+            const word = [...rowEl.children]
+                .map(letter => letter.children.item(0).innerText)
+                .join('');
+            const correctGuess = this.processGuess(word);
+            let enableNewGameBtn = false;
+            if (correctGuess) {
+                if (guess === 5) {
+                    const snarkIndex = Math.floor(Math.random() * (snarkyComments.length - 0) + 0);
+                    const snark = snarkyComments[snarkIndex];
+                    writeNotice(snark);
+                }
+                enableNewGameBtn = true;
+                gameOver = true;
+            }
+            else {
+                if (++guess === 6) {
+                    const correct = correctWord.map(ld => ld.letter).join('');
+                    writeNotice(`Answer: ${correct[0].toUpperCase() + correct.slice(1)}`);
+                    gameOver = true;
+                    enableNewGameBtn = true;
+                }
+                letter = -1;
+            }
+            if (enableNewGameBtn)
+                [...buttonContainer.children]
+                    .forEach(btn => btn.classList.remove('d-none'));
+        }
+    };
+    const onNewGameClick = (_) => {
+        guess = 0;
+        letter = -1;
+        [...document.getElementById('guessGrid').children]
+            .filter(child => child.classList.contains('row'))
+            .map(row => [...row.children])
+            .flat()
+            .map(letter => letter.children.item(0))
+            .forEach(span => {
+            span.innerText = '';
+            span.parentElement.className = 'emptySquare';
+        });
+        [...document.getElementById('keyboardContainer').children]
+            .map(row => [...row.children])
+            .flat()
+            .forEach(key => key.className = 'keyboardKey');
+        setCorrectWord();
+        [...buttonContainer.children].forEach(btn => btn.classList.add('d-none'));
+        gameOver = false;
+        writeNotice(null);
+        document.body.focus();
+    };
+    const onShareBtnClick = (_) => {
+        // Codepen understandably blocks the use of the navigator.clipboard API
+        // document.execComand works for some reason so using that instead
+        const resultText = `Word #${correctWordNumber} ${guesses.length}/6\n` +
+            guesses.map(guess => guess.map(letter => letter.emoji).join('') + '\n').join('');
+        const textArea = document.createElement("textarea");
+        textArea.value = resultText;
+        // Avoid scrolling to bottom
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const fallbackText = 'I couldn\'t copy your results for you. ):\n' +
+            'You\'ll have to copy them yourself, here they are!\n' +
+            resultText;
+        try {
+            const successfulCopy = document.execCommand('copy');
+            if (successfulCopy)
+                writeNotice('Results were copied to your clipboard!');
+            else
+                writeNotice(fallbackText);
+        }
+        catch (err) {
+            writeNotice(fallbackText);
+        }
+        document.body.removeChild(textArea);
+    };
+    const onPlayWordInputKeyDown = (event) => {
+        if (event.key === 'Backspace' || (/[0-9]/.test(event.key) && playWordInputEl.value.length < 3))
+            return;
+        else
+            event.preventDefault();
+    };
+    const onPlayWordBtnClick = (_) => {
+        if (!playWordInputEl.value) {
+            writeNotice('Enter the number of the word you want to try and solve!');
+            return;
+        }
+        const wordNumber = +playWordInputEl.value;
+        if (wordNumber !== 999 && (wordNumber > masterList.length || wordNumber < 1)) {
+            writeNotice(`We couldn't find word #${wordNumber}.\nPlease try a different number`);
+            playWordInputEl.value = '';
+            return;
+        }
+        playWordAtIndex = wordNumber === 999 ? wordNumber : wordNumber - 1;
+        playWordInputEl.value = '';
+        document.getElementById('playWordBtn').blur();
+        onNewGameClick();
+        if (wordNumber === 999)
+            writeNotice(`In development mode.\nTest Case: "${testCase}"\nGood luck.`);
+        else
+            writeNotice(`You are now attempting word #${wordNumber}. Good luck!`);
+    };
+    // helper functions
+    function setKeyboard() {
+        Object.keys(keyboardLayout).forEach(rowKey => {
+            const rowContent = keyboardLayout[rowKey];
+            const keyRowEl = document.getElementById(rowKey);
+            rowContent.forEach(keyChar => {
+                const keyboardKey = document.createElement('div');
+                keyboardKey.classList.add('keyboardKey');
+                keyboardKey.id = keyChar;
+                const keyboardLetter = document.createElement('div');
+                keyboardLetter.classList.add('keyboardLetter');
+                keyboardLetter.innerText = keyChar.toUpperCase();
+                const clickEvent = { key: keyChar };
+                if (keyChar === 'enter')
+                    clickEvent.key = 'Enter';
+                else if (keyChar === 'del')
+                    clickEvent.key = 'Backspace';
+                keyboardKey.onclick = () => onKeyPress(clickEvent);
+                keyboardKey.append(keyboardLetter);
+                keyRowEl.append(keyboardKey);
+            });
+        });
+    }
+    function setCorrectWord(wordIndex) {
+        if (wordBank.length === 0) {
+            writeNotice('You\'ve played with all the words we got.\nRefresh the page!');
+            return;
+        }
+        // Developer mode
+        if (playWordAtIndex === 999) {
+            correctWord = testCase.toLowerCase().split('').map((l, i) => ({
+                index: i,
+                letter: l
+            }));
+            correctWordNumber = 999;
+            playWordAtIndex = null;
+            return;
+        }
+        // Player specified word
+        if (playWordAtIndex) {
+            correctWord = masterList[playWordAtIndex].word.split('').map((l, i) => ({
+                index: i,
+                letter: l
+            }));
+            correctWordNumber = playWordAtIndex + 1;
+            playWordAtIndex = null;
+            return;
+        }
+        // Random word
+        const newWordIndex = Math.floor(Math.random() * (wordBank.length - 0) + 0);
+        correctWord = wordBank[newWordIndex].word.split('').map((l, i) => ({
+            index: i,
+            letter: l
+        }));
+        correctWordNumber = wordBank[newWordIndex].index + 1;
+        wordBank.splice(newWordIndex, 1);
+    }
+    function processGuess(word) {
+        //TODO:단어 검증
+        let correctGuess = true;
+        const guessedWordDetails = word.toLowerCase().split('').map((c, i) => ({
+            index: i,
+            letter: c,
+            isCorrect: false,
+            isIncorrect: false,
+            isInvalidPos: false,
+            emoji: ''
+        }));
+        // Process each letter of the guessed word
+        guessedWordDetails.forEach((gl, i) => {
+            var _a, _b, _c, _d;
+            // Is letter in word?
+            if (!correctWord.map(ld => ld.letter).join('').includes(gl.letter)) {
+                // letter not in word
+                gl.isIncorrect = true;
+                gl.emoji = '⬛';
+                return;
+            }
+            // Letter is in word
+            // Is letter in correct position?
+            if (gl.letter === correctWord[i].letter) {
+                gl.isCorrect = true;
+                gl.emoji = '🟩';
+                // Does this currently guessed letter come after any other letters?
+                if (i > 0) {
+                    // This letter comes after other letters of the same value that may be marked as isInvalidPos = true
+                    // Does the guessed word contain this letter more than once?
+                    const lettersInGuessedWord = guessedWordDetails.filter(ld => ld.letter === gl.letter && ld.index < i && !ld.isCorrect);
+                    if ((lettersInGuessedWord === null || lettersInGuessedWord === void 0 ? void 0 : lettersInGuessedWord.length) > 0) {
+                        // The currently guessed letter does appear in the guessed word more than once
+                        // and before the positon of the currently guessed letter
+                        // Should the previously examined guessed letter be marked as isIncorrect = true?
+                        const qtyOfLetterInCorrectWord = (_b = (_a = correctWord.filter(ld => ld.letter === gl.letter)) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+                        if (qtyOfLetterInCorrectWord === 1) {
+                            // The correct word contains the currently guessed letter only one time
+                            // This means the player guessed this letter correct
+                            // And the previously examined letter should no longer be, isInvalidPos = true
+                            // But instead should be isIncorrect = true;
+                            lettersInGuessedWord.forEach(ld => {
+                                ld.isInvalidPos = false;
+                                ld.isIncorrect = true;
+                                gl.emoji = '⬛';
+                            });
+                        }
+                    }
+                }
+                return;
+            }
+            // Guessed letter is in the incorrect position
+            // Is guessed letter in guessed word more than once?
+            const letterInGuessedWord = guessedWordDetails.filter(guess => guess.letter === gl.letter);
+            if ((letterInGuessedWord === null || letterInGuessedWord === void 0 ? void 0 : letterInGuessedWord.length) > 1) {
+                // Guessed letter is in guessed word 1+ times
+                // Does current guessed letter come after any other instances of this letter in the guessed word?
+                const guessedLetterBeforeCurrentGL = letterInGuessedWord.find(guess => guess.index < gl.index);
+                if (guessedLetterBeforeCurrentGL) {
+                    // The guessed word contains the current letter value, before the current guessed letter
+                    // e.g. in the word, "green" we're currently working with the second, "e"
+                    // Can we mark this current guessed letter as isInvalidPos = true?
+                    const qtyOfCurrentGLInCorrectWord = (_d = (_c = correctWord.filter(ld => ld.letter === gl.letter)) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 0;
+                    if (qtyOfCurrentGLInCorrectWord > 1) {
+                        // The current guessed letter, is in the guessed word more than once
+                        // We have already iterated over a previous instance of the current guessed letter
+                        // The correct word must have the same amount of the current guessed letter
+                        // for this current guessed letter to not be marked as incorrect
+                        // i.e. if the guess word is, "gloss", then correct word must have at least two, "s" letters
+                        // Or this current gl is invalid b/c we locked in the previous instance of the gl
+                        // Does the instance of this current guessed letter exceed the amount allowed?
+                        if ((letterInGuessedWord.findIndex(ld => ld.index === gl.index) + 1) > qtyOfCurrentGLInCorrectWord) {
+                            // The correct word has n instances of the current guessed letter
+                            // This instance of the current guessed letter is n + 1
+                            // This exceeds the amount permitted of the current guessed letter
+                            // Mark this letter as isIncorrect = true instead of isInvalidPos = true
+                            // The prior instances of this guessed letter will have already been examined
+                            // and appropriately marked as either isCorrect or isInvalidPos
+                            gl.isIncorrect = true;
+                            gl.emoji = '⬛';
+                        }
+                        else {
+                            // The current instance of the current guessed letter does not exceed
+                            // the quantity of the current guessed letter in the correct word
+                            // That means this current guessed letter is a valid guess that
+                            // is in the wrong place and should be marked as isInvalidPos = true
+                            gl.isInvalidPos = true;
+                            gl.emoji = '🟨';
+                        }
+                        return;
+                    }
+                    else {
+                        // The current guessed letter value, only exists in the correct word 1 time
+                        // And the current guessed letter is the second or later instance of this letter
+                        // Therefor we cannot mark is as invalidPos b/c the previous instance has already
+                        // been marked as invalidPos. So we mark it as incorrect
+                        gl.isIncorrect = true;
+                        gl.emoji = '⬛';
+                    }
+                }
+                else {
+                    // This is the first instance of the guessed letter in the guessed word
+                    // Mark it as isInvalidPos = true
+                    gl.isInvalidPos = true;
+                    gl.emoji = '🟨';
+                }
+            }
+            else {
+                // This is the only instance of the guessed letter in the guessed word
+                // Mark it as isInvalidPos = true
+                gl.isInvalidPos = true;
+                gl.emoji = '🟨';
+                return;
+            }
+        });
+        // Set styles
+        guessedWordDetails.forEach((ld, i) => {
+            const letterEl = document.getElementById(`r${guess}l${i}`);
+            const keyboardKeyEl = document.getElementById(ld.letter);
+            if (ld.isCorrect) {
+                letterEl.classList.add('correct');
+                keyboardKeyEl.className = 'keyboardKey correct';
+            }
+            else if (ld.isInvalidPos) {
+                letterEl.classList.add('incorrectPosition');
+                // Only set keyboard style if the higher tier style, "correct" has NOT been set
+                if (!keyboardKeyEl.classList.contains('correct')) {
+                    keyboardKeyEl.className = 'keyboardKey incorrectPosition';
+                }
+                // The above consideration is only for styles
+                // If the current guess letter would be considered invalidPos then the guess is still wrong
+                // i.e. they have the letter in the right spot from a previous guess, and for some reason
+                // decided to knowingly put an incorrect letter in the spot of a known correct letter
+                // on a subsequent guess
+                correctGuess = false;
+            }
+            else {
+                letterEl.classList.add('incorrect');
+                // Only set keyboard style if the higher tier style, "correct" and, "incorrectPosition" have NOT been set
+                if (!keyboardKeyEl.classList.contains('correct')
+                    && !keyboardKeyEl.classList.contains('incorrectPosition')) {
+                    keyboardKeyEl.className = 'keyboardKey incorrect';
+                }
+                // The above consideration is only for styles
+                // If the current guess letter would be considered incorrect then the guess is still wrong
+                // i.e. they have the letter in the right spot from a previous guess, or have been told the
+                // letter is in the incorrect position from a previous guess, and for some reason
+                // decided to knowingly put an incorrect letter in the spot of a known correct letter
+                // on a subsequent guess
+                correctGuess = false;
+            }
+        });
+        guesses.push(guessedWordDetails);
+        return correctGuess;
+    }
+    function writeNotice(notice) {
+        document.getElementById('notice').innerText = notice;
+    }
+    // register event handlers
+    document.getElementById('newGameBtn').onclick = onNewGameClick;
+    document.getElementById('shareBtn').onclick = onShareBtnClick;
+    document.getElementById('playWordBtn').onclick = onPlayWordBtnClick;
+    playWordInputEl.onkeydown = onPlayWordInputKeyDown;
+    document.onkeydown = onKeyPress;
+    
+</script>

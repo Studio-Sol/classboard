@@ -139,9 +139,6 @@ async function fetchTimeTable(fmonday, refresh) {
     await $.ajax({
         url: `/api/timetable?monday=${fmonday}&refresh=${refresh ?? ""}`,
         method: "GET",
-        beforeSend : () => {
-            
-        },
         success: (data) => {
             $("#loading").addClass("fadeout");
             setTimeout(() => {
@@ -235,7 +232,7 @@ window.onerror = (message, url, lineNumber) => {
 
     $("#error-message").html("문제가 보고되었습니다. <br>" + message);
     $.ajax({
-        url: `/api/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
+        url: `/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
         method: "GET"
     })
     return true;

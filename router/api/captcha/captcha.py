@@ -41,13 +41,13 @@ def gen_captcha():
     draw.text((random.randint(10,25), random.randint(10,25)), value, font=font)
 
 
-    im.save("/home/ubuntu/storage/school/tmp/" + value + ".jpg")
+    im.save("/home/ubuntu/storage/school/tmp/captcha_" + value + ".jpg")
 
     l = random.uniform(20,24)      # 파장(wave length) 클수록 쉬움
     amp = random.uniform(12,16)    # 진폭(amplitude) 작을수록 쉬움
 
-    img = cv2.imread("/home/ubuntu/storage/school/tmp/" + value + ".jpg")
-    os.system("rm /home/ubuntu/storage/school/tmp/" + value + ".jpg")
+    img = cv2.imread("/home/ubuntu/storage/school/tmp/captcha_" + value + ".jpg")
+    os.system("rm /home/ubuntu/storage/school/tmp/captcha_" + value + ".jpg")
     rows, cols = img.shape[:2]
 
     # 초기 매핑 배열 생성 ---①
@@ -70,7 +70,7 @@ def gen_captcha():
 
     # 결과 출력 
     id_ = uuid.uuid4().hex
-    cv2.imwrite(filename="/home/ubuntu/storage/school/captcha_img/" + id_ + ".jpg", img=img)
+    cv2.imwrite(filename="/home/ubuntu/storage/school/tmp/captcha_" + id_ + ".jpg", img=img)
 
     return id_, value
 

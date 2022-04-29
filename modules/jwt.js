@@ -19,9 +19,9 @@ module.exports = {
             if (err.message === 'jwt expired') {
                 return -1;
             } else if (err.message === 'invalid token') {
-                return -1;
+                return -2;
             } else {
-                return -1;
+                return -3;
             }
         }
         return decoded;

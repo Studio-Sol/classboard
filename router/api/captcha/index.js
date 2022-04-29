@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit')
 
 
 function discord_alert(content) {
-    request.post("https://ptb.discord.com/api/webhooks/960146429970624562/tNpzHEp6INI-peVkABcHNSp4tBjJp3PazVGFSuU7AWfsB4xNi--rGKvXysiBvnPLH3F4", {
+    request.post("https://ptb.discord.com/api/webhooks/968132224425795624/SmmFS54OFE9oY7QKJvYTCt7WnmFLNN2e0cbPBWTkA0xi30L1VjSr0xQHZgrheIKbehOi", {
         form: {
             username: "웹서버 알림",
             content: content,
@@ -20,13 +20,17 @@ function discord_alert(content) {
 
 const router = new express.Router()
 
-router.use(["/api/captcha/gen", "/api/captcha/verify"], (req, res, next) => {
-    if (req.header("Auth") == undefined) {
-        res.status(403).json({success: false, mesage: "use 'Auth' header"});
+router.use(["/api/captcha/gen", "/api/captcha/verify"], async (req, res, next) => {
+    if (req.header("Key") == undefined) {
+        res.status(403).json({success: false, mesage: "use 'Key' header"});
         return;
     }
-    if (req.header("Auth") != "715815246127693825") {
-        res.status(403).json({success: false, mesage: "Unknown Auth Token"});
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var api_client = client.db("school").collection("api_client").findOne({
+        key: req.header("Key")
+    });
+    if (!api_client) {
+        res.status(403).json({success: false, mesage: "Unknown Key"});
         return;
     }
     next();
@@ -40,46 +44,71 @@ router.use("/api/captcha/gen", rateLimit({
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     statusCode: 200,
     handler: (req, res) => {
-        discord_alert(`rateLimit 알림 : \`{ip: "${req.ip}", auth: "${req.header("Auth")}"}\``)
+        discord_alert(`rateLimit 알림 : \`{ip: "${req.ip}", Key: "${req.header("Key")}"}\``)
         res.status(429).send({success: false, message: "too fast, please slow down"})
     },
     keyGenerator: (req, res) => {
-        return req.header("Auth")
+        return req.header("Key")
     },
 }));
 
 
-router.get("/api/captcha/gen", (req, res) => {
+router.get("/api/captcha/gen", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var api_client = await client.db("school").collection("api_client").findOne({
+        key: req.header("Key")
+    });
+    if (!api_client) {
+        res.json({});
+        return;
+    }
+    client.db("school").collection("api_client").updateOne({
+        key: req.header("Key")
+    }, {
+        $inc: {
+            captcha: 1
+        }
+    });
     PythonShell.run("captcha.py", {
         scriptPath: "/home/ubuntu/storage/school/router/api/captcha/"
     }, async function(err, data) {
-        var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
         var data = JSON.parse(data)
         var insert = {
+            client: api_client.key,
             token: data.id,
             value: data.value,
             expireAt: new Date(new Date().getTime() + 1000 * 60 * 5),
-            image: fs.readFileSync("./captcha_img/" + data.id + ".jpg").toString("base64")
+            image: fs.readFileSync("./tmp/captcha_" + data.id + ".jpg").toString("base64")
         }
-        fs.unlink("./captcha_img/" + data.id + ".jpg", () => {})
         client.db("school").collection("captcha").insertOne(insert)
         res.json({success: true, token: insert.token, expireAt: insert.expireAt})
+        fs.unlink("./tmp/captcha_" + data.id + ".jpg", () => {})
     })
 });
 
 
 router.get("/api/captcha/verify", async (req, res) => {
-    if (req.header("Secret") != "Mythical") {
-        res.status(403).json({success: false, mesage: "Unknown Secret Key"});
+    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    var api_client = await client.db("school").collection("api_client").findOne({
+        key: req.header("Key")
+    });
+    console.log(req.header("Secret"), api_client.secret)
+    if (req.header("Secret") != api_client.secret) {
+        res.status(403).json({success: false, mesage: "Incorrect Secret Key"});
+        console.log("asdf")
         return;
     }
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+    
     var data = await client.db("school").collection("captcha").findOne({
+        client: api_client.key,
         token: req.query.token,
         value: req.query.value.toUpperCase()
     });
     if (data) {
         res.json({verify: true})
+        client.db("school").collection("captcha").deleteOne({
+            token: req.query.token
+        })
         return;
     }
     res.json({verify: false})

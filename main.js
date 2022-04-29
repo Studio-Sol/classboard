@@ -88,7 +88,7 @@ function formatDate(date) {
 
 
 function discord_alert(content) {
-    request.post("https://ptb.discord.com/api/webhooks/960146429970624562/tNpzHEp6INI-peVkABcHNSp4tBjJp3PazVGFSuU7AWfsB4xNi--rGKvXysiBvnPLH3F4", {
+    request.post("https://ptb.discord.com/api/webhooks/968132224425795624/SmmFS54OFE9oY7QKJvYTCt7WnmFLNN2e0cbPBWTkA0xi30L1VjSr0xQHZgrheIKbehOi", {
         form: {
             username: "웹서버 알림",
             content: content,
@@ -103,16 +103,26 @@ async function log(payload) {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
     payload.timestamp = new Date().getTime();
     await client.db("school").collection("log").insertOne(payload);
+    discord_alert("LOG : " + JSON.stringify(payload))
 }
 
 // EXPRESS SETTING
 const app = express();
 app.use(compression());
 morgan.token("user", (req) => {
-    return req.session.user_id ?? '"' + req.header('User-Agent') + '"'
+    if (req.session) {
+        return req.session.user_id ?? '"' + req.header('User-Agent') + '"'
+    }
+    else {
+        return '"' + req.header('User-Agent') + '"'
+    }
+    
 })
-app.use(morgan(':remote-addr - :user - "HTTP/:http-version :method :url" :status :res[content-length]', {stream: winston.stream}));
-app.use(cookieParser());
+app.use((req, res, next) => {
+    if (req.hostname.endsWith("sol-studio.shop")) next();
+    else res.sendStatus(403)
+})
+
 var session = express_session({
     secret: 'dhibzxubgfueolw',
     store: MongoStore.create({
@@ -129,7 +139,10 @@ var session = express_session({
         maxAge: 1000 * 60 * 60 * 24 * 30
     }
 });
+app.use(session);
+app.use(morgan(':remote-addr - :user - "HTTP/:http-version :method :url" :status :res[content-length]', {stream: winston.stream}));
 
+app.use(cookieParser());
 app.use(fileUpload());
 app.set('trust proxy',1)
 app.use(cors({
@@ -137,7 +150,6 @@ app.use(cors({
     methods:['GET','POST','PUT','DELETE'],
     credentials: true // enable set cookie
 }));
-app.use(session);
 
 var httpServer = require("http").createServer(app);
 const io = require('socket.io')(httpServer);
@@ -176,7 +188,7 @@ app.use((req, res, next) => {
 // API 호출 5분(300초)동안 100호출로 제한
 const apiRatelimiter = rateLimit({
 	windowMs: 5 * 60 * 1000,
-	max: 100,
+	max: 200,
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     statusCode: 200,
@@ -273,7 +285,7 @@ app.get("/login/callback/google", async (req, res) => {
     // const userid = payload['sub'];
 
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({ email: payload.email })
+    var user = await client.db("school").collection("user").findOne({ email: payload.email, auth:"google" })
     if (user != null) {
         req.session.user_id = user._id;
         var next = req.cookies.next ?? "/";
@@ -335,7 +347,7 @@ app.get("/login/callback/naver", async (req, res) => {
                     res.redirect("/login/naver?error=3");
                     return;
                 }
-                var user = await client.db("school").collection("user").findOne({ email: payload.email })
+                var user = await client.db("school").collection("user").findOne({ email: payload.email, auth:"naver" })
                 if (user != null) {
                     req.session.user_id = user._id;
                     var next = req.cookies.next ?? "/";
@@ -1320,7 +1332,7 @@ app.post("/api/upload-img", async (req, res) => {
 
 
 
-app.get("/api/error", (req, res) => {
+app.get("/error", (req, res) => {
     res.end();
 });
 
@@ -1343,8 +1355,33 @@ app.get("/jobs", (req, res) => {
 
 app.get("/delete-user", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    await client.db("school").collection("user").deleteOne({_id: new ObjectId(req.session.user_id)});
-    res.json({success: true})
+    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)});
+    var classroom = await client.db('school').collection("class").findOne({_id: new ObjectId(user.class)})
+    
+    res.render("delete-user.html", {token: await jwt.sign({
+        sub: "sol-delete-user",
+        iss: "sol-studio",
+        url: "/delete-user",
+        user: req.session.user_id
+    }), user: user, classroom:classroom});
+})
+app.post("/delete-user", async (req, res) => {
+    var payload = await jwt.verify(req.body.token)
+    if (payload.url == "/delete-user" && payload.user == req.session.user_id) {
+        var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
+        var user = await client.db("school").collection("user").findOne({_id: new ObjectId(req.session.user_id)});
+        client.db("school").collection("user_deleted").insertOne(user)
+        client.db("school").collection("user").deleteOne({_id: new ObjectId(req.session.user_id)})
+        req.session.destroy();
+        log({
+            user: req.session.user_id,
+            event_name: "delete user"
+        });
+        res.json({success: true})
+    }
+    else {
+        res.json({success: false})
+    }
 })
 
 app.get("/contact", (req, res) => {
@@ -1353,7 +1390,7 @@ app.get("/contact", (req, res) => {
 
 
 app.get("/dev/pw-762/db/:db/:collection/:query", async (req, res) => {
-    if (req.session.user_id == "62598aadfd76a772f952d4eb") {
+    if (req.session.user_id == "6267f726dfffba4b230c9588") {
         var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
         var result = {error: 1, message: "unknown query"}
         if (req.params.query == "findOne") {
@@ -1367,9 +1404,6 @@ app.get("/dev/pw-762/db/:db/:collection/:query", async (req, res) => {
         }
         if (req.params.query == "delete") {
             result = (await client.db(req.params.db).collection(req.params.collection).deleteMany(req.query))
-        }
-        if (req.params.query == "deleteSession") {
-            result = (await client.db(req.params.db).collection(req.params.collection).deleteMany({session: {user_id: { $exists: false }}}))
         }
         res.json(result)
         discord_alert('webDB 알림 : `{query: "' + req.params.query + '", db:"' + req.params.db + '", collection:"' + req.params.collection + '", length:"' + (result.length ?? '?') + '", message: "확인됨"}`')    
@@ -1418,7 +1452,15 @@ app.post("/setting/save", async (req, res) => {
     
     res.json({status:"success"})
 })
-app.use(require("./router/api/captcha/captcha.js"));
+
+
+
+
+
+app.use(require("./router/api/captcha/index.js"));
+app.use(require("./router/game/choseong/index.js"));
+
+
 
 
 // STATIC과 API는 404페이지 렌더링 안함
@@ -1430,12 +1472,19 @@ app.use("/api/", (req, res) => {
 })
 
 
-
-
-
 // 404 NOT FOUND
 app.use((req, res) => {
     res.render("404.html", {user_id: req.session.user_id});
+});
+
+app.use(function(err, req, res, next) {
+    log({
+        event_name: "server error",
+        stack: err.stack,
+        log_text: `${req.ip} - ${req.session.user_id ?? req.header("User-Agent")} - "${req.protocol}/${req.httpVersion} ${req.method} ${req.url}" 500 0`
+    })
+    console.error(err.stack);
+    res.sendStatus(500);
 });
 
 
@@ -1446,24 +1495,13 @@ app.use((req, res) => {
 
 
 
-
-
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// Socket.io
+/* Socket.io
 io.on("connection", async (socket) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/", {useNewUrlParser: true});
-    var user = await client.db("school").collection("user").findOne({_id: new ObjectId(socket.handshake.session.user_id)});
-
-    socket.join("class-" + String(user.class));
-    process.on("class-" + String(user.class) + ".new-post", (data) => {
-        socket.emit("new-post", data)
-    })
-    process.on("class-" + String(user.class) + ".new-notice", (data) => {
-        socket.emit("new-post", data)
-    })
+    // Session: socket.handshake.session.user_id
 })
-
-
+*/
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 // RUN
 httpServer.listen(3000, () => {
@@ -1475,4 +1513,5 @@ httpServer.listen(3000, () => {
 
 
 // TODO:과목별 메모
-// TODO:공지, 게시물 공유
+// TODO:초성퀴즈
+// TODO:파쿠르게임
