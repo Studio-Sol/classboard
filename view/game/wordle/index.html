@@ -7,6 +7,7 @@
 .grid {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .replayBtnGrp {
@@ -113,7 +114,10 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
+h2 {
+    color:white;
+    width: fit-content;
+}
 @media screen and (min-width: 0px) and (max-width: 575.98px) {
   .emptySquare {
     height: 60px;
@@ -135,19 +139,21 @@
 }
 </style>
 <div class="flex-container">	
+    
 	<div id="guessGrid" class="grid">
+        <h2>무한으로 즐겨요 워들</h2>
 		<div class="input-group replayBtnGrp">
 		  <input id="playWordInput"
 				 class="form-control"
-				 placeholder="Word Number"
+				 placeholder="단어 번호"
 				 type="tel"
-				 aria-label="Word Number"
+				 aria-label="단어 번호"
 				 aria-describedby="basic-addon2" />
 		  <div class="input-group-append">
 		    <button id="playWordBtn"
 					class="btn btn-outline-success"
 					type="button">
-				Play Word
+				플레이
 			</button>
 		  </div>
 		</div>
@@ -196,10 +202,10 @@
 		<div id="notice" class="notice"></div>
 		<span id="buttonContainer" class="buttonContainer">
 			<button id="newGameBtn" class="btn btn-outline-success postGameBtn d-none">
-				New Game
+				새 게임
 			</button>
 			<button id="shareBtn" class="btn btn-outline-primary postGameBtn d-none">
-				Share
+				공유
 			</button>
 		</span>
 		<div id="keyboardContainer" class="keyboardContainer">
@@ -209,39 +215,23 @@
 		</div>
 	</div>
 </div>
+
 <script type="text/javascript">
-    "use strict";
-    document.body.style.backgroundColor = '#121213';
+    var words = [];
+    (async () => await fetch("/game/wordle/api/words").then((res) => res.json()).then((data) => {words = data;}))().then(() => {
+        document.body.style.backgroundColor = '#121213';
     // constants
     const keyboardLayout = {
         keyRow1: ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
         keyRow2: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-        keyRow3: ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'del']
+        keyRow3: ['del', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'enter']
     };
-    const masterList = [
-        "above", "abuse", "acute", "admit", "adopt", "adult", "agent", "alive", "alter", "anger",
-        "angry", "argue", "arise", "avoid", "awful", "basic", "beach", "begin", "birth", "black",
-        "blame", "blind", "block", "board", "brain", "brave", "bread", "break", "brief", "bring",
-        "broad", "brown", "build", "burst", "buyer", "cause", "chain", "chair", "cheap", "chest",
-        "chief", "child", "china", "claim", "clean", "clear", "climb", "close", "coast", "count",
-        "court", "cover", "crazy", "cream", "crime", "crowd", "crown", "daily", "dance", "death",
-        "depth", "dirty", "doubt", "draft", "dream", "drink", "drive", "early", "earth", "empty",
-        "enjoy", "entry", "equal", "exact", "exist", "extra", "faint", "faith", "false", "fault",
-        "field", "fight", "final", "first", "focus", "force", "frame", "frank", "fresh", "front",
-        "fruit", "giant", "grand", "grant", "great", "group", "guide", "heart", "heavy",
-        "horse", "hotel", "house", "human", "ideal", "image", "imply", "index", "input", "joint",
-        "jones", "judge", "knife", "large", "laugh", "layer", "learn", "lewis", "light",
-        "lucky", "lunch", "magic", "major", "march", "match", "metal", "minor", "model", "money",
-        "month", "moral", "mouth", "music", "naked", "nasty", "night", "noise", "north", "novel",
-        "nurse", "other", "outer", "owner", "panel", "party", "phase", "phone", "pilot", "pitch",
-        "place", "plain", "plane", "plant", "plate", "point", "pound", "power"
-    ].map((word, index) => ({ word, index }));
+    const masterList = words.map((word, index) => ({ word, index }));
     const wordBank = masterList.slice(0);
     const snarkyComments = [
         "Cuttin' it a bit close, eh?",
         "Don't worry I struggle too",
         "Phew",
-        "https://www.amazon.com/dp/0877792011",
         "Next one is going to be ezpz for sure!",
         "Next one's gonna be a 3/6 I can feel it!",
         "As sure as God wears sandles, you solved that one by the skin of yer teeth",
@@ -251,7 +241,6 @@
     const playWordInputEl = document.getElementById('playWordInput');
     // initial state
     setKeyboard();
-    let testCase = 'knoll';
     let playWordAtIndex;
     let gameOver = false;
     let guesses = [];
@@ -285,7 +274,7 @@
             const word = [...rowEl.children]
                 .map(letter => letter.children.item(0).innerText)
                 .join('');
-            const correctGuess = this.processGuess(word);
+            const correctGuess = processGuess(word);
             let enableNewGameBtn = false;
             if (correctGuess) {
                 if (guess === 5) {
@@ -297,9 +286,9 @@
                 gameOver = true;
             }
             else {
-                if (++guess === 6) {
+                if (guess === 6) {
                     const correct = correctWord.map(ld => ld.letter).join('');
-                    writeNotice(`Answer: ${correct[0].toUpperCase() + correct.slice(1)}`);
+                    writeNotice(`게임 오버!\n답: ${correct[0].toUpperCase() + correct.slice(1)}`);
                     gameOver = true;
                     enableNewGameBtn = true;
                 }
@@ -352,7 +341,7 @@
         try {
             const successfulCopy = document.execCommand('copy');
             if (successfulCopy)
-                writeNotice('Results were copied to your clipboard!');
+                writeNotice('결과를 클립보드에 복사했습니다!');
             else
                 writeNotice(fallbackText);
         }
@@ -362,30 +351,27 @@
         document.body.removeChild(textArea);
     };
     const onPlayWordInputKeyDown = (event) => {
-        if (event.key === 'Backspace' || (/[0-9]/.test(event.key) && playWordInputEl.value.length < 3))
+        if (event.key === 'Backspace' || (/[0-9]/.test(event.key)))
             return;
         else
             event.preventDefault();
     };
     const onPlayWordBtnClick = (_) => {
         if (!playWordInputEl.value) {
-            writeNotice('Enter the number of the word you want to try and solve!');
+            writeNotice('플레이할 단어 번호를 입력해주세요!');
             return;
         }
         const wordNumber = +playWordInputEl.value;
-        if (wordNumber !== 999 && (wordNumber > masterList.length || wordNumber < 1)) {
-            writeNotice(`We couldn't find word #${wordNumber}.\nPlease try a different number`);
+        if (wordNumber > masterList.length || wordNumber < 1) {
+            writeNotice(`단어 #${wordNumber}를 찾을 수 없습니다.\n다른 번호를 시도해주세요`);
             playWordInputEl.value = '';
             return;
         }
-        playWordAtIndex = wordNumber === 999 ? wordNumber : wordNumber - 1;
+        playWordAtIndex = wordNumber-1;
         playWordInputEl.value = '';
         document.getElementById('playWordBtn').blur();
         onNewGameClick();
-        if (wordNumber === 999)
-            writeNotice(`In development mode.\nTest Case: "${testCase}"\nGood luck.`);
-        else
-            writeNotice(`You are now attempting word #${wordNumber}. Good luck!`);
+        writeNotice(`단어 #${wordNumber}를 시도중입니다. 행운을 빕니다!`);
     };
     // helper functions
     function setKeyboard() {
@@ -412,17 +398,7 @@
     }
     function setCorrectWord(wordIndex) {
         if (wordBank.length === 0) {
-            writeNotice('You\'ve played with all the words we got.\nRefresh the page!');
-            return;
-        }
-        // Developer mode
-        if (playWordAtIndex === 999) {
-            correctWord = testCase.toLowerCase().split('').map((l, i) => ({
-                index: i,
-                letter: l
-            }));
-            correctWordNumber = 999;
-            playWordAtIndex = null;
+            writeNotice('모든 단어를 플레이했습니다.\n다시 풀기 위해서 페이지를 새로고침해주세요!');
             return;
         }
         // Player specified word
@@ -445,7 +421,24 @@
         wordBank.splice(newWordIndex, 1);
     }
     function processGuess(word) {
-        //TODO:단어 검증
+        console.log(word)
+        for (const w of masterList) {
+            if (w.word.toUpperCase() == word){
+                var success = true;
+                break;
+            }
+        }
+        if (!success) {
+            onKeyPress({key: "Backspace"})
+            onKeyPress({key: "Backspace"})
+            onKeyPress({key: "Backspace"})
+            onKeyPress({key: "Backspace"})
+            onKeyPress({key: "Backspace"})
+            writeNotice("존재하지 않는 단어입니다.")
+
+            return false;
+        }
+        writeNotice("")
         let correctGuess = true;
         const guessedWordDetails = word.toLowerCase().split('').map((c, i) => ({
             index: i,
@@ -597,6 +590,7 @@
             }
         });
         guesses.push(guessedWordDetails);
+        guess++;
         return correctGuess;
     }
     function writeNotice(notice) {
@@ -608,5 +602,15 @@
     document.getElementById('playWordBtn').onclick = onPlayWordBtnClick;
     playWordInputEl.onkeydown = onPlayWordInputKeyDown;
     document.onkeydown = onKeyPress;
-    
+    });
+
+
+
+
+
+
+
+
+
+
 </script>

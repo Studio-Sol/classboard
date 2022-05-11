@@ -132,6 +132,45 @@
                         <% } %>
                     </div>
                 <% } %>
+                <hr />
+                <div class="p-3 pt-0">
+                    <p>공유</p>
+                    <a id="share-kakao" href="javascript:;">
+                        <img style="width: 2rem; height:2rem;" src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" alt="카카오톡으로 공유"/>
+                    </a>
+                    <a class="ms-1" id="share-link" href="javascript:;" onclick="copy('https:\/\/sol-studio.shop/post/<%= data._id %>')">
+                        <img style="width: 2rem; height:2rem;" src="https://upload.wikimedia.org/wikipedia/commons/5/56/Chain_link_icon_slanted.png">
+                    </a>
+                      <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+                      <script type="text/javascript">
+                            if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                                document.querySelector("#share-link").style.filter = "invert()"
+                            }
+                            function copy(text) {
+                                var tempElem = document.createElement('textarea');
+                                tempElem.value = text;
+                                document.body.appendChild(tempElem);
+
+                                tempElem.select();
+                                document.execCommand("copy");
+                                document.body.removeChild(tempElem);
+                                alert("URL이 복사되었습니다. 원하시는 곳에 붙여넣어주세요.")
+                            }
+                            Kakao.init('9110cc5f2159504e8844c4a23cea3929');
+                            Kakao.isInitialized();
+                            Kakao.Link.createDefaultButton({
+                                container: '#share-kakao',
+                                objectType: 'text',
+                                text:
+                                '글을 공유했습니다 : <%= data.title %>',
+                                link: {
+                                mobileWebUrl: 'https://sol-studio.shop/post/<%= data._id %>',
+                                webUrl: 'https://sol-studio.shop/post/<%= data._id %>',
+                                },
+                            });
+                      </script>
+                      
+                </div>
             </div>
 
         </div>

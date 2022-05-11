@@ -1,7 +1,6 @@
 const UID = require("uid-safe");
 const jwt = require('jsonwebtoken');
-const secretKey = require('../config/jwt').secretKey;
-const options = require('../config/jwt').options;
+const { secretKey, options } = require('../config/jwt');
 
 module.exports = {
     sign: async (payload) => {

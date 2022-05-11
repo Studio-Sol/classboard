@@ -796,7 +796,7 @@ app.get("/notice/:id", async (req, res) => {
     res.render("notice.html", {replies:replies, user: user, data: data, author: author, items: items??null, formatDate: (date)=>{
         let formatted_date = date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes()
          return formatted_date;
-        }})
+    }})
 });
 
 
@@ -1333,6 +1333,11 @@ app.post("/api/upload-img", async (req, res) => {
 
 
 app.get("/error", (req, res) => {
+    log({
+        event_name: "client error",
+        stack: req.query.message,
+        log_text: `${req.ip} - ${req.session.user_id ?? req.header("User-Agent")} - "${req.protocol}/${req.httpVersion} ${req.method} ${req.url}" 500 0`
+    })
     res.end();
 });
 
@@ -1459,7 +1464,7 @@ app.post("/setting/save", async (req, res) => {
 
 app.use(require("./router/api/captcha/index.js"));
 app.use(require("./router/game/choseong/index.js"));
-
+app.use(require("./router/game/wordle/index.js"));
 
 
 
@@ -1498,7 +1503,7 @@ app.use(function(err, req, res, next) {
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 /* Socket.io
 io.on("connection", async (socket) => {
-    // Session: socket.handshake.session.user_id
+    // Session: socket.handshake.session(.user_id, ..)
 })
 */
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
