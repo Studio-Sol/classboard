@@ -1,270 +1,383 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" crossorigin="anonymous"></script>
-    <style>
-        td.class:hover,
-        th.dayofweek:hover {
-            background-color: var(--hover);
-            cursor: pointer;
-        }
-
-        .dayofweek {
-            text-align: center;
-        }
-
-        @media screen and (max-width: 800px) {
-            td {
-                font-size: small;
-            }
-        }
-    </style>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/style.css" , rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>클래스 알리미 - 홈</title>
-    <meta property="og:title" content="클래스 알리미" />
-    <meta property="og:description" content="시간표, 급식, 공지사항, 학급 내 커뮤니티까지 언제 어디서나 확인하세요!" />
-    <meta property="og:image" content="https://sol-studio.shop/static/common/logo.png" />
-    <script src="https://kit.fontawesome.com/76a19131cd.js" crossorigin="anonymous" async></script>
-    <style>
-        @keyframes spinner {
-            from {
-                transform: rotate(0deg);
+    <head>
+        <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410"
+            crossorigin="anonymous"
+        ></script>
+        <style>
+            td.class:hover,
+            th.dayofweek:hover {
+                background-color: var(--hover);
+                cursor: pointer;
             }
 
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes fadeout {
-            from {
-                opacity: 1;
+            .dayofweek {
+                text-align: center;
             }
 
-            to {
-                opacity: 0;
+            @media screen and (max-width: 800px) {
+                td {
+                    font-size: small;
+                }
+            }
+        </style>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link href="/static/style.css" , rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>클래스 알리미 - 홈</title>
+        <meta property="og:title" content="클래스 알리미" />
+        <meta
+            property="og:description"
+            content="시간표, 급식, 공지사항, 학급 내 커뮤니티까지 언제 어디서나 확인하세요!"
+        />
+        <meta
+            property="og:image"
+            content="https://sol-studio.ga/static/common/logo.png"
+        />
+        <script
+            src="https://kit.fontawesome.com/76a19131cd.js"
+            crossorigin="anonymous"
+            async
+        ></script>
+        <style>
+            @keyframes spinner {
+                from {
+                    transform: rotate(0deg);
+                }
+
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes fadeout {
+                from {
+                    opacity: 1;
+                }
+
+                to {
+                    opacity: 0;
+                    display: none;
+                }
+            }
+
+            .spinner {
+                box-sizing: border-box;
+                width: 20vh;
+                height: 20vh;
+                margin-top: -32px;
+                margin-left: -32px;
+                border-radius: 50%;
+                border: 1rem solid transparent;
+                border-top-color: #22c8f1;
+                border-bottom-color: #22c8f1;
+                animation: spinner 0.8s ease infinite;
+            }
+
+            .fadeout {
+                animation: fadeout 0.5s;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container-xl w-auto" style="height: 100%" id="main">
+            <div class="row mb-2" style="height: 7em">
+                <div class="col p-lg-4 p-3 mt-3 m-lg-3 shadow box">
+                    <div class="row d-flex align-items-center h-100">
+                        <div class="col">
+                            <div>
+                                <h2 style="margin: 0px">
+                                    <strong id="school-grade-class"
+                                        >로딩...</strong
+                                    >
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div
+                            class="col"
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            "
+                        >
+                            <div></div>
+                            <div class="theme-switch-wrapper">
+                                <% if (user.type == "teacher") { %>
+                                <a href="/teacher" target="__blank">
+                                    <button class="btn btn-primary">
+                                        선생님 메뉴
+                                    </button>
+                                </a>
+
+                                <% } %>
+                                <a
+                                    class="ms-lg-3"
+                                    href="/setting"
+                                    target="__blank"
+                                >
+                                    <button class="btn btn-primary">
+                                        설정
+                                    </button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-lg-4 mt-3">
+                <div
+                    class="col-lg-7 p-lg-4 pt-3 m-lg-3 shadow box"
+                    style="height: fit-content"
+                    id="timetable"
+                >
+                    <div style="display: flex; justify-content: space-between">
+                        <button
+                            class="btn p-0"
+                            style="width: 2em"
+                            onclick="fetchTimeTable(getLastMonday())"
+                            title="지난주 시간표"
+                        >
+                            <i class="fa fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h2 style="display: inline-block">
+                                시간표 (<span id="timetable-date"></span>)
+                            </h2>
+                            <button
+                                class="btn p-0"
+                                style="width: 2em"
+                                onclick="fetchTimeTable(monday, 'true')"
+                                title="시간표 업데이트"
+                            >
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                        </div>
+                        <button
+                            class="btn p-0"
+                            style="width: 2em"
+                            onclick="fetchTimeTable(getNextMonday())"
+                            title="다음주 시간표"
+                        >
+                            <i class="fa fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%"></th>
+                                <th style="width: 19%" class="dayofweek">월</th>
+                                <th style="width: 19%" class="dayofweek">화</th>
+                                <th style="width: 19%" class="dayofweek">수</th>
+                                <th style="width: 19%" class="dayofweek">목</th>
+                                <th style="width: 19%" class="dayofweek">금</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>1</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>2</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>3</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>4</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>5</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>6</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                            <tr>
+                                <th>7</th>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                                <td class="class"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div
+                        class="p-3 mt-4 mb-lg-0 mb-3"
+                        style="
+                            border-color: var(--text);
+                            border-style: solid;
+                            border-width: 1px;
+                        "
+                    >
+                        <h3><strong>급식</strong></h3>
+                        <h5 id="meal-date"></h5>
+                        <p id="meal">로드중..</p>
+                    </div>
+                </div>
+                <div class="col m-lg-3 mt-3">
+                    <div class="row p-4 shadow box">
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                            "
+                        >
+                            <a href="/notice" target="__blank">
+                                <h3><strong>공지사항</strong></h3>
+                            </a>
+                            <div>
+                                <% if (user.type == "teacher") { %>
+                                <a href="/new-notice" target="__blank">
+                                    <button class="btn p-0" style="width: 2em">
+                                        <i class="fa fa-pencil"></i>
+                                    </button>
+                                </a>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <ul id="notice" class="list-group"></ul>
+                    </div>
+                    <div class="row p-4 mt-4 shadow box">
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                            "
+                        >
+                            <a
+                                href="/post"
+                                target="__blank"
+                                style="width: fit-content"
+                            >
+                                <h3
+                                    style="
+                                        display: inline-block;
+                                        width: fit-content;
+                                    "
+                                >
+                                    <strong>게시물</strong>
+                                </h3>
+                            </a>
+                            <button
+                                class="btn p-0"
+                                style="width: 2em"
+                                onclick="newPost();"
+                            >
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </div>
+                        <ul id="metadata" class="list-group"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            id="overlay"
+            style="
+                position: fixed;
+                height: 100%;
+                width: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                top: 0px;
+                left: 0px;
                 display: none;
-            }
-        }
-
-        .spinner {
-            box-sizing: border-box;
-            width: 20vh;
-            height: 20vh;
-            margin-top: -32px;
-            margin-left: -32px;
-            border-radius: 50%;
-            border: 1rem solid transparent;
-            border-top-color: #22c8f1;
-            border-bottom-color: #22c8f1;
-            animation: spinner .8s ease infinite;
-
-        }
-
-        .fadeout {
-            animation: fadeout 0.5s;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container-xl w-auto" style="height: 100%;" id="main">
-        <div class="row mb-2" style="height: 7em;">
-            <div class="col p-lg-4 p-3 mt-3 m-lg-3 shadow box">
-                <div class="row d-flex align-items-center h-100">
-                    <div class="col">
-                        <div>
-                            <h2 style="margin: 0px;"><strong id="school-grade-class">로딩...</strong></h2>
-                        </div>
-                    </div>
-
-                    <div class="col" style="display: flex; justify-content: space-between; align-items: center;">
-                        <div></div>
-                        <div class="theme-switch-wrapper">
-                            <% if (user.type == "teacher") { %>
-                            <a href="/teacher" target="__blank">
-                                <button class="btn btn-primary">선생님 메뉴</button>
-                            </a>
-
-                            <% } %>
-                            <a class="ms-lg-3" href="/setting" target="__blank">
-                                <button class="btn btn-primary">설정</button>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
+                justify-content: center;
+                align-items: center;
+            "
+        >
+            <div></div>
+        </div>
+        <div
+            id="loading"
+            style="
+                position: fixed;
+                height: 100%;
+                width: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                top: 0px;
+                left: 0px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            "
+        >
+            <div>
+                <div class="spinner"></div>
             </div>
         </div>
-        <div class="row mt-lg-4 mt-3">
-            <div class="col-lg-7 p-lg-4 pt-3 m-lg-3 shadow box" style="height: fit-content;" id="timetable">
-                <div style="display: flex;justify-content: space-between;">
-                    <button class="btn p-0" style="width: 2em;" onclick="fetchTimeTable(getLastMonday())" title="지난주 시간표">
-                        <i class="fa fa-arrow-left"></i>
-                    </button>
-                    <div>
-                        <h2 style="display: inline-block;">시간표 (<span id="timetable-date"></span>)</h2>
-                        <button class="btn p-0" style="width: 2em;" onclick="fetchTimeTable(monday, 'true')" title="시간표 업데이트">
-                            <i class="fa fa-refresh"></i>
+        <div class="modal fade" tabindex="-1" role="dialog" id="error">
+            <div class="modal-dialog" role="document">
+                <div
+                    class="modal-content shadow box"
+                    style="background-color: var(--box-bg)"
+                >
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">오류!</h5>
+                    </div>
+                    <div class="modal-body" style="color: var(--text)">
+                        <p id="error-message"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="$('#overlay').hide();$('#error').removeClass('show').hide();"
+                        >
+                            닫기
                         </button>
                     </div>
-                    <button class="btn p-0" style="width: 2em;" onclick="fetchTimeTable(getNextMonday())" title="다음주 시간표">
-                        <i class="fa fa-arrow-right"></i>
-                    </button>
-                </div>
-
-
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th style="width: 5%"></th>
-                            <th style="width: 19%" class="dayofweek">월</th>
-                            <th style="width: 19%" class="dayofweek">화</th>
-                            <th style="width: 19%" class="dayofweek">수</th>
-                            <th style="width: 19%" class="dayofweek">목</th>
-                            <th style="width: 19%" class="dayofweek">금</th>
-                        </tr>
-
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th>1 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>2 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>3 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>4 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>5 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>6 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                        <tr>
-                            <th>7 </th>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                            <td class="class"> </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="p-3 mt-4 mb-lg-0 mb-3" style="border-color: var(--text);border-style: solid; border-width: 1px;">
-                    <h3><strong>급식</strong></h3>
-                    <h5 id="meal-date"></h5>
-                    <p id="meal">로드중..</p>
-                </div>
-            </div>
-            <div class="col m-lg-3 mt-3">
-                <div class="row p-4 shadow box">
-                    <div style="display: flex;justify-content: space-between;">
-                        <a href="/notice" target="__blank">
-                            <h3><strong>공지사항</strong></h3>
-                        </a>
-                        <div>
-                            <% if (user.type == "teacher") { %>
-                            <a href="/new-notice" target="__blank">
-                                <button class="btn p-0" style="width: 2em;">
-                                    <i class="fa fa-pencil"></i>
-                                </button>
-                            </a>
-                            <% } %>
-                        </div>
-
-                    </div>
-
-                    <ul id="notice" class="list-group">
-
-                    </ul>
-                </div>
-                <div class="row p-4 mt-4 shadow box">
-                    <div style="display: flex;justify-content: space-between;">
-                        <a href="/post" target="__blank" style="width:fit-content;">
-                            <h3 style="display: inline-block; width:fit-content;"><strong>게시물</strong></h3>
-                        </a>
-                        <button class="btn p-0" style="width: 2em;" onclick="newPost();">
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                    </div>
-                    <ul id="metadata" class="list-group">
-
-                    </ul>
                 </div>
             </div>
         </div>
-    </div>
+        <script>
+            var monday = "<%= monday.replaceAll("-", "") %>";
+            var grade = "<%= grade %>"
+            var class_ = "<%= classroom %>"
+            var school_name = "<%= school_name %>"
+        </script>
 
-    <div id="overlay" style="position:fixed; height: 100%; width: 100%; background-color: rgba(0,0,0,0.6);top: 0px; left:0px; display: none; justify-content: center; align-items: center">
-        <div></div>
-    </div>
-    <div id="loading" style="position:fixed; height: 100%; width: 100%; background-color: rgba(0,0,0,0.6);top: 0px; left:0px; display: flex; justify-content: center; align-items: center">
-        <div>
-            <div class="spinner"></div>
-        </div>
-    </div>
-    <div class="modal fade" tabindex="-1" role="dialog" id="error">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content shadow box" style="background-color: var(--box-bg);">
-                <div class="modal-header">
-                    <h5 class="modal-title text-danger">오류!</h5>
-                </div>
-                <div class="modal-body" style="color: var(--text)">
-                    <p id="error-message"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="$('#overlay').hide();$('#error').removeClass('show').hide();">닫기</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        var monday = "<%= monday.replaceAll("-", "") %>";
-        var grade = "<%= grade %>"
-        var class_ = "<%= classroom %>"
-        var school_name = "<%= school_name %>"
-    </script>
-
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-    <script src="/static/main.js"></script>
-</body>
-
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script src="/static/main.js"></script>
+    </body>
 </html>
