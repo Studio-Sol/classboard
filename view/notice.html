@@ -76,7 +76,7 @@
                     </div>
                     <div>
                         <h5 style="margin: 0px; padding: 0px">
-                            <%= author.name %>
+                            <%= author.name %> 선생님
                         </h5>
                         <p id="timestamp" style="color: gray"></p>
                     </div>
@@ -100,6 +100,7 @@
                                 id="reply-reply"
                                 placeholder="응답을 입력해주세요."
                             ></textarea>
+                            <br />
                             <button
                                 class="btn btn-primary"
                                 onclick="submitText();"
@@ -108,7 +109,7 @@
                             </button>
                         </div>
 
-                        <% } %> <% if (data.question.type == "select") { %>
+                        <% } else if (data.question.type == "select") { %>
                         <h3>질문 : <%= data.question.content %></h3>
                         <ul class="list-group">
                             <% var i = 0 %> <% for (const item of
@@ -125,6 +126,7 @@
                             </li>
                             <% i++ %> <% } %>
                         </ul>
+                        <br />
                         <button
                             class="btn btn-primary"
                             onclick="submitSelect();"
@@ -148,7 +150,8 @@
                                 "
                                 id="reply-reply"
                                 placeholder="응답을 입력해주세요."
-                            ></textarea>
+                            ></textarea
+                            ><br />
                             <button
                                 class="btn btn-primary"
                                 onclick="submitText();"
@@ -190,11 +193,7 @@
                                     <% for (const reply of replies) { %>
                                     <tr>
                                         <td><%= reply.user.name %></td>
-                                        <td>
-                                            <%=
-                                            data.question.items[reply.answer].content
-                                            %>
-                                        </td>
+                                        <td><%= reply.answer %></td>
                                         <td>
                                             <%= formatDate(new
                                             Date(reply.timestamp)) %>
@@ -222,7 +221,7 @@
                             class="ms-1"
                             id="share-link"
                             href="javascript:;"
-                            onclick="copy('https:\/\/sol-studio.ga/post/<%= data._id %>')"
+                            onclick="copy('https:\/\/sol-studio.ga/notice/<%= data._id %>')"
                         >
                             <img
                                 style="width: 2rem; height: 2rem"

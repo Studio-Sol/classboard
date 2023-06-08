@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "ES6",
+        "outDir": "./dist",
+        "moduleResolution": "nodenext",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
