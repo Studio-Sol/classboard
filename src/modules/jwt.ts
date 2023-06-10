@@ -3,21 +3,21 @@ const jwt = require("jsonwebtoken");
 const { secretKey, options } = require("../config/jwt");
 
 export default {
-    sign: async (payload) => {
+    sign: async (payload: any) => {
         const result = {
             token: jwt.sign(payload, secretKey, options),
             refreshToken: UID.sync(256),
         };
         return result;
     },
-    verify: async (token) => {
+    verify: async (token: any) => {
         let decoded;
         try {
             decoded = jwt.verify(token, secretKey);
-        } catch (err) {
-            if (err.message === "jwt expired") {
+        } catch (e: any) {
+            if (e.message === "jwt expired") {
                 return -1;
-            } else if (err.message === "invalid token") {
+            } else if (e.message === "invalid token") {
                 return -2;
             } else {
                 return -3;

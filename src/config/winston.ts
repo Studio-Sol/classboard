@@ -20,7 +20,8 @@ const level = () => {
 const format = winston.format.combine(
     winston.format.timestamp({ format: " YYYY-MM-DD HH:MM:SS ||" }),
     winston.format.printf(
-        (info) => `[${info.level}] ${info.timestamp} ${info.message}`
+        (info: { level: any; timestamp: any; message: any }) =>
+            `[${info.level}] ${info.timestamp} ${info.message}`
     )
 );
 
@@ -52,7 +53,7 @@ const logger = winston.createLogger({
 });
 
 logger.stream = {
-    write: function (message, encoding) {
+    write: function (message: any, _encoding: any) {
         logger.info(message); // 단순히 message를 default 포맷으로 출력
     },
 };

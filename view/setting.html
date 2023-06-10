@@ -8,6 +8,7 @@
             crossorigin="anonymous"
         />
         <link rel="stylesheet" href="/static/style.css" />
+        <script src="/static/style.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
             rel="stylesheet"
@@ -51,8 +52,27 @@
             </div>
             <div class="row">
                 <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
+                    <h2>테마</h2>
+                    <button
+                        id="theme"
+                        style="background-color: var(--bg); color: var(--text)"
+                    ></button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
                     <h2>이름</h2>
-                    <textarea id="name"><%= user.name %></textarea>
+                    <input
+                        type="text"
+                        id="name"
+                        value="<%= user.name %>"
+                        style="
+                            color: var(--text);
+                            background-color: var(--bg);
+                            border-radius: 4px;
+                            border-style: solid;
+                        "
+                    />
                 </div>
             </div>
             <div class="row">
@@ -60,12 +80,12 @@
                     <h2>계정 유형</h2>
                     <div
                         style="
-                            background-color: #313131;
+                            background-color: var(--box-bg);
                             width: fit-content;
                             padding: 8px;
                             border-radius: 3px;
                             border: 1px solid #3d3d3d;
-                            color: #7a7aff;
+                            color: var(--link);
                         "
                     >
                         <a
@@ -114,7 +134,7 @@
                     >
                 </div>
             </div>
-            <div class="row">
+            <div class="row" style="position: fixed; bottom: 10px; right: 10px">
                 <div
                     id="changed"
                     class="col p-lg-4 mt-3 m-lg-3 shadow box"
@@ -134,16 +154,40 @@
 
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script>
+            var theme = localStorage.getItem("theme");
+            if (theme == "dark") {
+                document.getElementById("theme").innerHTML =
+                    "라이트모드로 전환";
+            } else if (theme == "light") {
+                document.getElementById("theme").innerHTML = "다크모드로 전환";
+            } else {
+                document.getElementById("theme").innerHTML = "다크모드로 전환";
+            }
+            document.getElementById("theme").onclick = (e) => {
+                localStorage.setItem(
+                    "theme",
+                    theme == "dark" ? "light" : "dark"
+                );
+                theme = localStorage.getItem("theme");
+                switchTheme();
+                if (theme == "dark") {
+                    document.getElementById("theme").innerHTML =
+                        "라이트모드로 전환";
+                } else if (theme == "light") {
+                    document.getElementById("theme").innerHTML =
+                        "다크모드로 전환";
+                }
+            };
             var original_name = "<%= user.name %>";
             var original_avatar = "<%= user.avatar %>";
             var submit = false;
-            $("#name").on("keyup", () => {
-                if ($("#name").val() != original_name) {
+            document.getElementById("name").onkeyup = (e) => {
+                if (this.value != original_name) {
                     $("#changed").css("display", "flex");
                 } else {
                     $("#changed").hide();
                 }
-            });
+            };
             function selectAvatar() {
                 $("#avatar_file").click();
             }
@@ -163,7 +207,6 @@
             }
 
             $("#avatar_file").on("change", (e) => {
-                console.log($("#avatar_file").val());
                 $("#avatar-img").attr(
                     "src",
                     URL.createObjectURL(e.target.files[0])

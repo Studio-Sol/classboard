@@ -1,32 +1,60 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-	<title>회원가입</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    
-    <link rel="stylesheet" href="/static/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.css">
-</head>
-<body>
+    <head>
+        <title>회원가입</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+            crossorigin="anonymous"
+        />
 
-	<div class="container-lg" style="height: 100%; display: flex;align-items: center; justify-content: center">
-        <div style="height: fit-content; text-align: center;">
-            <h1 style="width: 100%;"><strong>당신은 누구십니까?</strong></h1>
-            <div class="row mt-5">
-                <h3 class="text-danger">필독!!</h3>클래스 알리미는 반을 등록하는 과정이 필요합니다. 선생님 선택시, 반을 등록할 수 있고 공지 작성 등 반을 관리할 수 있습니다. 따라서 반을 직접 등록하실 예정이라면 선생님을 선택해주세요. 학생 선택시에는 선생님께서 알려주신 초대코드를 사용해서 클래스에 가입하시면 됩니다.
-            </div>
-            <div class="row mt-5">
-                <div class="btn shadow box col me-5 p-3" style="text-align-last: center; width: 40vw" onclick="location = '/login/type/callback?type=teacher'">
-                    <h3>선생님</h3>
+        <link rel="stylesheet" href="/static/style.css" />
+        <script src="/static/style.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.css"
+        />
+    </head>
+    <body>
+        <div
+            class="container-lg"
+            style="
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+        >
+            <div style="height: fit-content; text-align: center">
+                <h1 style="width: 100%"><strong>당신은 누구십니까?</strong></h1>
+                <div class="row mt-5">
+                    <h3 class="text-danger">필독!!</h3>
+                    클래스 알리미는 반을 등록하는 과정이 필요합니다. 선생님
+                    선택시, 반을 등록할 수 있고 공지 작성 등 반을 관리할 수
+                    있습니다. 따라서 반을 직접 등록하실 예정이라면 선생님을
+                    선택해주세요. 학생 선택시에는 선생님께서 알려주신 초대코드를
+                    사용해서 클래스에 가입하시면 됩니다.
                 </div>
-                <div class="btn shadow box col p-3" style="text-align-last: center; width: 40vw" onclick="location = '/login/type/callback?type=student'">
-                    <h3>학생</h3>
+                <div class="row mt-5">
+                    <div
+                        class="btn shadow box col me-5 p-3"
+                        style="text-align-last: center; width: 40vw"
+                        onclick="location = '/login/type/callback?type=teacher'"
+                    >
+                        <h3>선생님</h3>
+                    </div>
+                    <div
+                        class="btn shadow box col p-3"
+                        style="text-align-last: center; width: 40vw"
+                        onclick="location = '/login/type/callback?type=student'"
+                    >
+                        <h3>학생</h3>
+                    </div>
                 </div>
             </div>
-
         </div>
-    </div>
-</body>
+    </body>
 </html>

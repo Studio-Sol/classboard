@@ -3,30 +3,30 @@
         --bg: #f3f5f7;
         --box-bg: #ffffff;
         --text: #202124;
-        --hover: rgba(0,0,0,0.1);
+        --hover: rgba(0, 0, 0, 0.1);
         --link: #4e5cde;
     }
-  }
-  @media (prefers-color-scheme: dark) {
-      :root {
+}
+@media (prefers-color-scheme: dark) {
+    :root {
         --bg: #181818;
         --box-bg: #252525;
-        --text: #FFFFFF;
-        --hover: rgba(255, 255, 255,0.1);
+        --text: #ffffff;
+        --hover: rgba(255, 255, 255, 0.1);
         --link: #57acdc;
-      }
-  }
-
+    }
+}
 
 @font-face {
-    font-family: 'ONE-Mobile-Regular';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/ONE-Mobile-Regular.woff') format('woff');
+    font-family: "ONE-Mobile-Regular";
+    src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/ONE-Mobile-Regular.woff")
+        format("woff");
     font-weight: normal;
     font-style: normal;
 }
 
 * {
-    font-family: 'ONE-Mobile-Regular', sans-serif;
+    font-family: "ONE-Mobile-Regular", sans-serif;
     color: var(--text);
 }
 html,
@@ -42,7 +42,6 @@ body {
     border-radius: 1rem;
     background-color: var(--box-bg);
 }
-
 
 .active {
     background-color: var(--hover);

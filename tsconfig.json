@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "allowJs": true,
+        "strict": false,
         "target": "ES6",
         "outDir": "./dist",
         "moduleResolution": "nodenext",
@@ -8,5 +9,6 @@
         "esModuleInterop": true
     },
     "include": ["./src/**/*"],
-    "exclude": ["node_modules", "dist"]
+    "exclude": ["node_modules", "dist"],
+    
 }
