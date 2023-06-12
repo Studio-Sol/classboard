@@ -101,7 +101,8 @@ const app = express();
 import http from "http";
 import { NextFunction } from "connect";
 const httpServer = http.createServer(app);
-
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(compression());
 
 morgan.token("user", (req: Request) => {
@@ -151,8 +152,7 @@ app.use(
         credentials: true, // enable set cookie
     })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
 app.set("views", path.join(__dirname, "..", "/view"));
 app.set("view engine", "ejs");
 app.engine("html", require("ejs").renderFile);
@@ -167,7 +167,6 @@ app.use((req, res, next) => {
         if (
             req.path.startsWith("/test") ||
             req.path == "/" ||
-            req.path.startsWith("/api/captcha") ||
             req.path.startsWith("/login") ||
             req.path.startsWith("/static") ||
             req.path == "/terms" ||
@@ -323,7 +322,7 @@ app.get("/test/login/student", async (req, res) => {
     var user = await client
         .db("school")
         .collection("user")
-        .findOne({ email: "cloud8862@google.com", auth: "google" });
+        .findOne({ email: "cloud8862@gmail.com", auth: "google" });
     req.session.user_id = user._id;
     var next = req.cookies.next ?? "/";
     res.clearCookie("next");
@@ -959,7 +958,49 @@ app.get("/notice/:id", async (req, res) => {
     });
 });
 
+app.get("/calendar", (req, res) => {
+    res.render("calendar.html");
+});
 // API
+app.post("/api/calendar", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/");
+    var user = await client
+        .db("school")
+        .collection("user")
+        .findOne({ _id: new ObjectId(req.session.user_id) });
+    var event = {
+        user: user._id,
+        class: user.class,
+        start: new Date(req.body.start),
+        end: new Date(req.body.end),
+        title: req.body.title,
+        description: req.body.description,
+    };
+    client.db("school").collection("calendar").insertOne(event);
+    res.json({
+        sucess: true,
+        event: event,
+    });
+});
+app.get("/api/calendar", async (req, res) => {
+    var client = await MongoClient.connect("mongodb://127.0.0.1/");
+    var user = await client
+        .db("school")
+        .collection("user")
+        .findOne({ _id: new ObjectId(req.session.user_id) });
+    var result = await client
+        .db("school")
+        .collection("calendar")
+        .find({
+            class: user.class,
+            start: {
+                $gte: new Date(req.query.start as string),
+                $lt: new Date(req.query.end as string),
+            },
+        })
+        .toArray();
+    res.json(result);
+});
 app.get("/api/meal", async (req, res) => {
     var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
@@ -982,7 +1023,7 @@ app.get("/api/meal", async (req, res) => {
                 MLSV_YMD: req.query.date as string,
             },
             {
-                pSize: 1,
+                pSize: 10,
             }
         );
     } catch {}

@@ -1,25 +1,44 @@
-function switchTheme() {
+let switchTheme;
+switchTheme = () => {
+    stylesheet = document.documentElement.style;
+    function getCSSValue(v) {
+        return getComputedStyle(document.documentElement).getPropertyValue(v);
+    }
+    styles = {
+        dark: {
+            bg: getCSSValue("--dark-bg"),
+            box_bg: getCSSValue("--dark-box-bg"),
+            text: getCSSValue("--dark-text"),
+            hover: getCSSValue("--dark-hover"),
+            link: getCSSValue("--dark-link"),
+        },
+        light: {
+            bg: getCSSValue("--light-bg"),
+            box_bg: getCSSValue("--light-box-bg"),
+            text: getCSSValue("--light-text"),
+            hover: getCSSValue("--light-hover"),
+            link: getCSSValue("--light-link"),
+        },
+    };
+    if (!localStorage.getItem("theme"))
+        if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+            localStorage.setItem("theme", "light");
+        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            localStorage.setItem("theme", "dark");
+        }
     if (localStorage.getItem("theme") == "dark") {
-        document.documentElement.style.setProperty("--bg", "#181818");
-        document.documentElement.style.setProperty("--box-bg", "#252525");
-        document.documentElement.style.setProperty("--text", "#ffffff");
-        document.documentElement.style.setProperty(
-            "--hover",
-            "rgba(255, 255, 255, 0.1)"
-        );
-        document.documentElement.style.setProperty("--link", "#57acdc");
+        stylesheet.setProperty("--bg", styles.dark.bg);
+        stylesheet.setProperty("--box-bg", styles.dark.box_bg);
+        stylesheet.setProperty("--text", styles.dark.text);
+        stylesheet.setProperty("--hover", styles.dark.hover);
+        stylesheet.setProperty("--link", styles.dark.link);
+    } else if (localStorage.getItem("theme") == "light") {
+        stylesheet.setProperty("--bg", styles.light.bg);
+        stylesheet.setProperty("--box-bg", styles.light.box_bg);
+        stylesheet.setProperty("--text", styles.light.text);
+        stylesheet.setProperty("--hover", styles.light.hover);
+        stylesheet.setProperty("--link", styles.light.link);
     }
-    if (localStorage.getItem("theme") == "light") {
-        document.documentElement.style.setProperty("--bg", "#f3f5f7");
-        document.documentElement.style.setProperty("--box-bg", "#ffffff");
-        document.documentElement.style.setProperty("--text", "#202124");
-        document.documentElement.style.setProperty(
-            "--hover",
-            "rgba(0, 0, 0, 0.1)"
-        );
-        document.documentElement.style.setProperty("--link", "#4e5cde");
-    }
-}
-
+};
 switchTheme();
 window.onfocus = switchTheme;

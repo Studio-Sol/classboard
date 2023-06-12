@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charset="utf-8" />
+        <style>
+            :root {
+                --light-bg: #f3f5f7;
+                --light-box-bg: #ffffff;
+                --light-text: #202124;
+                --light-hover: rgba(0, 0, 0, 0.1);
+                --light-link: #4e5cde;
+
+                --dark-bg: #181818;
+                --dark-box-bg: #252525;
+                --dark-text: #ffffff;
+                --dark-hover: rgba(255, 255, 255, 0.1);
+                --dark-link: #57acdc;
+            }
+            body {
+                color: var(--text);
+                background-color: var(--bg);
+            }
+        </style>
+        <script src="/static/style.js"></script>
+        <style>
+            html,
+            body {
+                margin: 5px;
+            }
+            .popper,
+            .tooltip {
+                position: absolute;
+                z-index: 9999;
+                background: #ffc107;
+                color: black;
+                width: 150px;
+                border-radius: 3px;
+                box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+                padding: 10px;
+                text-align: center;
+            }
+            .style5 .tooltip {
+                background: #1e252b;
+                color: #ffffff;
+                max-width: 200px;
+                width: auto;
+                font-size: 0.8rem;
+                padding: 0.5em 1em;
+            }
+            .popper .popper__arrow,
+            .tooltip .tooltip-arrow {
+                width: 0;
+                height: 0;
+                border-style: solid;
+                position: absolute;
+                margin: 5px;
+            }
+
+            .tooltip .tooltip-arrow,
+            .popper .popper__arrow {
+                border-color: #ffc107;
+            }
+            .style5 .tooltip .tooltip-arrow {
+                border-color: #1e252b;
+            }
+            .popper[x-placement^="top"],
+            .tooltip[x-placement^="top"] {
+                margin-bottom: 5px;
+            }
+            .popper[x-placement^="top"] .popper__arrow,
+            .tooltip[x-placement^="top"] .tooltip-arrow {
+                border-width: 5px 5px 0 5px;
+                border-left-color: transparent;
+                border-right-color: transparent;
+                border-bottom-color: transparent;
+                bottom: -5px;
+                left: calc(50% - 5px);
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+            .popper[x-placement^="bottom"],
+            .tooltip[x-placement^="bottom"] {
+                margin-top: 5px;
+            }
+            .tooltip[x-placement^="bottom"] .tooltip-arrow,
+            .popper[x-placement^="bottom"] .popper__arrow {
+                border-width: 0 5px 5px 5px;
+                border-left-color: transparent;
+                border-right-color: transparent;
+                border-top-color: transparent;
+                top: -5px;
+                left: calc(50% - 5px);
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+            .tooltip[x-placement^="right"],
+            .popper[x-placement^="right"] {
+                margin-left: 5px;
+            }
+            .popper[x-placement^="right"] .popper__arrow,
+            .tooltip[x-placement^="right"] .tooltip-arrow {
+                border-width: 5px 5px 5px 0;
+                border-left-color: transparent;
+                border-top-color: transparent;
+                border-bottom-color: transparent;
+                left: -5px;
+                top: calc(50% - 5px);
+                margin-left: 0;
+                margin-right: 0;
+            }
+            .popper[x-placement^="left"],
+            .tooltip[x-placement^="left"] {
+                margin-right: 5px;
+            }
+            .popper[x-placement^="left"] .popper__arrow,
+            .tooltip[x-placement^="left"] .tooltip-arrow {
+                border-width: 5px 0 5px 5px;
+                border-top-color: transparent;
+                border-right-color: transparent;
+                border-bottom-color: transparent;
+                right: -5px;
+                top: calc(50% - 5px);
+                margin-left: 0;
+                margin-right: 0;
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+        <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
+        <script src="https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.8/index.global.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            if (localStorage.getItem("theme") == "dark") {
+                let link = document.createElement("link");
+                link.href =
+                    "https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css";
+                link.rel = "stylesheet";
+                document.head.appendChild(link);
+            }
+        </script>
+        <script
+            src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+            crossorigin="anonymous"
+        ></script>
+        <link
+            href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+            rel="stylesheet"
+        />
+        <style>
+            @media (max-width: 900px) {
+                .fc-toolbar-title {
+                    font-size: 1.5em !important;
+                }
+                button {
+                    padding: 2px !important;
+                }
+            }
+        </style>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var calendarEl = document.getElementById("calendar");
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    longPressDelay: 0,
+                    themeSystem: "standard",
+                    defaultAllDay: true,
+                    timeZone: "UTC",
+                    selectable: true,
+                    headerToolbar: {
+                        left: "prev,next",
+                        center: "title",
+                        right: "dayGridMonth,listMonth today",
+                    },
+                    contentHeight: "auto",
+                    initialView: "dayGridMonth",
+                    eventDidMount: function (info) {
+                        var tooltip = new Tooltip(info.el, {
+                            title: info.event.extendedProps.description,
+                            placement: "top",
+                            trigger: "hover",
+                            container: "body",
+                        });
+                    },
+                    googleCalendarApiKey:
+                        "AIzaSyAcJQF_u9VFzqrhDJ2B-Roj-7XTIH0o1N8",
+
+                    // US Holidays
+                    eventSources: [
+                        {
+                            googleCalendarId:
+                                "ko.south_korea#holiday@group.v.calendar.google.com",
+                        },
+
+                        {
+                            url: "/api/calendar",
+                            failure: function () {
+                                alert("일정을 가져올 수 없습니다!");
+                            },
+                            color: "orange",
+                            textColor: "black", // a non-ajax option
+                        },
+                    ],
+                    dayMaxEvents: true,
+                    select: function (info) {
+                        console.log(info);
+                        Swal.fire({
+                            title: "일정 추가",
+                            html: `${info.startStr}~${info.endStr}<br><input id="swal-input1" class="swal2-input" placeholder="일정 제목"><input id="swal-input2" class="swal2-input" placeholder="일정 설명">`,
+                            inputAttributes: {
+                                autocapitalize: "off",
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: "추가",
+                            cancelButtonText: "취소",
+                            showLoaderOnConfirm: true,
+                            focusConfirm: false,
+                            preConfirm: async (input) => {
+                                let body = {
+                                    start: info.startStr,
+                                    end: info.endStr,
+                                    title: document.getElementById(
+                                        "swal-input1"
+                                    ).value,
+                                    description:
+                                        document.getElementById("swal-input2")
+                                            .value,
+                                };
+                                return await (
+                                    await fetch(`/api/calendar`, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type":
+                                                "application/x-www-form-urlencoded",
+                                        },
+                                        body: new URLSearchParams(body),
+                                    })
+                                ).json();
+                            },
+                            allowOutsideClick: () => !Swal.isLoading(),
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                calendar.addEvent({
+                                    ...result.value.event,
+                                    textColor: "black",
+                                    color: "orange",
+                                });
+                                toastr.success("일정 추가됨", "성공!");
+                            }
+                        });
+                    },
+                });
+                calendar.setOption("locale", "ko");
+                calendar.render();
+            });
+        </script>
+    </head>
+    <body>
+        <div id="calendar" style="height: 100vh"></div>
+    </body>
+</html>

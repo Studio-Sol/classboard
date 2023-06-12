@@ -16,7 +16,7 @@ function window_onresize() {
             $(e).text(i);
         });
         $("#school-grade-class").html(
-            `${school_name.replace("학교", "")} ${grade}-${class_}`
+            `${school_name.slice(0, -3)} ${grade}-${class_}`
         );
     }
 }
@@ -58,9 +58,12 @@ async function fetchMeal(date) {
             $("#meal").html("데이터 없음");
         } else {
             $("#meal").html("");
-            data.meal.forEach((d) => {
-                $("#meal").append(`<strong>${d.MMEAL_SC_NM}</strong><br>`);
-                $("#meal").append(d.DDISH_NM);
+            data.meal.forEach((d, i) => {
+                $("#meal").append(
+                    `<strong>${d.MMEAL_SC_NM}</strong><br>${d.DDISH_NM}${
+                        i + 1 < data.meal.length ? "<br><br>" : ""
+                    }`
+                );
             });
         }
 
@@ -77,11 +80,12 @@ async function fetchMeal(date) {
                     $("#meal").html("데이터 없음");
                 } else {
                     $("#meal").html("");
-                    data.meal.forEach((d) => {
+                    data.meal.forEach((d, i) => {
                         $("#meal").append(
-                            `<strong>${d.MMEAL_SC_NM}</strong><br>`
+                            `<strong>${d.MMEAL_SC_NM}</strong><br>${
+                                d.DDISH_NM
+                            }${i + 1 < data.meal.length ? "<br><br>" : ""}`
                         );
-                        $("#meal").append(d.DDISH_NM);
                     });
                 }
             } else {
@@ -288,13 +292,6 @@ function newPost() {
 
 window.onerror = (message, url, lineNumber) => {
     $("#error").addClass("show").show();
-    if (
-        message.includes("요청이 너무 빠릅니다! 잠시 후에 다시 시도해주세요.")
-    ) {
-        $("#error-message").html(message);
-        return;
-    }
-
     $("#error-message").html("문제가 보고되었습니다. <br>" + message);
     $.ajax({
         url: `/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,

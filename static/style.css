@@ -1,20 +1,15 @@
-@media (prefers-color-scheme: light) {
-    :root {
-        --bg: #f3f5f7;
-        --box-bg: #ffffff;
-        --text: #202124;
-        --hover: rgba(0, 0, 0, 0.1);
-        --link: #4e5cde;
-    }
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #181818;
-        --box-bg: #252525;
-        --text: #ffffff;
-        --hover: rgba(255, 255, 255, 0.1);
-        --link: #57acdc;
-    }
+:root {
+    --light-bg: #f3f5f7;
+    --light-box-bg: #ffffff;
+    --light-text: #202124;
+    --light-hover: rgba(0, 0, 0, 0.1);
+    --light-link: #4e5cde;
+
+    --dark-bg: #181818;
+    --dark-box-bg: #252525;
+    --dark-text: #ffffff;
+    --dark-hover: rgba(255, 255, 255, 0.1);
+    --dark-link: #57acdc;
 }
 
 @font-face {
@@ -26,11 +21,13 @@
 }
 
 * {
+    transition: background 0.6s;
     font-family: "ONE-Mobile-Regular", sans-serif;
     color: var(--text);
 }
 html,
 body {
+    transition: background 0.6s;
     height: 100%;
     margin: 0px;
     padding: 0px;
