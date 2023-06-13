@@ -1,6 +1,7 @@
-sessions/
-node_modules/
-logs/
-static/avatar/
-static/img/
-tmp/
+/sessions/
+/node_modules/
+/logs/
+/static/avatar/
+/static/img/
+/tmp/
+/dist/
