@@ -149,7 +149,10 @@
                             <i class="fa fa-arrow-left"></i>
                         </button>
                         <div>
-                            <h2 style="display: inline-block">
+                            <h2
+                                style="display: inline-block"
+                                id="timetable-title"
+                            >
                                 시간표 (<span id="timetable-date"></span>)
                             </h2>
                             <button
@@ -262,12 +265,12 @@
                                 justify-content: space-between;
                             "
                         >
-                            <a href="/notice" target="__blank">
+                            <a href="/notice" target="_blank">
                                 <h3><strong>공지사항</strong></h3>
                             </a>
                             <div>
                                 <% if (user.type == "teacher") { %>
-                                <a href="/new-notice" target="__blank">
+                                <a href="/new-notice" target="_blank">
                                     <button class="btn p-0" style="width: 2em">
                                         <i class="fa fa-pencil"></i>
                                     </button>
@@ -287,7 +290,7 @@
                         >
                             <a
                                 href="/post"
-                                target="__blank"
+                                target="_blank"
                                 style="width: fit-content"
                             >
                                 <h3
@@ -309,7 +312,7 @@
                         </div>
                         <ul id="metadata" class="list-group"></ul>
                     </div>
-                    <div class="row p-4 mt-4 shadow box">
+                    <div class="row p-4 mt-4 mb-4 shadow box">
                         <div
                             style="
                                 display: flex;
@@ -318,13 +321,14 @@
                         >
                             <a
                                 href="/calendar"
-                                target="__blank"
+                                target="_blank"
                                 style="width: fit-content"
                             >
                                 <h3
                                     style="
                                         display: inline-block;
                                         width: fit-content;
+                                        margin: 0px;
                                     "
                                 >
                                     <strong>캘린더</strong>

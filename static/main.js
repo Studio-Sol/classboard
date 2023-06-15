@@ -173,6 +173,9 @@ async function fetchTimeTable(fmonday, refresh) {
                     fmonday.slice(6)
             );
             var tmp2 = new Date(tmp.getTime() + 1000 * 60 * 60 * 24 * 4);
+            if (window.innerWidth < 800) {
+                $("#timetable-title").html("<span id='timetable-date'></span>");
+            }
             $("#timetable-date").text(
                 `${tmp.getMonth() + 1}.${tmp.getDate()} ~ ${
                     tmp2.getMonth() + 1

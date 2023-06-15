@@ -1,6 +1,6 @@
 var inspecting = false;
 var startAt = new Date().getMilliseconds();
-const serviceHost = "redirect.kro.kr";
+const serviceURL = "http://redirect.kro.kr";
 const allow_hosts = ["sol-studio.ga", "127.0.0.1", "redirect.kro.kr"];
 // Express
 import express, { Request, Response } from "express";
@@ -20,6 +20,7 @@ const neis = new Neis({
 
 // mongoDB
 import { MongoClient, ObjectId } from "mongodb";
+let client: MongoClient;
 
 // GOOGLE CLIENT
 import { OAuth2Client } from "google-auth-library";
@@ -76,7 +77,7 @@ function formatDate(d: string | Date) {
 
 function discord_alert(content: string) {
     request.post(
-        "https://discord.com/api/webhooks/1106460848492400720/7gEIOYmOCxhgYlskzbchlCwLpF-djIzlIuQBHPhudkcoT_fA1lxFWU5RCadCaDhv_o5v",
+        "https://discord.com/api/webhooks/1118913871965605940/ozv6Il_gOU5aMC5jEvDbZW9MgVLmJGZDXYMocHG1nJaH7aUT5XaD2SIxYCe27QdtJGXy",
         {
             form: {
                 username: "웹서버 알림",
@@ -90,7 +91,6 @@ function discord_alert(content: string) {
 
 // log
 async function log(payload: any) {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     payload.timestamp = new Date().getTime();
     await client.db("school").collection("log").insertOne(payload);
     discord_alert("LOG : " + JSON.stringify(payload));
@@ -121,7 +121,7 @@ app.use((req, res, next) => {
 var session = express_session({
     secret: "dhibzxubgfueolw",
     store: MongoStore.create({
-        mongoUrl: "mongodb://127.0.0.1:/",
+        mongoUrl: "mongodb://192.168.0.19:27017/",
         dbName: "school",
         collectionName: "session",
     }),
@@ -196,7 +196,6 @@ app.get("/", (req, res) => {
 
 // MAIN
 app.get("/main", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -237,7 +236,7 @@ app.get("/login", (req, res) => {
 
 app.get("/login/naver", (req, res) => {
     var client_id = "HbpEftfFEhhUEbMDUXf4";
-    var redirectURI = encodeURI(`http://${serviceHost}/login/callback/naver`);
+    var redirectURI = encodeURI(`${serviceURL}/login/callback/naver`);
     var state = Math.round(Math.random() * 1000);
     var url =
         "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=" +
@@ -275,7 +274,6 @@ app.get("/login/callback/google", async (req, res) => {
     const payload = ticket.getPayload();
     // const userid = payload['sub'];
 
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -306,32 +304,11 @@ app.get("/login/callback/google", async (req, res) => {
         });
     }
 });
-app.get("/test/login/teacher", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
-    var user = await client
-        .db("school")
-        .collection("user")
-        .findOne({ email: "cloud8862@naver.com", auth: "naver" });
-    req.session.user_id = user._id;
-    var next = req.cookies.next ?? "/";
-    res.clearCookie("next");
-    res.redirect(next);
-});
-app.get("/test/login/student", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
-    var user = await client
-        .db("school")
-        .collection("user")
-        .findOne({ email: "cloud8862@gmail.com", auth: "google" });
-    req.session.user_id = user._id;
-    var next = req.cookies.next ?? "/";
-    res.clearCookie("next");
-    res.redirect(next);
-});
+
 app.get("/login/callback/naver", async (req, res) => {
     var client_id = "HbpEftfFEhhUEbMDUXf4";
     var client_secret = "BXc89OVv2j";
-    var redirectURI = encodeURI(`http://${serviceHost}/login/callback/naver`);
+    var redirectURI = encodeURI(`${serviceURL}/login/callback/naver`);
     var api_url = "";
     var code = req.query.code;
     var state = req.query.state;
@@ -364,9 +341,6 @@ app.get("/login/callback/naver", async (req, res) => {
             };
             request.get(options2, async function (error2, response2, body2) {
                 if (!error2 && response2.statusCode == 200) {
-                    var client = await MongoClient.connect(
-                        "mongodb://127.0.0.1/"
-                    );
                     var payload = JSON.parse(body2).response;
                     var keys = Object.keys(payload);
                     if (
@@ -422,7 +396,6 @@ app.get("/login/callback/naver", async (req, res) => {
 });
 
 app.get("/login/type", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -435,7 +408,6 @@ app.get("/login/type", async (req, res) => {
 });
 
 app.get("/login/type/callback", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -468,8 +440,6 @@ app.get("/login/type/callback", async (req, res) => {
 });
 
 app.get("/register-class", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
-
     var user = await client
         .db("school")
         .collection("user")
@@ -482,8 +452,6 @@ app.get("/register-class", async (req, res) => {
 });
 
 app.post("/register-class", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
-
     var user = await client
         .db("school")
         .collection("user")
@@ -625,7 +593,6 @@ app.post("/register-class", async (req, res) => {
 });
 
 app.get("/invite", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -642,7 +609,6 @@ app.get("/invite", async (req, res) => {
 });
 
 app.get("/invite/:code", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -686,7 +652,6 @@ app.get("/logout", (req, res) => {
 
 // 선생님 페이지
 app.get("/teacher", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -709,7 +674,7 @@ app.get("/teacher", async (req, res) => {
         .collection("user")
         .find({ class: user.class, waiting: true, type: "student" })
         .toArray();
-    res.render("teacher/teacher.html", {
+    res.render("teacher.html", {
         classroom: classroom,
         user: user,
         students: students,
@@ -719,7 +684,6 @@ app.get("/teacher", async (req, res) => {
 
 // 소셜 기능
 app.get("/user/:id", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     try {
         new ObjectId(req.params.id);
     } catch {
@@ -753,7 +717,6 @@ app.get("/new-post", async (req, res) => {
 });
 
 app.get("/post", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -774,7 +737,6 @@ app.get("/post", async (req, res) => {
 });
 
 app.get("/post/:id", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -811,11 +773,11 @@ app.get("/post/:id", async (req, res) => {
         data: data,
         author: author,
         user: { name: user.name, avatar: user.avatar },
+        serviceURL: serviceURL,
     });
 });
 
 app.get("/new-notice", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -836,7 +798,6 @@ app.get("/new-notice", async (req, res) => {
 });
 
 app.get("/notice", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -857,7 +818,6 @@ app.get("/notice", async (req, res) => {
 });
 
 app.get("/notice/:id", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -955,6 +915,7 @@ app.get("/notice/:id", async (req, res) => {
                 date.getMinutes();
             return formatted_date;
         },
+        serviceURL: serviceURL,
     });
 });
 
@@ -963,7 +924,6 @@ app.get("/calendar", (req, res) => {
 });
 // API
 app.post("/api/calendar", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -983,7 +943,6 @@ app.post("/api/calendar", async (req, res) => {
     });
 });
 app.get("/api/calendar", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1002,7 +961,6 @@ app.get("/api/calendar", async (req, res) => {
     res.json(result);
 });
 app.get("/api/meal", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1036,7 +994,6 @@ app.get("/api/meal", async (req, res) => {
 });
 
 app.post("/api/post", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1059,7 +1016,6 @@ app.post("/api/post", async (req, res) => {
 });
 
 app.post("/api/notice", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1100,7 +1056,6 @@ app.post("/api/notice", async (req, res) => {
 });
 
 app.post("/api/notice/question/reply", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1175,12 +1130,34 @@ app.post("/api/notice/question/reply", async (req, res) => {
                 });
             }
         } else if (question.type == "text") {
-            await client.db("school").collection("reply").insertOne({
-                user: user._id,
-                id: req.body.id,
-                answer: req.body.answer,
-                timestamp: new Date().getTime(),
-            });
+            if (
+                !(await client.db("school").collection("reply").findOne({
+                    id: req.body.id,
+                    user: user._id,
+                }))
+            )
+                await client.db("school").collection("reply").insertOne({
+                    user: user._id,
+                    id: req.body.id,
+                    answer: req.body.answer,
+                    timestamp: new Date().getTime(),
+                });
+            else
+                await client
+                    .db("school")
+                    .collection("reply")
+                    .updateOne(
+                        {
+                            user: user._id,
+                            id: req.body.id,
+                        },
+                        {
+                            $set: {
+                                answer: req.body.answer,
+                                timestamp: new Date().getTime(),
+                            },
+                        }
+                    );
         }
         res.json({ success: true });
     } else {
@@ -1190,7 +1167,6 @@ app.post("/api/notice/question/reply", async (req, res) => {
 
 app.get("/api/post", async (req, res) => {
     try {
-        var client = await MongoClient.connect("mongodb://127.0.0.1/");
         var user = await client
             .db("school")
             .collection("user")
@@ -1246,7 +1222,6 @@ app.get("/api/post", async (req, res) => {
 
 app.get("/api/notice", async (req, res) => {
     try {
-        var client = await MongoClient.connect("mongodb://127.0.0.1/");
         var user = await client
             .db("school")
             .collection("user")
@@ -1320,7 +1295,7 @@ app.get("/api/timetable", async (req, res) => {
         ).getTime() +
             1000 * 60 * 60 * 24 * 5
     );
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
+
     var user = await client
         .db("school")
         .collection("user")
@@ -1473,7 +1448,6 @@ app.get("/api/timetable", async (req, res) => {
 });
 
 app.get("/api/teacher/student.ban", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1513,7 +1487,6 @@ app.get("/api/teacher/student.ban", async (req, res) => {
 });
 
 app.get("/api/teacher/join.accept", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1562,7 +1535,6 @@ app.get("/api/teacher/join.accept", async (req, res) => {
 });
 
 app.get("/api/teacher/join.reject", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1603,7 +1575,6 @@ app.get("/api/teacher/join.reject", async (req, res) => {
 });
 
 app.get("/api/comment", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     if (isNaN(parseInt(req.query.skip as string))) {
         res.json({ success: false });
         return;
@@ -1652,7 +1623,6 @@ app.get("/api/comment", async (req, res) => {
 });
 
 app.post("/api/comment", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1735,7 +1705,6 @@ app.get("/jobs", (req, res) => {
 });
 
 app.get("/delete-user", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1760,7 +1729,6 @@ app.get("/delete-user", async (req, res) => {
 app.post("/delete-user", async (req, res) => {
     var payload = await jwt.verify(req.body.token);
     if (payload.url == "/delete-user" && payload.user == req.session.user_id) {
-        var client = await MongoClient.connect("mongodb://127.0.0.1/");
         var user = await client
             .db("school")
             .collection("user")
@@ -1770,11 +1738,12 @@ app.post("/delete-user", async (req, res) => {
             .db("school")
             .collection("user")
             .deleteOne({ _id: new ObjectId(req.session.user_id) });
-        req.session.destroy();
+
         log({
             user: req.session.user_id,
             event_name: "delete user",
         });
+        req.session.destroy();
         res.json({ success: true });
     } else {
         res.json({ success: false });
@@ -1786,7 +1755,6 @@ app.get("/contact", (req, res) => {
 });
 
 app.get("/redirect", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1798,7 +1766,6 @@ app.get("/redirect", async (req, res) => {
 });
 
 app.get("/setting", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     var user = await client
         .db("school")
         .collection("user")
@@ -1807,7 +1774,6 @@ app.get("/setting", async (req, res) => {
 });
 
 app.post("/setting/save", async (req, res) => {
-    var client = await MongoClient.connect("mongodb://127.0.0.1/");
     if (req.files) {
         var uid = UID.sync(16);
         var url = `/static/avatar/${req.session.user_id}-${uid}.webp`;
@@ -1882,11 +1848,14 @@ app.use(function (err: any, req: Request, res: Response, next: NextFunction) {
 });
 
 // RUN
-httpServer.listen(3000, "0.0.0.0", () => {
-    console.log("listening...");
-    discord_alert(
-        '재시작 알림 : `{success: true, time: "' +
-            (new Date().getMilliseconds() - startAt) +
-            'ms"}`'
-    );
-});
+(async () => {
+    client = await MongoClient.connect("mongodb://192.168.0.19:27017/");
+    httpServer.listen(3000, "0.0.0.0", () => {
+        console.log("listening...");
+        discord_alert(
+            '재시작 알림 : `{success: true, time: "' +
+                (new Date().getMilliseconds() - startAt) +
+                'ms"}`'
+        );
+    });
+})();
