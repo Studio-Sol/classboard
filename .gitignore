@@ -1,7 +1,6 @@
-/sessions/
 /node_modules/
 /logs/
-/static/avatar/
-/static/img/
-/tmp/
+/static/avatar/*.webp
+/static/img/*.webp
 /dist/
+.env
