@@ -29,7 +29,6 @@ export default async ({
             return '"' + req.header("User-Agent") + '"';
         }
     });
-
     app.use((req, res, next) => {
         if (allow_hosts.includes(req.hostname)) next();
         else res.sendStatus(403);

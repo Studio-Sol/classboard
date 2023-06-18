@@ -3,6 +3,7 @@ import express from "express";
 import request from "request";
 import { OAuth2Client } from "google-auth-library";
 export default (app: express.Application, serviceURL, client) => {
+    console.log("[AUTH] setting up..");
     // SIGNUP and LOGIN and LOGOUT
     app.get("/login", (req, res) => {
         res.render("login/login.html");

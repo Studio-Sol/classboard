@@ -1,36 +1,40 @@
+/**
+ *
+ * @param {string} q
+ * @returns HTMLElement[] | HTMLElement
+ */
+function $(q) {
+    var result = document.querySelectorAll(q);
+    return result.length == 1 ? result[0] : result;
+}
 // BASIC PAGE MAKE
 function window_onresize() {
     if (window.innerWidth > 1200) {
-        var i = 0;
-        Array.from($("th[scope='row']")).forEach((e) => {
-            i++;
-            $(e).text(i + "교시");
-        });
-        $("#school-grade-class").html(
-            `${school_name} ${grade}학년 ${class_}반`
-        );
+        $(
+            "#school-grade-class"
+        ).innerHTML = `${school_name} ${grade}학년 ${class_}반`;
     } else {
-        var i = 0;
-        Array.from($("th[scope='row']")).forEach((e) => {
-            i++;
-            $(e).text(i);
-        });
-        $("#school-grade-class").html(
-            `${school_name.slice(0, -3)} ${grade}-${class_}`
-        );
+        $("#school-grade-class").innerHTML = `${school_name.slice(
+            0,
+            -3
+        )} ${grade}-${class_}`;
     }
 }
 window_onresize();
 window.onresize = window_onresize;
 
 // FETCH WITH USER INTERACTION
-$("td.class, th.dayofweek").on("click", (event) => {
-    $(".active").removeClass("active");
-    $(`*[data-date='${event.target.attributes["data-date"].value}']`).addClass(
-        "active"
-    );
-    var date = formatDate(parseInt(event.target.attributes["data-date"].value));
-    fetchMeal(date);
+$("td.class, th.dayofweek").forEach((e) => {
+    e.addEventListener("click", (event) => {
+        $(".active").removeClass("active");
+        $(
+            `*[data-date='${event.target.attributes["data-date"].value}']`
+        ).addClass("active");
+        var date = formatDate(
+            parseInt(event.target.attributes["data-date"].value)
+        );
+        fetchMeal(date);
+    });
 });
 
 // Date to NeisDate
@@ -45,21 +49,22 @@ function formatDate(date) {
 
 // FETCH FUNC
 async function fetchMeal(date) {
-    $("#meal").html("로드중...");
+    $("#meal").innerHTML = "로드중...";
     var dateString =
         date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6);
-    $("#meal-date").html(
-        `${dateString}(${"일월화수목금토"[new Date(dateString).getDay()]})`
-    );
+    $("#meal-date").innerHTML = `${dateString}(${
+        "일월화수목금토"[new Date(dateString).getDay()]
+    })`;
 
     if (Object.keys(cache.meal).indexOf(date) != -1) {
         var data = cache.meal[date];
         if (data.meal.length == 0) {
-            $("#meal").html("데이터 없음");
+            $("#meal").innerHTML = "데이터 없음";
         } else {
-            $("#meal").html("");
+            $("#meal").innerHTML = "";
             data.meal.forEach((d, i) => {
-                $("#meal").append(
+                $("#meal").insertAdjacentHTML(
+                    "beforeend",
                     `<strong>${d.MMEAL_SC_NM}</strong><br>${d.DDISH_NM}${
                         i + 1 < data.meal.length ? "<br><br>" : ""
                     }`
@@ -70,18 +75,20 @@ async function fetchMeal(date) {
         return;
     }
 
-    $.ajax({
-        url: "/api/meal?date=" + date,
+    fetch("/api/meal?date=" + date, {
         method: "GET",
-        success: (data) => {
+    })
+        .then((d) => d.json())
+        .then((data) => {
             if (data.success) {
                 cache.meal[date] = data;
                 if (data.meal.length == 0) {
-                    $("#meal").html("데이터 없음");
+                    $("#meal").innerHTML = "데이터 없음";
                 } else {
-                    $("#meal").html("");
+                    $("#meal").innerHTML = "";
                     data.meal.forEach((d, i) => {
-                        $("#meal").append(
+                        $("#meal").insertAdjacentHTML(
+                            "beforeend",
                             `<strong>${d.MMEAL_SC_NM}</strong><br>${
                                 d.DDISH_NM
                             }${i + 1 < data.meal.length ? "<br><br>" : ""}`
@@ -89,81 +96,89 @@ async function fetchMeal(date) {
                     });
                 }
             } else {
-                $("#meal").html("Error");
+                $("#meal").innerHTML = "Error";
                 throw Error(
                     data.message ?? "fetchMeal:success->false, no message"
                 );
             }
-        },
-    });
+        });
 }
 
 async function fetchpost() {
-    $("#metadata").html("로드중...");
+    $("#posts").innerHTML = "로드중...";
 
-    $.ajax({
-        url: `/api/post?skip=0&_=${Math.random()}`,
+    fetch(`/api/post?skip=0&_=${Math.random()}`, {
         method: "GET",
-        success: (data) => {
+    })
+        .then((d) => d.json())
+        .then((data) => {
             if (data.success) {
-                $("#metadata").html("");
+                $("#posts").innerHTML = "";
                 for (const d of data.post) {
-                    $("#metadata").append(
+                    $("#posts").insertAdjacentHTML(
+                        "beforeend",
                         `<li class="list-group-item" onclick="openPost('${d.id}')">${d.title}</li>`
                     );
                 }
                 if (data.post.length == 0) {
-                    $("#metadata").append(
-                        `<strong class="list-group-item">게시글 없음</strong>`
+                    $("#posts").insertAdjacentHTML(
+                        "beforeend",
+                        `<li class="list-group-item"><strong style="color: black;">게시글 없음</strong></li>`
                     );
                 }
             } else {
-                $("#metadata").html("오류가 발생했습니다.");
+                $("#posts").insertAdjacentHTML(
+                    "beforeend",
+                    `<li class="list-group-item"><strong style="color: black;">오류 발생</strong></li>`
+                );
                 throw Error(
                     data.message ?? "fetchpost:success->false, no message"
                 );
             }
-        },
-    });
+        });
 }
 
 async function fetchNotice() {
-    $("#notice").html("로드중...");
+    $("#notice").innerHTML = "로드중...";
 
-    $.ajax({
-        url: `/api/notice?_=${Math.random()}&skip=0`,
+    fetch(`/api/notice?_=${Math.random()}&skip=0`, {
         method: "GET",
-        success: (data) => {
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
             if (data.success) {
-                $("#notice").html("");
+                $("#notice").innerHTML = "";
                 for (const d of data.notice) {
-                    $("#notice").append(
+                    $("#notice").insertAdjacentHTML(
+                        "beforeend",
                         `<li class="list-group-item" onclick="openNotice('${d.id}')">${d.title}</li>`
                     );
                 }
                 if (data.notice.length == 0) {
-                    $("#notice").append(
+                    $("#notice").insertAdjacentHTML(
+                        "beforeend",
                         `<strong class="list-group-item">공지 없음</strong>`
                     );
                 }
             } else {
-                $("#notice").html("오류가 발생했습니다.");
+                $("#notice").innerHTML = "오류가 발생했습니다.";
                 throw Error(
                     data.message ?? "fetchNotice:success->false, no message"
                 );
             }
-        },
-    });
+        });
 }
 
 async function fetchTimeTable(fmonday, refresh) {
-    await $.ajax({
-        url: `/api/timetable?monday=${fmonday}&refresh=${refresh ?? ""}`,
+    await fetch(`/api/timetable?monday=${fmonday}&refresh=${refresh ?? ""}`, {
         method: "GET",
-        success: (data) => {
-            $("#loading").addClass("fadeout");
+    })
+        .then((d) => d.json())
+        .then((data) => {
+            $("#loading").classList += "fadeout";
             setTimeout(() => {
-                $("#loading").hide();
+                $("#loading").style.display = "none";
             }, 500);
             var tmp = new Date(
                 fmonday.slice(0, 4) +
@@ -174,13 +189,12 @@ async function fetchTimeTable(fmonday, refresh) {
             );
             var tmp2 = new Date(tmp.getTime() + 1000 * 60 * 60 * 24 * 4);
             if (window.innerWidth < 800) {
-                $("#timetable-title").html("<span id='timetable-date'></span>");
+                $("#timetable-title").innerHTML =
+                    "<span id='timetable-date'></span>";
             }
-            $("#timetable-date").text(
-                `${tmp.getMonth() + 1}.${tmp.getDate()} ~ ${
-                    tmp2.getMonth() + 1
-                }.${tmp2.getDate()}`
-            );
+            $("#timetable-date").textContent = `${
+                tmp.getMonth() + 1
+            }.${tmp.getDate()} ~ ${tmp2.getMonth() + 1}.${tmp2.getDate()}`;
             if (data.success) {
                 var lastDate = "";
                 var tmp = 0;
@@ -193,7 +207,7 @@ async function fetchTimeTable(fmonday, refresh) {
                         `tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${
                             tmp + 1
                         })`
-                    ).html(`${b.ITRT_CNTNT.replace("-", "")}`);
+                    ).innerHTML = `${b.ITRT_CNTNT.replace("-", "")}`;
                 });
                 for (var i = 0; i < 5; i++) {
                     $(`thead > tr > th:nth-child(${i + 2})`).attr(
@@ -234,8 +248,7 @@ async function fetchTimeTable(fmonday, refresh) {
                     data.message ?? "fetchTimetable:success->false, no message"
                 );
             }
-        },
-    });
+        });
 }
 
 // FETCH CACHE STORAGE
@@ -295,8 +308,8 @@ function newPost() {
 
 window.onerror = (message, url, lineNumber) => {
     $("#error").addClass("show").show();
-    $("#error-message").html("문제가 보고되었습니다. <br>" + message);
-    $.ajax({
+    $("#error-message").innerHTML = "문제가 보고되었습니다. <br>" + message;
+    fetch({
         url: `/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
         method: "GET",
     });

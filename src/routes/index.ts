@@ -4,6 +4,7 @@ import { MongoClient, ObjectId } from "mongodb";
 // JWT
 import jwt from "../modules/jwt";
 import Neis from "@my-school.info/neis-api";
+import auth from "../api/auth";
 export default (
     app: express.Application,
     client: MongoClient,
@@ -41,7 +42,7 @@ export default (
     app.get("/", (req, res) => {
         res.render("index.html", { user_id: req.session.user_id ?? false });
     });
-
+    auth(app, serviceURL, client);
     // MAIN
     app.get("/main", async (req, res) => {
         var user = await client
