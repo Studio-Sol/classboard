@@ -1,16 +1,11 @@
 // ADSENSE
 var lazyadsense = !1;
 window.addEventListener("load", function () {
-    var e = document.createElement("script");
-    (e.type = "text/javascript"),
-        (e.async = !0),
-        (e.crossorigin = "anonymous"),
-        (e.src =
-            "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410");
-    var a = document.getElementsByTagName("script")[0];
-    a.parentNode.insertBefore(e, a);
-
-    document.head.innerHTML += `<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZR1ZER2Z0L"></script><script>  window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'G-ZR1ZER2Z0L');</script>`;
+    document.head.insertAdjacentHTML(
+        "beforeend",
+        `<script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" async crossorigin="anonymous"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZR1ZER2Z0L"></script><script>  window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'G-ZR1ZER2Z0L');</script>`
+    );
 });
 // THEME
 function switchTheme() {

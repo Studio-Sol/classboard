@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
-        <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410"
-            crossorigin="anonymous"
-        ></script>
         <style>
             td.class:hover,
             th.dayofweek:hover {
@@ -394,7 +389,7 @@
                         <button
                             type="button"
                             class="btn btn-primary"
-                            onclick="$('#overlay').hide();$('#error').removeClass('show').hide();"
+                            onclick="$('#overlay').style.display = 'none';$('#error').classList.remove('show');$('#error').style.display='none'"
                         >
                             닫기
                         </button>
@@ -409,7 +404,6 @@
             var school_name = "<%= school_name %>"
         </script>
 
-        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script src="/static/main.js"></script>
     </body>
 </html>

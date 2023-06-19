@@ -1,7 +1,7 @@
 /**
- *
+ * @author sol
  * @param {string} q
- * @returns HTMLElement[] | HTMLElement
+ * @returns Element[] | Element
  */
 function $(q) {
     var result = document.querySelectorAll(q);
@@ -26,13 +26,9 @@ window.onresize = window_onresize;
 // FETCH WITH USER INTERACTION
 $("td.class, th.dayofweek").forEach((e) => {
     e.addEventListener("click", (event) => {
-        $(".active").removeClass("active");
-        $(
-            `*[data-date='${event.target.attributes["data-date"].value}']`
-        ).addClass("active");
-        var date = formatDate(
-            parseInt(event.target.attributes["data-date"].value)
-        );
+        $(".active")?.classList?.remove("active");
+        event.target.classList.add("active");
+        var date = formatDate(parseInt(event.target.dataset.date));
         fetchMeal(date);
     });
 });
@@ -176,7 +172,7 @@ async function fetchTimeTable(fmonday, refresh) {
     })
         .then((d) => d.json())
         .then((data) => {
-            $("#loading").classList += "fadeout";
+            $("#loading").classList.add("fadeout");
             setTimeout(() => {
                 $("#loading").style.display = "none";
             }, 500);
@@ -210,8 +206,7 @@ async function fetchTimeTable(fmonday, refresh) {
                     ).innerHTML = `${b.ITRT_CNTNT.replace("-", "")}`;
                 });
                 for (var i = 0; i < 5; i++) {
-                    $(`thead > tr > th:nth-child(${i + 2})`).attr(
-                        "data-date",
+                    $(`thead > tr > th:nth-child(${i + 2})`).dataset.date =
                         new Date(
                             fmonday.slice(0, 4) +
                                 "-" +
@@ -219,16 +214,14 @@ async function fetchTimeTable(fmonday, refresh) {
                                 "-" +
                                 fmonday.slice(6)
                         ).getTime() +
-                            1000 * 60 * 60 * 24 * i
-                    );
+                        1000 * 60 * 60 * 24 * i;
 
                     for (var j = 0; j < 7; j++) {
                         $(
                             `tbody > tr:nth-child(${j + 1}) > td:nth-child(${
                                 i + 2
                             })`
-                        ).attr(
-                            "data-date",
+                        ).dataset.date =
                             new Date(
                                 fmonday.slice(0, 4) +
                                     "-" +
@@ -236,16 +229,18 @@ async function fetchTimeTable(fmonday, refresh) {
                                     "-" +
                                     fmonday.slice(6)
                             ).getTime() +
-                                1000 * 60 * 60 * 24 * i
-                        );
+                            1000 * 60 * 60 * 24 * i;
                     }
                 }
                 if (refresh) {
                     alert("새로고침을 완료했습니다.");
                 }
             } else {
-                throw Error(
-                    data.message ?? "fetchTimetable:success->false, no message"
+                window.onerror(
+                    new Error(
+                        data.message ??
+                            "fetchTimetable:success->false, no message"
+                    )
                 );
             }
         });
@@ -307,11 +302,14 @@ function newPost() {
 }
 
 window.onerror = (message, url, lineNumber) => {
-    $("#error").addClass("show").show();
+    $("#error").classList.add("show");
+    $("#error").style.display = "block";
     $("#error-message").innerHTML = "문제가 보고되었습니다. <br>" + message;
-    fetch({
-        url: `/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
-        method: "GET",
-    });
+    fetch(
+        `/error?message=${message}&url=${url}&line=${lineNumber}&page=${location.href}`,
+        {
+            method: "GET",
+        }
+    );
     return true;
 };
