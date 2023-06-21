@@ -5,11 +5,7 @@ import http from "http";
 (async () => {
     const app = express();
     const httpServer = new http.Server(app);
-    const allow_hosts = [
-        "https://classboard.kr",
-        "redirect.kro.kr",
-        "127.0.0.1",
-    ];
+    const allow_hosts = ["classboard.kr", "redirect.kro.kr", "127.0.0.1"];
     const inspecting = false;
     const serviceURL = "https://classboard.kr";
 
