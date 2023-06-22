@@ -18,8 +18,8 @@ export default async (
     let neis = await neisLoader();
     console.log("[LOADER] Neis Intialized");
 
-    const mongoConnection = await mongooseLoader();
-    console.log("[LOADER] MongoDB Intialized");
+    await mongooseLoader();
+    console.log("[LOADER] Mongoose Intialized");
 
     const { sessionCounter } = pm2();
 
@@ -31,8 +31,8 @@ export default async (
 
     console.log("[LOADER] Express Intialized");
 
-    await api(expressApp, mongoConnection, neis, serviceURL);
+    await api(expressApp, neis, serviceURL);
     console.log("[LOADER] API Intialized");
 
-    cron(mongoConnection, sessionCounter);
+    cron(sessionCounter);
 };

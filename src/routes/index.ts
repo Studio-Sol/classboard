@@ -5,12 +5,12 @@ import { MongoClient, ObjectId } from "mongodb";
 import jwt from "../modules/jwt";
 import Neis from "@my-school.info/neis-api";
 import auth from "../api/auth";
-export default (
-    app: express.Application,
-    client: MongoClient,
-    neis: Neis,
-    serviceURL
-) => {
+import Class from "../models/class.entity";
+import User from "../models/user.entity";
+import Post from "../models/post.entity";
+import Notice from "../models/notice.entity";
+import Reply from "../models/reply.entity";
+export default (app: express.Application, neis: Neis, serviceURL) => {
     // UTILS
     function getMondayDate(paramDate: Date) {
         paramDate.setUTCHours(0, 0, 0, 0);
@@ -42,19 +42,15 @@ export default (
     app.get("/", (req, res) => {
         res.render("index.html", { user_id: req.session.user_id ?? false });
     });
-    auth(app, serviceURL, client);
+    auth(app, serviceURL);
     // MAIN
     app.get("/main", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({
-                _id: new ObjectId(user.class),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({
+            _id: user.class,
+        });
         if (user.waiting) {
             res.render("wait.html", { waiting: user.class });
         } else if (user.class == null) {
@@ -78,10 +74,9 @@ export default (
     });
 
     app.get("/register-class", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher" || user.class != null) {
             res.redirect("/");
             return;
@@ -90,10 +85,9 @@ export default (
     });
 
     app.post("/register-class", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
@@ -169,7 +163,7 @@ export default (
             return;
         }
         var ay = classroom.AY;
-        var tmp = await client.db("school").collection("class").findOne({
+        var tmp = await Class.findOne({
             "school.SD_SCHUL_CODE": school.SD_SCHUL_CODE,
             "school.ATPT_OFCDC_SC_CODE": school.ATPT_OFCDC_SC_CODE,
             "school.SCHUL_NM": school.SCHUL_NM,
@@ -188,38 +182,30 @@ export default (
             res.redirect("/register-class?error=alreadyexist");
             return;
         }
-        var i = await client
-            .db("school")
-            .collection("class")
-            .insertOne({
-                school: {
-                    SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-                    ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-                    SCHUL_NM: school.SCHUL_NM,
+        var i = await new Class({
+            school: {
+                SD_SCHUL_CODE: school.SD_SCHUL_CODE,
+                ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
+                SCHUL_NM: school.SCHUL_NM,
+            },
+            class: {
+                MADE: user._id,
+                GRADE: classroom.GRADE,
+                CLASS_NM: classroom.CLASS_NM,
+            },
+            ay: ay,
+            invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join(""),
+        }).save();
+        await User.updateOne(
+            {
+                _id: new ObjectId(req.session.user_id),
+            },
+            {
+                $set: {
+                    class: i._id,
                 },
-                class: {
-                    MADE: user._id,
-                    GRADE: classroom.GRADE,
-                    CLASS_NM: classroom.CLASS_NM,
-                },
-                ay: ay,
-                invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join(
-                    ""
-                ),
-            });
-        await client
-            .db("school")
-            .collection("user")
-            .updateOne(
-                {
-                    _id: new ObjectId(req.session.user_id),
-                },
-                {
-                    $set: {
-                        class: i.insertedId,
-                    },
-                }
-            );
+            }
+        );
         if (req.body.select_school) {
             res.json({ success: true, redirect: "/main" });
             return;
@@ -228,10 +214,9 @@ export default (
     });
 
     app.get("/invite", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.class) {
             res.redirect("/");
             return;
@@ -244,10 +229,9 @@ export default (
     });
 
     app.get("/invite/:code", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.class != null) {
             res.redirect("/");
             return;
@@ -256,20 +240,14 @@ export default (
             res.redirect("/");
             return;
         }
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({ invite: req.params.code });
+        var classroom = await Class.findOne({ invite: req.params.code });
 
         if (classroom) {
-            client
-                .db("school")
-                .collection("user")
-                .updateOne(
-                    { _id: new ObjectId(req.session.user_id) },
-                    { $set: { class: classroom._id, waiting: true } }
-                );
-            res.redirect("/");
+            await User.updateOne(
+                { _id: new ObjectId(req.session.user_id) },
+                { $set: { class: classroom._id, waiting: true } }
+            );
+            res.redirect("/main");
         } else {
             res.redirect("/invite?error=noinvite");
         }
@@ -282,28 +260,24 @@ export default (
 
     // 선생님 페이지
     app.get("/teacher", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({ _id: new ObjectId(user.class) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({ _id: user.class });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
         }
-        var students = await client
-            .db("school")
-            .collection("user")
-            .find({ class: user.class, waiting: false, type: "student" })
-            .toArray();
-        var join_request = await client
-            .db("school")
-            .collection("user")
-            .find({ class: user.class, waiting: true, type: "student" })
-            .toArray();
+        var students = await User.find({
+            class: user.class,
+            waiting: false,
+            type: "student",
+        }).exec();
+        var join_request = await User.find({
+            class: user.class,
+            waiting: true,
+            type: "student",
+        }).exec();
         res.render("teacher.html", {
             classroom: classroom,
             user: user,
@@ -320,18 +294,12 @@ export default (
             res.sendStatus(404);
             return;
         }
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.params.id) });
+        var user = await User.findOne({ _id: new ObjectId(req.params.id) });
         if (!user) {
             res.sendStatus(404);
             return;
         }
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({ _id: new ObjectId(user.class) });
+        var classroom = await Class.findOne({ _id: user.class });
         res.render("user.html", { user: user, classroom: classroom });
     });
 
@@ -347,18 +315,12 @@ export default (
     });
 
     app.get("/post", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({
-                _id: new ObjectId(user.class),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({
+            _id: user.class,
+        });
         res.render("post_list.html", {
             grade: classroom.class.GRADE,
             classroom: classroom.class.CLASS_NM,
@@ -367,38 +329,29 @@ export default (
     });
 
     app.get("/post/:id", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         try {
             new ObjectId(req.params.id);
         } catch {
             res.sendStatus(404);
             return;
         }
-        var data = await client
-            .db("school")
-            .collection("post")
-            .findOne({
-                class: user.class,
-                _id: new ObjectId(req.params.id),
-            });
+        var data = await Post.findOne({
+            class: user.class,
+            _id: new ObjectId(req.params.id),
+        });
         if (data == null) {
             res.sendStatus(404);
             return;
         }
-        var author = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(data.author),
-            });
+        var author = await User.findOne({
+            _id: new ObjectId(data.author),
+        });
         data.content = data.content
-            .replaceAll("<script", "&lt;script")
-            .replaceAll("</script>", "&lt;/script&gt;");
+            .replace(/<script/gi, "&lt;script")
+            .replace(/<\/script/gi, "&lt;/script&gt;");
         res.render("post.html", {
             data: data,
             author: author,
@@ -408,12 +361,9 @@ export default (
     });
 
     app.get("/new-notice", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
@@ -428,18 +378,12 @@ export default (
     });
 
     app.get("/notice", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({
-                _id: new ObjectId(user.class),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({
+            _id: user.class,
+        });
         res.render("notice_list.html", {
             grade: classroom.class.GRADE,
             classroom: classroom.class.CLASS_NM,
@@ -448,12 +392,9 @@ export default (
     });
 
     app.get("/notice/:id", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         try {
             new ObjectId(req.params.id);
         } catch {
@@ -461,13 +402,10 @@ export default (
             return;
         }
 
-        var data = await client
-            .db("school")
-            .collection("notice")
-            .findOne({
-                class: user.class,
-                _id: new ObjectId(req.params.id),
-            });
+        var data = await Notice.findOne({
+            class: user.class,
+            _id: new ObjectId(req.params.id),
+        });
         if (!data) {
             res.sendStatus(404);
             return;
@@ -475,13 +413,9 @@ export default (
         if (data.question) {
             let raw = [];
             if (data.question.type == "select") {
-                raw = await client
-                    .db("school")
-                    .collection("reply")
-                    .find({
-                        id: String(data._id),
-                    })
-                    .toArray();
+                raw = await Reply.find({
+                    id: String(data._id),
+                }).exec();
                 var items = {};
                 for (const r of raw) {
                     if (Object.keys(items).includes(r.answer)) {
@@ -492,13 +426,9 @@ export default (
                 }
             } else {
                 if (user.type == "teacher") {
-                    raw = await client
-                        .db("school")
-                        .collection("reply")
-                        .find({
-                            id: String(data._id),
-                        })
-                        .toArray();
+                    raw = await Reply.find({
+                        id: String(data._id),
+                    }).exec();
                 }
             }
             if (user.type == "teacher") {
@@ -506,22 +436,16 @@ export default (
                 for (const r of raw) {
                     replies.push({
                         timestamp: r.timestamp,
-                        user: await client
-                            .db("school")
-                            .collection("user")
-                            .findOne({ _id: new ObjectId(r.user) }),
+                        user: await User.findOne({ _id: new ObjectId(r.user) }),
                         answer: r.answer,
                     });
                 }
             }
         }
 
-        var author = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(data.author),
-            });
+        var author = await User.findOne({
+            _id: data.author,
+        });
         if (data == null) {
             res.sendStatus(404);
             return;

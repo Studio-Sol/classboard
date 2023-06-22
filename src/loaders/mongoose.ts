@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { connect } from "mongoose";
 export default async () => {
-    return await MongoClient.connect(process.env.MONGO_URL);
+    await connect(`${process.env.MONGO_URL}/school`);
 };

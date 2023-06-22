@@ -1,8 +1,9 @@
-import { ObjectId } from "mongodb";
 import express from "express";
 import request from "request";
 import { OAuth2Client } from "google-auth-library";
-export default (app: express.Application, serviceURL, client) => {
+import User from "../models/user.entity";
+import { ObjectId } from "bson";
+export default (app: express.Application, serviceURL) => {
     console.log("[AUTH] setting up..");
     // SIGNUP and LOGIN and LOGOUT
     app.get("/login", (req, res) => {
@@ -49,17 +50,14 @@ export default (app: express.Application, serviceURL, client) => {
         const payload = ticket.getPayload();
         // const userid = payload['sub'];
 
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ email: payload.email, auth: "google" });
+        var user = await user.findOne({ email: payload.email, auth: "google" });
         if (user != null) {
             req.session.user_id = user._id;
             var next = req.cookies.next ?? "/";
             res.clearCookie("next");
             res.redirect(next);
         } else {
-            let user = await client.db("school").collection("user").insertOne({
+            let user = await new User({
                 type: null,
                 auth: "google",
                 email: payload.email,
@@ -68,8 +66,8 @@ export default (app: express.Application, serviceURL, client) => {
                 class: null,
                 waiting: false,
                 signup_at: new Date().getTime(),
-            });
-            req.session.user_id = user.insertedId;
+            }).save();
+            req.session.user_id = user._id;
             req.session.save(() => {
                 res.redirect("/login/type");
             });
@@ -126,33 +124,27 @@ export default (app: express.Application, serviceURL, client) => {
                                 res.redirect("/login/naver?error=3");
                                 return;
                             }
-                            var user = await client
-                                .db("school")
-                                .collection("user")
-                                .findOne({
-                                    email: payload.email,
-                                    auth: "naver",
-                                });
+                            var user = await User.findOne({
+                                email: payload.email,
+                                auth: "naver",
+                            });
                             if (user != null) {
                                 req.session.user_id = user._id;
                                 var next = req.cookies.next ?? "/";
                                 res.clearCookie("next");
                                 res.redirect(next);
                             } else {
-                                let user = await client
-                                    .db("school")
-                                    .collection("user")
-                                    .insertOne({
-                                        type: null,
-                                        auth: "naver",
-                                        email: payload.email,
-                                        name: payload.name,
-                                        avatar: payload.profile_image,
-                                        class: null,
-                                        waiting: false,
-                                        signup_at: new Date().getTime(),
-                                    });
-                                req.session.user_id = user.insertedId;
+                                let user = await new User({
+                                    type: null,
+                                    auth: "naver",
+                                    email: payload.email,
+                                    name: payload.name,
+                                    avatar: payload.profile_image,
+                                    class: null,
+                                    waiting: false,
+                                    signup_at: new Date().getTime(),
+                                }).save();
+                                req.session.user_id = user._id;
                                 req.session.save(() => {
                                     res.redirect("/login/type");
                                 });
@@ -171,10 +163,9 @@ export default (app: express.Application, serviceURL, client) => {
     });
 
     app.get("/login/type", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.class != null) {
             res.redirect("/");
         } else {
@@ -183,28 +174,21 @@ export default (app: express.Application, serviceURL, client) => {
     });
 
     app.get("/login/type/callback", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.class == null) {
             if (req.query.type == "teacher") {
-                await client
-                    .db("school")
-                    .collection("user")
-                    .updateOne(
-                        { _id: new ObjectId(req.session.user_id) },
-                        { $set: { type: "teacher" } }
-                    );
+                await User.updateOne(
+                    { _id: new ObjectId(req.session.user_id) },
+                    { $set: { type: "teacher" } }
+                );
                 res.redirect("/register-class");
             } else if (req.query.type == "student") {
-                await client
-                    .db("school")
-                    .collection("user")
-                    .updateOne(
-                        { _id: new ObjectId(req.session.user_id) },
-                        { $set: { type: "student" } }
-                    );
+                await User.updateOne(
+                    { _id: new ObjectId(req.session.user_id) },
+                    { $set: { type: "student" } }
+                );
                 var next = req.cookies.next ?? "/";
                 res.clearCookie("next");
                 res.redirect(next);
