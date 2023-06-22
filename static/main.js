@@ -44,6 +44,36 @@ function formatDate(date) {
 }
 
 // FETCH FUNC
+async function fetchAllNotice() {
+    let response = await (await fetch("/api/all-notice")).json();
+    const steps = [];
+    for (let i = 0; i < response.length; i++) {
+        steps.push(String(i));
+    }
+    const Queue = Swal.mixin({
+        progressSteps: steps,
+        confirmButtonText: "다음 >",
+        showDenyButton: true,
+        denyButtonText: `다시 보지 않기`,
+        // optional classes to avoid backdrop blinking between steps
+        showClass: { backdrop: "swal2-noanimation" },
+        hideClass: { backdrop: "swal2-noanimation" },
+    });
+    for (let i = 0; i < response.length; i++) {
+        if (i + 1 == response.length) {
+            response[i].confirmButtonText = "닫기";
+        }
+        await Queue.fire({
+            currentProgressStep: i,
+            ...response[i],
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isDenied) {
+                fetch(`/api/all-notice/noagain?notice=${response[i]._id}`);
+            }
+        });
+    }
+}
 async function fetchMeal(date) {
     $("#meal").innerHTML = "로드중...";
     var dateString =
@@ -254,12 +284,13 @@ var cache = {
 var today = formatDate(new Date());
 
 // FETCH
-setTimeout(async () => {
+window.onload = async () => {
     fetchTimeTable(monday);
     fetchMeal(today);
     fetchpost();
     fetchNotice();
-}, 0);
+    fetchAllNotice();
+};
 
 var currentMonday = monday;
 function getLastMonday() {
