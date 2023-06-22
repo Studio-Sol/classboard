@@ -39,7 +39,7 @@ export default async ({
         store: MongoStore.create({
             mongoUrl: "mongodb://192.168.0.19:27017/",
             dbName: "school",
-            collectionName: "session",
+            collectionName: "sessions",
         }),
         resave: false,
         saveUninitialized: false,

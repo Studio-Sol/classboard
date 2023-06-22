@@ -1,4 +1,3 @@
-import { MongoClient, ObjectId } from "mongodb";
 import UID from "uid-safe";
 import jwt from "../modules/jwt";
 import express, { NextFunction } from "express";
@@ -7,21 +6,29 @@ import fs from "fs";
 import path from "path";
 import routes from "../routes";
 import sharp from "sharp";
+import Calander from "../models/calander.entity";
+import Reply from "../models/reply.entity";
+import Timetable from "../models/timetable.entity";
+import User from "../models/user.entity";
+import { ObjectId } from "bson";
+import Class from "../models/class.entity";
+import Post from "../models/post.entity";
+import Notice from "../models/notice.entity";
+import Comment from "../models/comment.entity";
+import DeletedUser from "../models/deleted_user.entity";
 function formatDate(date: Date) {
     return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
 }
 export default async (
     app: express.Application,
-    client: MongoClient,
     neis: Neis,
     serviceURL: string
 ) => {
-    await routes(app, client, neis, serviceURL);
+    await routes(app, neis, serviceURL);
     app.post("/api/calendar", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         var event = {
             user: user._id,
             class: user.class,
@@ -30,41 +37,32 @@ export default async (
             title: req.body.title,
             description: req.body.description,
         };
-        client.db("school").collection("calendar").insertOne(event);
+        await new Calander(event).save();
         res.json({
             sucess: true,
             event: event,
         });
     });
     app.get("/api/calendar", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var result = await client
-            .db("school")
-            .collection("calendar")
-            .find({
-                class: user.class,
-                start: {
-                    $gte: new Date(req.query.start as string),
-                    $lt: new Date(req.query.end as string),
-                },
-            })
-            .toArray();
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var result = await Calander.find({
+            class: user.class,
+            start: {
+                $gte: new Date(req.query.start as string),
+                $lt: new Date(req.query.end as string),
+            },
+        }).exec();
         res.json(result);
     });
     app.get("/api/meal", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({
-                _id: new ObjectId(user.class),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({
+            _id: user.class,
+        });
 
         let meals;
         try {
@@ -88,36 +86,25 @@ export default async (
     });
 
     app.post("/api/post", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
-        var post_new = await client
-            .db("school")
-            .collection("post")
-            .insertOne({
-                title: req.body.title,
-                content: req.body.content,
-                preview: req.body.content
-                    .replace(/<[^>]*>?/gm, "")
-                    .slice(0, 20),
-                author: user._id,
-                class: user.class,
-                timestamp: new Date().getTime(),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var post_new = await new Post({
+            title: req.body.title,
+            content: req.body.content,
+            preview: req.body.content.replace(/<[^>]*>?/gm, "").slice(0, 20),
+            author: user._id,
+            class: user.class,
+            timestamp: new Date().getTime(),
+        }).save();
 
-        res.redirect("/post");
+        res.redirect("/post/" + post_new._id.toString());
     });
 
     app.post("/api/notice", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
 
         var body = JSON.parse(req.body.body);
         if (body.question) {
@@ -136,28 +123,22 @@ export default async (
                 var question;
             }
         }
-        var notice_new = await client
-            .db("school")
-            .collection("notice")
-            .insertOne({
-                title: body.title,
-                content: body.content,
-                preview: body.content.replace(/<[^>]*>?/gm, "").slice(0, 20),
-                author: user._id,
-                class: user.class,
-                timestamp: new Date().getTime(),
-                question: question,
-            });
-        res.json({ status: "success", id: notice_new.insertedId });
+        var notice_new = await new Notice({
+            title: body.title,
+            content: body.content,
+            preview: body.content.replace(/<[^>]*>?/gm, "").slice(0, 20),
+            author: user._id,
+            class: user.class,
+            timestamp: new Date().getTime(),
+            question: question,
+        }).save();
+        res.json({ status: "success", id: notice_new._id });
     });
 
     app.post("/api/notice/question/reply", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         try {
             new ObjectId(req.body.id);
         } catch {
@@ -165,10 +146,7 @@ export default async (
             return;
         }
         var question = (
-            await client
-                .db("school")
-                .collection("notice")
-                .findOne({ _id: new ObjectId(req.body.id) })
+            await Notice.findOne({ _id: new ObjectId(req.body.id) })
         ).question;
         if (question) {
             if (question.type == "select") {
@@ -181,10 +159,10 @@ export default async (
                 }
                 if (question.items[parseInt(req.body.answer)].limit != null) {
                     if (
-                        (await client.db("school").collection("reply").count({
+                        Reply.count({
                             id: req.body.id,
                             answer: req.body.answer,
-                        })) >= question.items[parseInt(req.body.answer)].limit
+                        }) >= question.items[parseInt(req.body.answer)].limit
                     ) {
                         res.json({
                             success: false,
@@ -195,64 +173,53 @@ export default async (
                     }
                 }
 
-                if (
-                    await client
-                        .db("school")
-                        .collection("reply")
-                        .findOne({ user: user._id, id: req.body.id })
-                ) {
-                    await client
-                        .db("school")
-                        .collection("reply")
-                        .updateOne(
-                            {
-                                user: user._id,
-                                id: req.body.id,
+                if (await Reply.findOne({ user: user._id, id: req.body.id })) {
+                    await Reply.updateOne(
+                        {
+                            user: user._id,
+                            id: req.body.id,
+                        },
+                        {
+                            $set: {
+                                answer: req.body.answer,
+                                timestamp: new Date().getTime(),
                             },
-                            {
-                                $set: {
-                                    answer: req.body.answer,
-                                    timestamp: new Date().getTime(),
-                                },
-                            }
-                        );
+                        }
+                    );
                 } else {
-                    await client.db("school").collection("reply").insertOne({
+                    await new Reply({
                         user: user._id,
                         id: req.body.id,
                         answer: req.body.answer,
                         timestamp: new Date().getTime(),
-                    });
+                    }).save();
                 }
             } else if (question.type == "text") {
                 if (
-                    !(await client.db("school").collection("reply").findOne({
+                    !(await Reply.findOne({
                         id: req.body.id,
                         user: user._id,
                     }))
                 )
-                    await client.db("school").collection("reply").insertOne({
+                    await new Reply({
                         user: user._id,
                         id: req.body.id,
                         answer: req.body.answer,
                         timestamp: new Date().getTime(),
-                    });
+                    }).save();
                 else
-                    await client
-                        .db("school")
-                        .collection("reply")
-                        .updateOne(
-                            {
-                                user: user._id,
-                                id: req.body.id,
+                    await Reply.updateOne(
+                        {
+                            user: user._id,
+                            id: req.body.id,
+                        },
+                        {
+                            $set: {
+                                answer: req.body.answer,
+                                timestamp: new Date().getTime(),
                             },
-                            {
-                                $set: {
-                                    answer: req.body.answer,
-                                    timestamp: new Date().getTime(),
-                                },
-                            }
-                        );
+                        }
+                    );
             }
             res.json({ success: true });
         } else {
@@ -262,36 +229,27 @@ export default async (
 
     app.get("/api/post", async (req, res) => {
         try {
-            var user = await client
-                .db("school")
-                .collection("user")
-                .findOne({
-                    _id: new ObjectId(req.session.user_id),
-                });
+            var user = await User.findOne({
+                _id: new ObjectId(req.session.user_id),
+            });
             if (isNaN(parseInt(req.query.skip as string))) {
                 res.json({ success: false });
                 return;
             }
-            var data = await client
-                .db("school")
-                .collection("post")
-                .find({
-                    class: user.class,
-                })
-                .sort("_id", -1)
+            var data = await Post.find({
+                class: user.class,
+            })
+                .sort({ _id: -1 })
                 .skip(parseInt(req.query.skip as string))
                 .limit(10)
-                .toArray();
+                .exec();
 
             var result = [];
             for (const d of data) {
                 if (req.query.preview) {
-                    var author = await client
-                        .db("school")
-                        .collection("user")
-                        .findOne({
-                            _id: new ObjectId(d.author),
-                        });
+                    var author = await User.findOne({
+                        _id: new ObjectId(d.author),
+                    });
                     result.push({
                         title: d.title,
                         id: d._id,
@@ -317,36 +275,27 @@ export default async (
 
     app.get("/api/notice", async (req, res) => {
         try {
-            var user = await client
-                .db("school")
-                .collection("user")
-                .findOne({
-                    _id: new ObjectId(req.session.user_id),
-                });
+            var user = await User.findOne({
+                _id: new ObjectId(req.session.user_id),
+            });
             if (isNaN(parseInt(req.query.skip as string))) {
                 res.json({ success: false, message: "비정상적인 요청" });
                 return;
             }
-            var data = await client
-                .db("school")
-                .collection("notice")
-                .find({
-                    class: user.class,
-                })
-                .sort("_id", -1)
+            var data = await Notice.find({
+                class: user.class,
+            })
+                .sort({ _id: -1 })
                 .skip(parseInt(req.query.skip as string))
                 .limit(10)
-                .toArray();
+                .exec();
 
             var result = [];
             for (const d of data) {
                 if (req.query.preview) {
-                    var author = await client
-                        .db("school")
-                        .collection("user")
-                        .findOne({
-                            _id: new ObjectId(d.author),
-                        });
+                    var author = await User.findOne({
+                        _id: d.author,
+                    });
                     result.push({
                         title: d.title,
                         id: d._id,
@@ -391,18 +340,12 @@ export default async (
                 1000 * 60 * 60 * 24 * 5
         );
 
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({
-                _id: new ObjectId(user.class),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({
+            _id: user.class,
+        });
         console.log(classroom);
         if (!req.query.refresh) {
             var cache = [];
@@ -420,18 +363,13 @@ export default async (
                 );
                 cache.push.apply(
                     cache,
-                    await client
-                        .db("school")
-                        .collection("timetable")
-                        .find({
-                            ATPT_OFCDC_SC_CODE:
-                                classroom.school.ATPT_OFCDC_SC_CODE,
-                            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                            ALL_TI_YMD: formatDate(tmp),
-                            CLASS_NM: classroom.class.CLASS_NM,
-                            GRADE: classroom.class.GRADE,
-                        })
-                        .toArray()
+                    await Timetable.find({
+                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                        ALL_TI_YMD: formatDate(tmp),
+                        CLASS_NM: classroom.class.CLASS_NM,
+                        GRADE: classroom.class.GRADE,
+                    }).exec()
                 );
             }
             if (cache.length > 0) {
@@ -470,15 +408,15 @@ export default async (
                     ALL_TI_YMD: t.ALL_TI_YMD,
                     CLASS_NM: t.CLASS_NM,
                     GRADE: t.GRADE,
-                    ITRT_CNTNT: t.ITRT_CNTNT.replace("-", ""),
+                    ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
                     PERIO: t.PERIO,
                 });
             }
 
-            client.db("school").collection("timetable").insertMany(result);
+            Timetable.insertMany(result);
             res.json({
                 success: true,
-                table: refine(timetable),
+                table: refine(Timetable),
                 friday: formatDate(friday),
             });
         } else {
@@ -495,19 +433,16 @@ export default async (
                         1000 * 60 * 60 * 24 * i
                 );
 
-                await client
-                    .db("school")
-                    .collection("timetable")
-                    .deleteMany({
-                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                        ALL_TI_YMD: formatDate(tmp),
-                        CLASS_NM: classroom.class.CLASS_NM,
-                        GRADE: classroom.class.GRADE,
-                    });
+                await Timetable.deleteMany({
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                    ALL_TI_YMD: formatDate(tmp),
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE,
+                });
             }
             try {
-                var timetable = await neis.getTimetable(
+                var timetables = await neis.getTimetable(
                     {
                         ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
                         SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
@@ -529,18 +464,18 @@ export default async (
                 return;
             }
             var result = [];
-            for (let t of timetable) {
+            for (let t of timetables) {
                 result.push({
                     ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
                     SD_SCHUL_CODE: t.SD_SCHUL_CODE,
                     ALL_TI_YMD: t.ALL_TI_YMD,
                     CLASS_NM: t.CLASS_NM,
                     GRADE: t.GRADE,
-                    ITRT_CNTNT: t.ITRT_CNTNT.replace("-", ""),
+                    ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
                     PERIO: t.PERIO,
                 });
             }
-            client.db("school").collection("timetable").insertMany(result);
+            Timetable.insertMany(result);
             res.json({
                 success: true,
                 table: refine(result),
@@ -550,12 +485,9 @@ export default async (
     });
 
     app.get("/api/teacher/student.ban", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
@@ -566,30 +498,24 @@ export default async (
             res.json({ success: false });
             return;
         }
-        await client
-            .db("school")
-            .collection("user")
-            .updateOne(
-                {
-                    _id: new ObjectId(req.query.user as string),
-                    class: user.class,
+        await User.updateOne(
+            {
+                _id: new ObjectId(req.query.user as string),
+                class: user.class,
+            },
+            {
+                $set: {
+                    class: null,
                 },
-                {
-                    $set: {
-                        class: null,
-                    },
-                }
-            );
+            }
+        );
         res.json({ success: true });
     });
 
     app.get("/api/teacher/join.accept", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
@@ -600,39 +526,30 @@ export default async (
             res.json({ success: false });
             return;
         }
-        await client
-            .db("school")
-            .collection("user")
-            .updateOne(
-                {
-                    _id: new ObjectId(req.query.user as string),
-                    class: user.class,
+        await User.updateOne(
+            {
+                _id: new ObjectId(req.query.user as string),
+                class: user.class,
+            },
+            {
+                $set: {
+                    waiting: false,
                 },
-                {
-                    $set: {
-                        waiting: false,
-                    },
-                }
-            );
+            }
+        );
         res.json({
             success: true,
-            user: await client
-                .db("school")
-                .collection("user")
-                .findOne({
-                    _id: new ObjectId(req.query.user as string),
-                    class: user.class,
-                }),
+            user: await User.findOne({
+                _id: new ObjectId(req.query.user as string),
+                class: user.class,
+            }),
         });
     });
 
     app.get("/api/teacher/join.reject", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({
-                _id: new ObjectId(req.session.user_id),
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         if (user.type != "teacher") {
             res.redirect("/");
             return;
@@ -643,21 +560,18 @@ export default async (
             res.json({ success: false });
             return;
         }
-        await client
-            .db("school")
-            .collection("user")
-            .updateOne(
-                {
-                    _id: new ObjectId(req.query.user as string),
-                    class: user.class,
+        await User.updateOne(
+            {
+                _id: new ObjectId(req.query.user as string),
+                class: user.class,
+            },
+            {
+                $set: {
+                    class: null,
+                    waiting: false,
                 },
-                {
-                    $set: {
-                        class: null,
-                        waiting: false,
-                    },
-                }
-            );
+            }
+        );
         res.json({ success: true });
     });
 
@@ -666,21 +580,18 @@ export default async (
             res.json({ success: false });
             return;
         }
-        var raw = await client
-            .db("school")
-            .collection("comment")
-            .find({
-                id: req.query.id,
-                reply: req.query.reply ?? null,
-            })
+        var raw = await Comment.find({
+            id: req.query.id,
+            reply: req.query.reply ?? null,
+        })
             .limit(30)
             .skip(parseInt(req.query.skip as string))
-            .toArray();
+            .exec();
 
         var comments = [];
 
         for (const r of raw) {
-            var author = await client.db("school").collection("user").findOne({
+            var author = await User.findOne({
                 _id: r.author,
             });
             comments.push({
@@ -692,43 +603,36 @@ export default async (
                 content: r.content,
                 timestamp: r.timestamp,
                 reply: r.reply,
-                reply_count: await client
-                    .db("school")
-                    .collection("comment")
-                    .count({ reply: String(r._id) }),
+                reply_count: await Comment.count({ reply: String(r._id) }),
             });
         }
 
         res.json({
             success: true,
             comment: comments,
-            total: await client
-                .db("school")
-                .collection("comment")
-                .count({ id: req.query.id, reply: req.query.reply ?? null }),
+            total: await Comment.count({
+                id: req.query.id,
+                reply: req.query.reply ?? null,
+            }),
         });
     });
 
     app.post("/api/comment", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var comment = await client
-            .db("school")
-            .collection("comment")
-            .insertOne({
-                id: req.body.id,
-                author: user._id,
-                content: req.body.content,
-                timestamp: new Date().getTime(),
-                reply: req.body.reply ?? null,
-            });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var comment = await new Comment({
+            id: req.body.id,
+            author: user._id,
+            content: req.body.content,
+            timestamp: new Date().getTime(),
+            reply: req.body.reply ?? null,
+        }).save();
 
         res.json({
             success: true,
             comment: {
-                _id: comment.insertedId,
+                _id: comment._id,
                 id: req.body.id,
                 author: {
                     name: user.name,
@@ -784,14 +688,10 @@ export default async (
     });
 
     app.get("/delete-user", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
-        var classroom = await client
-            .db("school")
-            .collection("class")
-            .findOne({ _id: new ObjectId(user.class) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        var classroom = await Class.findOne({ _id: user.class });
 
         res.render("delete-user.html", {
             token: await jwt.sign({
@@ -811,15 +711,11 @@ export default async (
             payload.url == "/delete-user" &&
             payload.user == req.session.user_id
         ) {
-            var user = await client
-                .db("school")
-                .collection("user")
-                .findOne({ _id: new ObjectId(req.session.user_id) });
-            client.db("school").collection("user_deleted").insertOne(user);
-            client
-                .db("school")
-                .collection("user")
-                .deleteOne({ _id: new ObjectId(req.session.user_id) });
+            var user = await User.findOne({
+                _id: new ObjectId(req.session.user_id),
+            });
+            new DeletedUser(user).save();
+            User.deleteOne({ _id: new ObjectId(req.session.user_id) });
 
             req.session.destroy();
             res.json({ success: true });
@@ -837,10 +733,9 @@ export default async (
     });
 
     app.get("/setting", async (req, res) => {
-        var user = await client
-            .db("school")
-            .collection("user")
-            .findOne({ _id: new ObjectId(req.session.user_id) });
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
         res.render("setting.html", { user: user });
     });
 
@@ -865,21 +760,15 @@ export default async (
                     .rotate()
                     .toBuffer()
             );
-            await client
-                .db("school")
-                .collection("user")
-                .updateOne(
-                    { _id: new ObjectId(req.session.user_id) },
-                    { $set: { name: req.body.name, avatar: url } }
-                );
+            await User.updateOne(
+                { _id: new ObjectId(req.session.user_id) },
+                { $set: { name: req.body.name, avatar: url } }
+            );
         } else {
-            await client
-                .db("school")
-                .collection("user")
-                .updateOne(
-                    { _id: new ObjectId(req.session.user_id) },
-                    { $set: { name: req.body.name } }
-                );
+            await User.updateOne(
+                { _id: new ObjectId(req.session.user_id) },
+                { $set: { name: req.body.name } }
+            );
         }
 
         res.json({ status: "success" });
