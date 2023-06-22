@@ -10,6 +10,7 @@ import User from "../models/user.entity";
 import Post from "../models/post.entity";
 import Notice from "../models/notice.entity";
 import Reply from "../models/reply.entity";
+import AllNotice from "../models/all_notice.entity";
 export default (app: express.Application, neis: Neis, serviceURL) => {
     // UTILS
     function getMondayDate(paramDate: Date) {
@@ -475,5 +476,20 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
 
     app.get("/calendar", (req, res) => {
         res.render("calendar.html");
+    });
+    app.get("/admin", (req, res) => {
+        res.render("admin/index.html");
+    });
+    app.get("/admin/new-all-notice", (req, res) => {
+        res.render("admin/new-all-notice.html");
+    });
+    app.post("/admin/new-all-notice", async (req, res) => {
+        let inserted = await new AllNotice({
+            icon: req.body.icon,
+            title: req.body.title,
+            html: req.body.html,
+            footer: req.body.footer,
+        }).save();
+        res.json(inserted);
     });
 };

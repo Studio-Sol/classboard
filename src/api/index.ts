@@ -16,6 +16,8 @@ import Post from "../models/post.entity";
 import Notice from "../models/notice.entity";
 import Comment from "../models/comment.entity";
 import DeletedUser from "../models/deleted_user.entity";
+import AllNotice from "../models/all_notice.entity";
+import AllNoticeNoagain from "../models/all_notice_noagain";
 function formatDate(date: Date) {
     return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
 }
@@ -772,6 +774,40 @@ export default async (
         }
 
         res.json({ status: "success" });
+    });
+    app.get("/api/all-notice", async (req, res) => {
+        let allNotices = await AllNotice.find().exec();
+        let result = [];
+        for (let n of allNotices) {
+            if (
+                !(await AllNoticeNoagain.findOne({
+                    user: req.session.user_id,
+                    notice: String(n._id),
+                }))
+            ) {
+                result.push(n);
+            }
+        }
+        res.json(result);
+    });
+    app.get("/api/all-notice/noagain", async (req, res) => {
+        if (
+            !(await AllNoticeNoagain.findOne({
+                user: req.session.user_id,
+                notice: req.query.notice,
+            }))
+        ) {
+            await new AllNoticeNoagain({
+                user: req.session.user_id,
+                notice: req.query.notice,
+            }).save();
+            res.json({ success: true });
+        } else {
+            res.json({
+                success: false,
+                message: "이미 다시 보지 않기로 했으면서..",
+            });
+        }
     });
 
     // ERRORs
