@@ -824,7 +824,7 @@ export default async (
     // 404 NOT FOUND
     app.use((req, res) => {
         console.log(req.originalUrl);
-        res.render("404.html", { user_id: req.session.user_id });
+        res.status(404).render("404.html", { user_id: req.session.user_id });
     });
 
     // STATIC과 API는 404페이지 렌더링 안함
