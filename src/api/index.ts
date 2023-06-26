@@ -20,6 +20,7 @@ import AllNoticeNoagain from "../models/all_notice_noagain.entity.js";
 import Neis from "../modules/neis.js";
 import { fileURLToPath } from "url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
+import mealEntity from "../models/meal.entity.js";
 function formatDate(date: Date) {
     return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
 }
@@ -68,19 +69,26 @@ export default async (
             _id: user.class,
         });
 
-        let meals;
-        try {
-            meals = await neis.getMealInfo(
-                {
-                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                    MLSV_YMD: req.query.date as string,
-                },
-                {
-                    pSize: 10,
-                }
-            );
-        } catch {}
+        let meals: any[] = await mealEntity
+            .find({
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                MLSV_YMD: req.query.date as string,
+            })
+            .exec();
+        if (meals.length == 0)
+            try {
+                meals = await neis.getMealInfo(
+                    {
+                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                        MLSV_YMD: req.query.date as string,
+                    },
+                    {
+                        pSize: 10,
+                    }
+                );
+                if (meals) await mealEntity.insertMany(meals);
+            } catch {}
 
         if (meals?.length ?? 0 != 0) {
             res.json({ success: true, meal: meals });
