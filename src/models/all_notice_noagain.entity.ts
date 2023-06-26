@@ -1,4 +1,4 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 interface AllNoticeNoAgain {
     user: string;
     notice: string;

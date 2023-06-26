@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
-        <%- include("./common/head.ejs") %>
+        <%- include("../common/head.ejs") %>
         <title>로그인</title>
 
         <link href="/static/bootstrap.min.css" rel="stylesheet" />
@@ -35,11 +35,8 @@
             <div style="height: fit-content; text-align: center">
                 <h1 style="width: 100%"><strong>다음으로 로그인</strong></h1>
                 <div class="row">
-                    <a href="#" style="color: red"
-                        >일시적으로 구글 로그인이 불가능합니다<br /><img
-                            style="filter: blur(2px)"
-                            height="50"
-                            src="/static/login/google.png"
+                    <a href="/login/google"
+                        ><img height="50" src="/static/login/google.png"
                     /></a>
                 </div>
                 <div class="row mt-3">
