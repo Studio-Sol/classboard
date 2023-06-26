@@ -1,4 +1,4 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
 interface Post {
     title: string;
     content: string;

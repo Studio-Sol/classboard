@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
+        <%- include("./common/head.ejs") %>
         <style>
             td.class:hover,
             th.dayofweek:hover {
@@ -33,7 +34,7 @@
             }
         </script>
         <link href="/static/style.css" , rel="stylesheet" />
-        <script src="/static/common.js"></script>
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>클래스보드 - 홈</title>
         <meta property="og:title" content="클래스보드" />
@@ -409,10 +410,10 @@
         </div>
 
         <script>
-            var monday = "<%= monday.replaceAll("-", "") %>";
-            var grade = "<%= grade %>"
-            var class_ = "<%= classroom %>"
-            var school_name = "<%= school_name %>"
+            var monday = `<%= monday.replaceAll("-", "") %>`;
+            var grade = "<%= grade %>";
+            var class_ = "<%= classroom %>";
+            var school_name = "<%= school_name %>";
         </script>
 
         <script src="/static/main.js"></script>

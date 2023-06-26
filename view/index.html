@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
+        <%- include("./common/head.ejs") %>
         <script async src="/static/common.js"></script>
         <title>클래스보드</title>
         <link href="/static/bootstrap.min.css" rel="stylesheet" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/static/style.css" />
-        <script src="/static/common.js"></script>
+
         <style>
             @font-face {
                 font-family: "ROKAFSansBold";
@@ -109,17 +110,29 @@
                         <a class="me-2" href="/privacy">개인정보 처리방침</a> |
                         <a class="ms-2 me-2" href="/terms">서비스 이용약관</a> |
                         <a class="ms-2 me-2" href="/jobs"
-                            >Sol Studio에 합류하기</a
-                        >
-                        |
-                        <a
-                            class="ms-2"
-                            href="https://doc.clickup.com/25719108/p/h/rgwa4-565/f506ac7b1156ec7"
-                            >솔 스튜디오 실Log</a
+                            >Sol Studio 합류하기</a
                         >
                     </div>
                 </div>
             </div>
         </div>
+        <% if (!user_id) { %>
+        <script
+            src="https://accounts.google.com/gsi/client"
+            async
+            defer
+        ></script>
+        <div
+            id="g_id_onload"
+            data-auto_select="true"
+            data-client_id="466546474630-s48sd0jjph3qdfup2mkjcevt8ch28nif.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse"
+        ></div>
+        <script>
+            function handleCredentialResponse(e) {
+                location.href = "/login/callback/google?token=" + e.credential;
+            }
+        </script>
+        <% } %>
     </body>
 </html>

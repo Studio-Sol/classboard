@@ -1,11 +1,11 @@
-import api from "../api";
-import expressLoader from "./express";
-import mongooseLoader from "./mongoose";
-import neisLoader from "./neis";
+import api from "../api/index.js";
+import expressLoader from "./express.js";
+import mongooseLoader from "./mongoose.js";
+import neisLoader from "./neis.js";
 import dotenv from "dotenv";
 import express from "express";
-import pm2 from "./pm2";
-import cron from "./cron";
+import pm2 from "./pm2.js";
+import cron from "./cron.js";
 
 export default async (
     expressApp: express.Application,

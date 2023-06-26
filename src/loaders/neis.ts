@@ -1,9 +1,6 @@
-import Neis from "@my-school.info/neis-api";
+import Neis from "../modules/neis.js";
 
 export default () => {
-    const neis = new Neis({
-        KEY: process.env.NEIS_API_KEY,
-        Type: "json",
-    });
+    const neis = new Neis(process.env.NEIS_API_KEY);
     return neis;
 };

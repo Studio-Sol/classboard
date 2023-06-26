@@ -1,7 +1,7 @@
 import express from "express";
 import request from "request";
 import { OAuth2Client } from "google-auth-library";
-import User from "../models/user.entity";
+import User from "../models/user.entity.js";
 import { ObjectId } from "bson";
 export default (app: express.Application, serviceURL) => {
     console.log("[AUTH] setting up..");
@@ -50,7 +50,7 @@ export default (app: express.Application, serviceURL) => {
         const payload = ticket.getPayload();
         // const userid = payload['sub'];
 
-        var user = await user.findOne({ email: payload.email, auth: "google" });
+        var user = await User.findOne({ email: payload.email, auth: "google" });
         if (user != null) {
             req.session.user_id = user._id;
             var next = req.cookies.next ?? "/";

@@ -5,11 +5,29 @@ import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 import compression from "compression";
-import winston from "../config/winston";
 import morgan from "morgan";
 import path from "path";
 import UID from "uid-safe";
-
+import AdminJS from "adminjs";
+import AdminJSExpress from "@adminjs/express";
+import * as AdminJSMongoose from "@adminjs/mongoose";
+import { fileURLToPath } from "url";
+import ejs from "ejs";
+import { stream } from "../config/winston.js";
+import all_noticeEntity from "../models/all_notice.entity.js";
+import all_notice_noagainEntity from "../models/all_notice_noagain.entity.js";
+import calanderEntity from "../models/calander.entity.js";
+import classEntity from "../models/class.entity.js";
+import commentEntity from "../models/comment.entity.js";
+import deleted_userEntity from "../models/deleted_user.entity.js";
+import noticeEntity from "../models/notice.entity.js";
+import postEntity from "../models/post.entity.js";
+import replyEntity from "../models/reply.entity.js";
+import sessionEntity from "../models/session.entity.js";
+import timetableEntity from "../models/timetable.entity.js";
+import userEntity from "../models/user.entity.js";
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const DEFAULT_ADMIN = { email: "sol762@classboard.kr", password: "sol762!" };
 export default async ({
     app,
     allow_hosts,
@@ -19,6 +37,47 @@ export default async ({
     allow_hosts: string[];
     inspecting: boolean;
 }) => {
+    AdminJS.registerAdapter({
+        Resource: AdminJSMongoose.Resource,
+        Database: AdminJSMongoose.Database,
+    });
+
+    const router = AdminJSExpress.buildAuthenticatedRouter(
+        new AdminJS({
+            resources: [
+                all_noticeEntity,
+                all_notice_noagainEntity,
+                calanderEntity,
+                classEntity,
+                commentEntity,
+                deleted_userEntity,
+                noticeEntity,
+                postEntity,
+                replyEntity,
+                sessionEntity,
+                timetableEntity,
+                userEntity,
+            ],
+            rootPath: "/admin",
+        }),
+        {
+            authenticate: async (email: string, password: string) => {
+                if (
+                    email === DEFAULT_ADMIN.email &&
+                    password === DEFAULT_ADMIN.password
+                ) {
+                    return Promise.resolve(DEFAULT_ADMIN);
+                }
+                return null;
+            },
+            cookiePassword: "secret",
+        }
+    );
+    app.use("/admin", router);
+    app.get("/ads.txt", (req, res) => {
+        res.send("google.com, pub-8112542064837410, DIRECT, f08c47fec0942fa0");
+    });
+
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(compression());
@@ -53,10 +112,9 @@ export default async ({
 
     app.use(session);
     app.use(
-        morgan(
-            ':remote-addr - :user - "HTTP/:http-version :method :url" :status :res[content-length]',
-            { stream: winston.stream }
-        )
+        morgan("combined", {
+            stream: stream,
+        })
     );
     app.use(cookieParser());
     app.use(fileUpload());
@@ -71,7 +129,7 @@ export default async ({
 
     app.set("views", path.join(__dirname, "..", "..", "/view"));
     app.set("view engine", "ejs");
-    app.engine("html", require("ejs").renderFile);
+    app.engine("html", ejs.renderFile);
     app.use(
         "/static",
         express.static(path.join(__dirname, "..", "..", "/static"))
@@ -96,7 +154,8 @@ export default async ({
                 req.path.startsWith("/static") ||
                 req.path == "/terms" ||
                 req.path == "/privacy" ||
-                req.path == "/favicon.ico"
+                req.path == "/favicon.ico" ||
+                req.path == "/jobs"
             ) {
                 next();
             } else {

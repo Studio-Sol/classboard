@@ -1,4 +1,4 @@
-import loaders from "./loaders";
+import loaders from "./loaders/index.js";
 import express from "express";
 import http from "http";
 

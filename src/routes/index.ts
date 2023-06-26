@@ -1,16 +1,16 @@
 import express from "express";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "bson";
 
 // JWT
-import jwt from "../modules/jwt";
-import Neis from "@my-school.info/neis-api";
-import auth from "../api/auth";
-import Class from "../models/class.entity";
-import User from "../models/user.entity";
-import Post from "../models/post.entity";
-import Notice from "../models/notice.entity";
-import Reply from "../models/reply.entity";
-import AllNotice from "../models/all_notice.entity";
+import jwt from "../modules/jwt.js";
+import Neis from "../modules/neis.js";
+import auth from "../api/auth.js";
+import Class from "../models/class.entity.js";
+import User from "../models/user.entity.js";
+import Post from "../models/post.entity.js";
+import Notice from "../models/notice.entity.js";
+import Reply from "../models/reply.entity.js";
+import AllNotice from "../models/all_notice.entity.js";
 export default (app: express.Application, neis: Neis, serviceURL) => {
     // UTILS
     function getMondayDate(paramDate: Date) {
@@ -477,13 +477,7 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
     app.get("/calendar", (req, res) => {
         res.render("calendar.html");
     });
-    app.get("/admin", (req, res) => {
-        res.render("admin/index.html");
-    });
-    app.get("/admin/new-all-notice", (req, res) => {
-        res.render("admin/new-all-notice.html");
-    });
-    app.post("/admin/new-all-notice", async (req, res) => {
+    app.post("/api/admin/new-all-notice", async (req, res) => {
         let inserted = await new AllNotice({
             icon: req.body.icon,
             title: req.body.title,
