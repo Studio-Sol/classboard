@@ -1,12 +1,3 @@
-// ADSENSE
-var lazyadsense = !1;
-window.addEventListener("load", function () {
-    document.head.insertAdjacentHTML(
-        "beforeend",
-        `<script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8112542064837410" async crossorigin="anonymous"></script>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZR1ZER2Z0L"></script><script>  window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'G-ZR1ZER2Z0L');</script>`
-    );
-});
 // THEME
 function switchTheme() {
     stylesheet = document.documentElement.style;
