@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+    <head>
+        <title>클래스보드 - 자리바꾸기</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Gothic+A1&family=Nanum+Gothic&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Jua&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/seat/style_main.css" />
+    </head>
+    <body style="overflow: hidden">
+        <div class="layout">
+            <h1>
+                <span id="title">자리바꾸기</span>
+            </h1>
+            <div class="main">
+                <div class="sleep" onClick="createButtonPressed();">
+                    <img src="/static/seat/sleep.png" />
+                    <div id="sleep_title">분단이 하나도 없네요!</div>
+                    <div id="sleep_content">
+                        여기를 클릭해 첫 분단을 만들어 보세요.
+                    </div>
+                </div>
+                <div class="createbox" style="display: none">
+                    <span
+                        class="x_button"
+                        style="cursor: pointer"
+                        onClick="xButton(0);"
+                        ><span></span><span></span
+                    ></span>
+                    <div class="createbox_title">
+                        만들 분단의 크기를 입력해주세요!
+                    </div>
+                    <div class="createbox_msg"></div>
+                    <label
+                        >입력
+                        <input
+                            class="createbox_input createbox_input_x"
+                            type="number"
+                            max="10"
+                            min="1"
+                            placeholder="가로"
+                            onfocusin="isfocus = 2;"
+                            onfocusout="isfocus = 0;"
+                            onkeyup="this.value = this.value.replace(/[^0-9]/g, '');"
+                        />
+                        <input
+                            class="createbox_input createbox_input_y"
+                            type="number"
+                            max="10"
+                            min="1"
+                            placeholder="세로"
+                            onfocusin="isfocus = 2;"
+                            onfocusout="isfocus = 0;"
+                            onkeyup="this.value = this.value.replace(/[^0-9]/g, '');"
+                        />
+                    </label>
+                    <input
+                        class="createbox_button"
+                        type="button"
+                        value="만들기"
+                        style="vertical-align: bottom; cursor: pointer"
+                        onClick="createTableWithButton();"
+                    />
+                </div>
+                <div class="removebox" style="display: none">
+                    <span
+                        class="x_button"
+                        style="cursor: pointer"
+                        onClick="xButton(1);"
+                        ><span></span><span></span
+                    ></span>
+                    <div class="removebox_title">
+                        지울 분단의 번호를 입력해주세요!
+                    </div>
+                    <div class="removebox_msg"></div>
+                    <label
+                        >입력
+                        <input
+                            class="removebox_input"
+                            type="number"
+                            max="10"
+                            placeholder="1"
+                            onfocusin="isfocus = 3;"
+                            onfocusout="isfocus = 0;"
+                            onkeyup="this.value = this.value.replace(/[^0-9]/g, '')"
+                        />
+                    </label>
+                    <input
+                        class="removebox_button"
+                        type="button"
+                        value="지우기"
+                        style="vertical-align: bottom; cursor: pointer"
+                        onClick="removeTableWithButton();"
+                    />
+                </div>
+            </div>
+            <div class="tip">
+                <font color="gray"
+                    >쉬운 자리 바꾸기에 오신 것을 환영합니다</font
+                >
+            </div>
+            <div class="menu">
+                <label
+                    ><span
+                        class="infobutton button"
+                        onmouseover="tipMsg('print');"
+                        onmouseout="tipMsg('default');"
+                        ><button
+                            class="buttoncore"
+                            name="info_button"
+                            onclick="beforePrint();"
+                            style="border-color: rgb(244, 141, 63)"
+                        >
+                            출력
+                        </button></span
+                    >
+                </label>
+                <label
+                    ><span
+                        class="malebutton button off"
+                        onmouseover="tipMsg('male');"
+                        onmouseout="tipMsg('default');"
+                        ><button
+                            class="buttoncore"
+                            name="male_button"
+                            onclick="maleButtonPressed();"
+                            style="border-color: rgb(0, 174, 255)"
+                        >
+                            남학생 자리 지정
+                        </button></span
+                    ></label
+                >
+                <label>
+                    <span
+                        class="constbutton button off"
+                        onmouseover="tipMsg('const');"
+                        onmouseout="tipMsg('default');"
+                    >
+                        <button
+                            class="buttoncore"
+                            name="const_button"
+                            onclick="constButtonPressed();"
+                            style="border-color: rgb(255, 217, 0)"
+                        >
+                            고정석 지정
+                        </button></span
+                    >
+                </label>
+                <label
+                    ><span
+                        class="changebutton bigbutton"
+                        onmouseover="tipMsg('change');"
+                        onmouseout="tipMsg('default');"
+                        ><button
+                            class="buttoncore"
+                            name="change_button"
+                            onclick="changeSeats();"
+                            style="
+                                background-color: rgb(255, 255, 255);
+                                color: black;
+                                font-size: xx-large;
+                            "
+                        >
+                            자리 바꾸기!
+                        </button></span
+                    ></label
+                >
+                <label
+                    ><span
+                        class="createbutton button"
+                        onmouseover="tipMsg('create');"
+                        onmouseout="tipMsg('default');"
+                        ><button
+                            class="buttoncore"
+                            name="create_button"
+                            onclick="createButtonPressed();"
+                            style="border-color: #6dffa5"
+                        >
+                            분단 만들기
+                        </button></span
+                    ></label
+                >
+                <label
+                    ><span
+                        class="removebutton button"
+                        onmouseover="tipMsg('remove');"
+                        onmouseout="tipMsg('default');"
+                        ><button
+                            class="buttoncore"
+                            name="remove_button"
+                            onclick="removeButtonPressed();"
+                            style="border-color: #ff5b96"
+                        >
+                            분단 제거
+                        </button></span
+                    ></label
+                >
+                <label
+                    ><span
+                        class="savebutton button"
+                        onmouseover="tipMsg('save');"
+                        onmouseout="tipMsg('default');"
+                        style="width: 60px"
+                        ><button
+                            class="buttoncore"
+                            name="save_button"
+                            onclick="saveSeats();"
+                            style="border-color: #de9cff"
+                        >
+                            저장
+                        </button></span
+                    ><span
+                        class="button"
+                        onmouseover="tipMsg('load');"
+                        onmouseout="tipMsg('default');"
+                        style="width: 60px"
+                        ><button
+                            class="buttoncore"
+                            name="load_button"
+                            onclick="loadSeats();"
+                            style="border-color: rgb(108, 255, 130)"
+                        >
+                            로드
+                        </button></span
+                    ></label
+                >
+            </div>
+        </div>
+        <div style="position: fixed; top: 0px; left: 0px; color: white">
+            <a href="https://polariswiz.github.io/seatsfactory/"
+                >&copy; polariswiz</a
+            ><br />
+            &copy; Sol-Studio 2023
+        </div>
+        <script type="text/javascript" src="/static/seat/function.js"></script>
+    </body>
+</html>
