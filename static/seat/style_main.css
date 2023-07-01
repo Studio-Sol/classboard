@@ -1,0 +1,306 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+html,
+body {
+    height: 100%;
+}
+body {
+    background-color: black;
+    background-attachment: fixed;
+}
+h1 {
+    display: block;
+    font-family: "Black Han Sans", sans-serif;
+    height: 60px;
+    padding-top: 15px;
+    padding-bottom: 5px;
+    text-align: center;
+    font-weight: 100;
+    font-size: 48px;
+    color: #ffffff;
+    text-shadow: 0px 0px 3px black;
+}
+input:focus {
+    outline: none;
+}
+.button {
+    width: 120px;
+    height: 49px;
+    cursor: pointer;
+    vertical-align: top;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+.bigbutton {
+    width: 200px;
+    height: 65px;
+    cursor: pointer;
+    vertical-align: top;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+button {
+    color: white;
+    font-family: "Black Han Sans", sans-serif;
+    font-size: large;
+    font-weight: 100;
+    width: 100%;
+    height: 100%;
+    border-style: solid;
+    background-color: transparent;
+}
+.malebutton.on {
+    box-shadow: 0px 0px 5px 5px rgb(0, 174, 255);
+    background-color: rgb(0, 174, 255);
+}
+.constbutton.on {
+    box-shadow: 0px 0px 5px 5px rgb(255, 217, 0);
+    background-color: rgb(255, 217, 0);
+}
+.createbutton.on {
+    box-shadow: 0px 0px 5px 5px #6dffa5;
+    background-color: #6dffa5;
+}
+.removebutton.on {
+    box-shadow: 0px 0px 5px 5px #ff5b96;
+    background-color: #ff5b96;
+}
+.on > button {
+    color: black !important;
+}
+td {
+    margin: 2px;
+    border: none;
+}
+.table {
+    margin: 15px;
+    display: inline-block;
+    vertical-align: top;
+    animation-name: fadeIn;
+    animation-duration: 0.5s;
+}
+.normal {
+    box-shadow: 0px 0px 15px white inset;
+    border: 5px solid white;
+    color: white;
+}
+.normal_empty {
+    border: 5px solid #4e4e4e;
+    color: #4e4e4e;
+}
+.male {
+    box-shadow: 0px 0px 15px #01eafb inset;
+    border: 5px solid #01eafb;
+    color: #01eafb;
+}
+.male_empty {
+    border: 5px solid #005b61;
+    color: #005b61;
+}
+.female {
+    box-shadow: 0px 0px 15px #fb61a4 inset;
+    border: 5px solid #fb61a4;
+    color: #fb61a4;
+}
+.female_empty {
+    border: 5px solid #4c0033;
+    color: #4c0033;
+}
+.const {
+    box-shadow: 0px 0px 15px #fae25d inset;
+    border: 5px solid #fae25d;
+    color: #fae25d;
+}
+.const_empty {
+    border: 5px solid #393100;
+    color: #393100;
+}
+.cell {
+    width: 90px;
+    height: 45px;
+    font-size: 20px;
+    text-align: center;
+    border-radius: 5px;
+    font-family: "Nanum Gothic", sans-serif;
+    background-color: transparent;
+}
+.main {
+    display: block;
+    white-space: nowrap; /* 표 줄바뀜 방지 */
+    text-align: center;
+    overflow: auto;
+    width: calc(100%-5px);
+    height: calc(100% - 195px);
+    max-width: 100%;
+}
+.sleep {
+    display: inline-block;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+#sleep_title {
+    font-family: "Jua", sans-serif;
+    font-size: 28px;
+    color: white;
+}
+#sleep_content {
+    font-family: "NanumSquare", sans-serif;
+    font-size: 20px;
+    color: gray;
+}
+.createbox,
+.removebox {
+    position: absolute;
+    width: 400px;
+    height: 100px;
+    top: calc(100% - 115px);
+    left: 50%;
+    transform: translate(-50%, -100%);
+    background-color: black;
+    border: 3px solid #6dffa5;
+    box-shadow: 0px 0px 7px #6dffa5;
+    font-family: "Jua", sans-serif;
+    color: white;
+}
+.removebox {
+    border: 3px solid #ff5b96;
+    box-shadow: 0px 0px 7px #ff5b96;
+}
+.x_button span:nth-child(1),
+.x_button span:nth-child(2) {
+    width: 25px;
+    height: 4px;
+    background-color: #6dffa5;
+    box-shadow: 0px 0px 7px #6dffa5;
+    border-radius: 3px;
+    position: absolute;
+    right: 0px;
+    top: 10px;
+}
+.x_button span:nth-child(1) {
+    transform: rotate(45deg);
+}
+.x_button span:nth-child(2) {
+    transform: rotate(-45deg);
+}
+.removebox .x_button span {
+    background-color: #ff5b96;
+    box-shadow: 0px 0px 7px #ff5b96;
+}
+.createbox_title,
+.removebox_title {
+    font-family: "Jua", sans-serif;
+    font-size: 20px;
+    color: #b9ffd4;
+}
+.removebox_title {
+    color: #ffb3ce;
+}
+.createbox_msg,
+.removebox_msg {
+    font-family: "NanumSquare", sans-serif;
+    height: 20px;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+.createbox_input,
+.removebox_input {
+    width: 75px;
+    height: 30px;
+    background-color: black;
+    border: 2px solid #6dffa5;
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px #6dffa5;
+    font-family: "Jua", sans-serif;
+    font-size: 20px;
+    text-align: center;
+    color: white;
+}
+.removebox_input {
+    border: 2px solid #ff5b96;
+    box-shadow: 0px 0px 5px #ff5b96;
+}
+.createbox_button,
+.removebox_button {
+    margin-left: 20px;
+    width: 74px;
+    height: 34px;
+    background-color: black;
+    border: 2px solid #6dffa5;
+    box-shadow: 0px 0px 5px #6dffa5;
+    font-family: "Jua", sans-serif;
+    font-size: 20px;
+    text-align: center;
+    color: white;
+}
+.removebox_button {
+    border: 2px solid #ff5b96;
+    box-shadow: 0px 0px 5px #ff5b96;
+}
+.menu {
+    display: block;
+    text-align: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: 75px;
+    padding-top: 5px;
+}
+.tip {
+    display: block;
+    width: 100%;
+    height: 35px;
+    font-size: 22px;
+    font-family: "Jua", sans-serif;
+    text-align: center;
+    color: white;
+    padding-top: 5px;
+}
+.layout {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes fadeIn2 {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes fadeIn3 {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.normal {
+    animation-name: fadeIn;
+    animation-duration: 0.5s;
+}
+.male {
+    animation-name: fadeIn2;
+    animation-duration: 0.5s;
+}
+.const {
+    animation-name: fadeIn3;
+    animation-duration: 0.5s;
+}

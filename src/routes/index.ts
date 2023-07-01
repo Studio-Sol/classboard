@@ -477,13 +477,24 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
     app.get("/calendar", (req, res) => {
         res.render("calendar.html");
     });
-    app.post("/api/admin/new-all-notice", async (req, res) => {
-        let inserted = await new AllNotice({
-            icon: req.body.icon,
-            title: req.body.title,
-            html: req.body.html,
-            footer: req.body.footer,
-        }).save();
-        res.json(inserted);
+    app.get("/teacher/seat", async (req, res) => {
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        if (user.type != "teacher") {
+            res.redirect("/");
+            return;
+        }
+        res.render("seat/index.html");
+    });
+    app.get("/teacher/seat/print", async (req, res) => {
+        var user = await User.findOne({
+            _id: new ObjectId(req.session.user_id),
+        });
+        if (user.type != "teacher") {
+            res.redirect("/");
+            return;
+        }
+        res.render("seat/print.html");
     });
 };
