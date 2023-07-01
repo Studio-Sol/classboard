@@ -100,8 +100,6 @@ export default async ({
             dbName: "school",
             collectionName: "sessions",
         }),
-        resave: false,
-        saveUninitialized: false,
         genid: (req) => {
             return req.ip + "-" + UID.sync(24);
         },
