@@ -8,6 +8,5 @@
 $ git flow feature start <feature name>
 $ git add .
 $ git commit -m "message"
-$ git flow feature publish <feature name>
 $ git flow feature pull origin <feature name>
 ```
