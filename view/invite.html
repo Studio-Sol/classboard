@@ -2,108 +2,49 @@
 <html lang="ko">
     <head>
         <%- include("./common/head.ejs") %>
-        <title>클래스 가입</title>
-
-        <link
-            rel="icon"
-            type="image/png"
-            href="/static/find-school/image/icons/favicon.ico"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/bootstrap/css/bootstrap.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/fonts/font-awesome-4.7.0/css/font-awesome.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/animate/animate.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/css-hamburgers/hamburgers.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/select2/select2.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/util.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/main.css"
-        />
+        <title>학급 등록</title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css" />
         <link rel="stylesheet" href="/static/style.css" />
     </head>
     <body>
-        <div class="contact1">
-            <div class="container-contact1">
-                <div class="contact1-pic js-tilt" data-tilt>
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/512/1904/1904200.png"
-                        alt="IMG"
-                    />
+        <div
+            class="container"
+            style="
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+        >
+            <div
+                class="box p-3"
+                style="
+                    display: flex;
+                    align-items: center;
+                    flex-direction: column;
+                "
+            >
+                <h1 style="width: fit-content">학급 가입</h1>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">초대코드</span>
+                    </div>
+                    <input type="text" id="invite-code" class="form-control" />
                 </div>
-
-                <form class="contact1-form validate-form">
-                    <span class="contact1-form-title">
-                        클래스 초대 코드 입력
-                    </span>
-
-                    <div
-                        class="wrap-input1 validate-input"
-                        data-validate="필수사항입니다."
-                    >
-                        <input
-                            class="input1"
-                            type="text"
-                            id="code"
-                            placeholder="초대 코드"
-                        />
-                        <span class="shadow-input1"></span>
-                    </div>
-
-                    <div class="container-contact1-form-btn">
-                        <button class="contact1-form-btn">
-                            <span>
-                                제출
-                                <i
-                                    class="fa fa-long-arrow-right"
-                                    aria-hidden="true"
-                                ></i>
-                            </span>
-                        </button>
-                    </div>
-                </form>
+                <div class="input-group mb-3">
+                    <input type="submit" id="submit" class="form-control" />
+                </div>
             </div>
         </div>
-
         <script>
-            if ("<%= error %>") {
-                alert("존재하지 않는 초대코드입니다.");
+            if (`<%=error%>`) {
+                alert("유효하지 않은 초대코드입니다!");
             }
-        </script>
-
-        <script src="/static/find-school/vendor/jquery/jquery-3.2.1.min.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/popper.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/bootstrap.min.js"></script>
-        <script src="/static/find-school/vendor/select2/select2.min.js"></script>
-        <script>
-            $("form").on("submit", (e) => {
-                e.preventDefault();
-                location = "/invite/" + $("#code").val();
+            document.getElementById("submit").addEventListener("click", () => {
+                location.href =
+                    "/invite/" + document.getElementById("invite-code").value;
             });
         </script>
+        <script src="/static/common.js"></script>
     </body>
 </html>

@@ -4,37 +4,16 @@ import { ObjectId } from "bson";
 // JWT
 import jwt from "../modules/jwt.js";
 import Neis from "../modules/neis.js";
-import auth from "../api/auth.js";
+import auth from "./auth.js";
 import Class from "../models/class.entity.js";
 import User from "../models/user.entity.js";
 import Post from "../models/post.entity.js";
 import Notice from "../models/notice.entity.js";
 import Reply from "../models/reply.entity.js";
-import AllNotice from "../models/all_notice.entity.js";
+import { getMondayDate, getUserById } from "../util/index.js";
+import teacher from "./teacher.js";
 export default (app: express.Application, neis: Neis, serviceURL) => {
-    // UTILS
-    function getMondayDate(paramDate: Date) {
-        paramDate.setUTCHours(0, 0, 0, 0);
-
-        var day = paramDate.getDay();
-        if (day == 6) var diff = paramDate.getDate() + 2;
-        else var diff = paramDate.getDate() - day + 1;
-        var result = new Date(paramDate.setDate(diff))
-            .toISOString()
-            .substring(0, 10);
-        return result;
-    }
-
-    // python random.choice
-    function choice(a: string, k = 1) {
-        var return_array = [];
-        for (var i = 0; i < k; i++) {
-            return_array.push(a[Math.floor(Math.random() * a.length)]);
-        }
-        return return_array;
-    }
-    // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
+    // STATUS BOT
     app.head("/", (req, res) => {
         res.set("status", "success");
         res.end();
@@ -46,15 +25,8 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
     auth(app, serviceURL);
     // MAIN
     app.get("/main", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
-        var classroom = await Class.findOne({
-            _id: user.class,
-        });
-        if (user.waiting) {
-            res.render("wait.html", { waiting: user.class });
-        } else if (user.class == null) {
+        var user = await getUserById(req.session.user_id);
+        if (!user.class) {
             if (user.type == "teacher") {
                 res.redirect("/register-class");
             } else if (user.type == "student") {
@@ -62,156 +34,22 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
             } else {
                 res.redirect("/login/type");
             }
-        } else {
-            var monday = getMondayDate(new Date());
-            res.render("main.html", {
-                monday: monday,
-                grade: classroom.class.GRADE,
-                classroom: classroom.class.CLASS_NM,
-                school_name: classroom.school.SCHUL_NM,
-                user: user,
-            });
+            return;
         }
-    });
-
-    app.get("/register-class", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
+        var classroom = await Class.findOne({
+            _id: user.class,
         });
-        if (user.type != "teacher" || user.class != null) {
-            res.redirect("/");
-            return;
+        if (user.waiting) {
+            return res.render("wait.html", { waiting: user.class });
         }
-        res.render("find-school.html", { error: req.query.error });
-    });
-
-    app.post("/register-class", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
+        var monday = getMondayDate(new Date());
+        res.render("main.html", {
+            monday: monday,
+            grade: classroom.class.GRADE,
+            classroom: classroom.class.CLASS_NM,
+            school_name: classroom.school.SCHUL_NM,
+            user: user,
         });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
-        if (user.class != null) {
-            res.redirect("/");
-            return;
-        }
-        let schools;
-        try {
-            schools = await neis.getSchoolInfo(
-                {
-                    SCHUL_NM: req.body.school,
-                },
-                {
-                    pSize: 50,
-                }
-            );
-        } catch {}
-
-        for (const s of schools) {
-            if (s.SCHUL_NM == req.body.school) {
-                var school = s;
-                break;
-            }
-        }
-        if (!school) {
-            if (schools.length == 50) {
-                res.redirect("/register-class?error=noschool");
-                return;
-            }
-            if (schools.length != 0) {
-                res.render("select-school.html", {
-                    schools: schools,
-                    grade: req.body.grade,
-                    classroom: req.body.class,
-                });
-                return;
-            } else {
-                res.redirect("/register-class?error=noschool");
-                return;
-            }
-        }
-        let classrooms;
-        try {
-            classrooms = await neis.getClassInfo(
-                {
-                    SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-                    ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-                    GRADE: req.body.grade,
-                },
-                {
-                    pSize: 100,
-                }
-            );
-        } catch {}
-
-        for (const c of classrooms) {
-            if (c.CLASS_NM == req.body.class) {
-                var classroom = c;
-                break;
-            }
-        }
-        if (!classroom) {
-            if (req.body.select_school) {
-                res.json({
-                    success: false,
-                    redirect: "/register-class?error=noclass",
-                });
-                return;
-            }
-            res.redirect("/register-class?error=noclass");
-            return;
-        }
-        var ay = classroom.AY;
-        var tmp = await Class.findOne({
-            "school.SD_SCHUL_CODE": school.SD_SCHUL_CODE,
-            "school.ATPT_OFCDC_SC_CODE": school.ATPT_OFCDC_SC_CODE,
-            "school.SCHUL_NM": school.SCHUL_NM,
-            "class.GRADE": classroom.GRADE,
-            "class.CLASS_NM": classroom.CLASS_NM,
-            ay: ay,
-        });
-        if (tmp != null) {
-            if (req.body.select_school) {
-                res.json({
-                    success: false,
-                    redirect: "/register-class?error=alreadyexist",
-                });
-                return;
-            }
-            res.redirect("/register-class?error=alreadyexist");
-            return;
-        }
-        var i = await new Class({
-            school: {
-                SD_SCHUL_CODE: school.SD_SCHUL_CODE,
-                ATPT_OFCDC_SC_CODE: school.ATPT_OFCDC_SC_CODE,
-                SCHUL_NM: school.SCHUL_NM,
-            },
-            class: {
-                MADE: user._id,
-                GRADE: classroom.GRADE,
-                CLASS_NM: classroom.CLASS_NM,
-            },
-            ay: ay,
-            invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join(""),
-        }).save();
-        await User.updateOne(
-            {
-                _id: new ObjectId(req.session.user_id),
-            },
-            {
-                $set: {
-                    class: i._id,
-                },
-            }
-        );
-        if (req.body.select_school) {
-            res.json({ success: true, redirect: "/main" });
-            return;
-        }
-        res.redirect("/");
     });
 
     app.get("/invite", async (req, res) => {
@@ -233,7 +71,7 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
         var user = await User.findOne({
             _id: new ObjectId(req.session.user_id),
         });
-        if (user.class != null) {
+        if (user.class) {
             res.redirect("/");
             return;
         }
@@ -241,7 +79,9 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
             res.redirect("/");
             return;
         }
-        var classroom = await Class.findOne({ invite: req.params.code });
+        var classroom = await Class.findOne({
+            invite: req.params.code.toUpperCase(),
+        });
 
         if (classroom) {
             await User.updateOne(
@@ -252,39 +92,6 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
         } else {
             res.redirect("/invite?error=noinvite");
         }
-    });
-
-    app.get("/logout", (req, res) => {
-        delete req.session.user_id;
-        res.redirect("/login");
-    });
-
-    // 선생님 페이지
-    app.get("/teacher", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
-        var classroom = await Class.findOne({ _id: user.class });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
-        var students = await User.find({
-            class: user.class,
-            waiting: false,
-            type: "student",
-        }).exec();
-        var join_request = await User.find({
-            class: user.class,
-            waiting: true,
-            type: "student",
-        }).exec();
-        res.render("teacher.html", {
-            classroom: classroom,
-            user: user,
-            students: students,
-            join_request: join_request,
-        });
     });
 
     // 소셜 기능
@@ -477,24 +284,8 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
     app.get("/calendar", (req, res) => {
         res.render("calendar.html");
     });
-    app.get("/teacher/seat", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
-        res.render("seat/index.html");
+    app.get("/how-to-install-app", (req, res) => {
+        res.render("how_to_install_app.html");
     });
-    app.get("/teacher/seat/print", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
-        res.render("seat/print.html");
-    });
+    teacher(app, neis);
 };

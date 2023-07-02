@@ -21,6 +21,7 @@ import Neis from "../modules/neis.js";
 import { fileURLToPath } from "url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 import mealEntity from "../models/meal.entity.js";
+import { getUserById } from "../util/index.js";
 function formatDate(date: Date) {
     return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
 }
@@ -30,6 +31,17 @@ export default async (
     serviceURL: string
 ) => {
     await routes(app, neis, serviceURL);
+    app.use("/api/*", async (req, res, next) => {
+        var user = await getUserById(req.session.user_id);
+        if (!user.class) return res.sendStatus(403);
+        req.session.user = user;
+        next();
+    });
+    app.use("/api/teacher/*", async (req, res, next) => {
+        console.log(req.session.user);
+        if (req.session.user.type != "teacher") return res.sendStatus(403);
+        next();
+    });
     app.post("/api/calendar", async (req, res) => {
         var user = await User.findOne({
             _id: new ObjectId(req.session.user_id),
@@ -332,7 +344,7 @@ export default async (
     });
 
     app.get("/api/timetable", async (req, res) => {
-        function refine(data) {
+        const refine = (data: any[]) => {
             var result = [];
             for (const d of data) {
                 result.push({
@@ -342,168 +354,81 @@ export default async (
                 });
             }
             return result;
-        }
-        var friday = new Date(
-            new Date(
-                `${(req.query.monday as string).slice(0, 4)}-${(
-                    req.query.monday as string
-                ).slice(4, 6)}-${(req.query.monday as string).slice(6, 8)}`
-            ).getTime() +
-                1000 * 60 * 60 * 24 * 5
+        };
+        var m = req.query.monday as string;
+        var monday = new Date(
+            `${m.slice(0, 4)}-${m.slice(4, 6)}-${m.slice(6, 8)}`
         );
+        var friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
 
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
+        var user = await getUserById(req.session.user_id);
         var classroom = await Class.findOne({
             _id: user.class,
         });
-        console.log(classroom);
         if (!req.query.refresh) {
-            var cache = [];
-            for (var i = 0; i < 5; i++) {
-                var tmp = new Date(
-                    new Date(
-                        `${(req.query.monday as string).slice(0, 4)}-${(
-                            req.query.monday as string
-                        ).slice(4, 6)}-${(req.query.monday as string).slice(
-                            6,
-                            8
-                        )}`
-                    ).getTime() +
-                        1000 * 60 * 60 * 24 * i
-                );
-                cache.push.apply(
-                    cache,
-                    await Timetable.find({
-                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                        ALL_TI_YMD: formatDate(tmp),
-                        CLASS_NM: classroom.class.CLASS_NM,
-                        GRADE: classroom.class.GRADE,
-                    }).exec()
-                );
-            }
+            var cache = await Timetable.find({
+                date: { $lte: friday, $gt: monday },
+            }).exec();
             if (cache.length > 0) {
-                res.json({
+                return res.json({
                     success: true,
                     table: refine(cache),
                     friday: formatDate(friday),
                 });
-                return;
             }
-            try {
-                var timetable = await neis.getTimetable(
-                    {
-                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                    },
-                    {
-                        TI_FROM_YMD: req.query.monday as string,
-                        TI_TO_YMD: formatDate(friday),
-                        CLASS_NM: classroom.class.CLASS_NM,
-                        GRADE: classroom.class.GRADE,
-                    },
-                    {
-                        pSize: 100,
-                    }
-                );
-            } catch {
-                res.json({ success: false, message: "NEIS API ERROR" });
-                return;
-            }
-            var result = [];
-            for (let t of timetable) {
-                result.push({
-                    ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: t.SD_SCHUL_CODE,
-                    ALL_TI_YMD: t.ALL_TI_YMD,
-                    CLASS_NM: t.CLASS_NM,
-                    GRADE: t.GRADE,
-                    ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
-                    PERIO: t.PERIO,
-                });
-            }
-
-            Timetable.insertMany(result);
-            res.json({
-                success: true,
-                table: refine(Timetable),
-                friday: formatDate(friday),
-            });
         } else {
-            for (var i = 0; i < 5; i++) {
-                var tmp = new Date(
-                    new Date(
-                        `${(req.query.monday as string).slice(0, 4)}-${(
-                            req.query.monday as string
-                        ).slice(4, 6)}-${(req.query.monday as string).slice(
-                            6,
-                            8
-                        )}`
-                    ).getTime() +
-                        1000 * 60 * 60 * 24 * i
-                );
-
-                await Timetable.deleteMany({
-                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                    ALL_TI_YMD: formatDate(tmp),
-                    CLASS_NM: classroom.class.CLASS_NM,
-                    GRADE: classroom.class.GRADE,
-                });
-            }
-            try {
-                var timetables = await neis.getTimetable(
-                    {
-                        ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                    },
-                    {
-                        TI_FROM_YMD: req.query.monday as string,
-                        TI_TO_YMD: formatDate(friday),
-                        CLASS_NM: classroom.class.CLASS_NM,
-                        GRADE: classroom.class.GRADE,
-                    },
-                    {
-                        pSize: 100,
-                    }
-                );
-            } catch {
-                res.json({
-                    success: false,
-                });
-                return;
-            }
-            var result = [];
-            for (let t of timetables) {
-                result.push({
-                    ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: t.SD_SCHUL_CODE,
-                    ALL_TI_YMD: t.ALL_TI_YMD,
-                    CLASS_NM: t.CLASS_NM,
-                    GRADE: t.GRADE,
-                    ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
-                    PERIO: t.PERIO,
-                });
-            }
-            Timetable.insertMany(result);
-            res.json({
-                success: true,
-                table: refine(result),
-                friday: formatDate(friday),
+            await Timetable.deleteMany({
+                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                CLASS_NM: classroom.class.CLASS_NM,
+                GRADE: classroom.class.GRADE,
+                date: { $lte: friday },
             });
         }
+        try {
+            var timetable = await neis.getTimetable(
+                {
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                },
+                {
+                    TI_FROM_YMD: req.query.monday as string,
+                    TI_TO_YMD: formatDate(friday),
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE,
+                },
+                {
+                    pSize: 100,
+                }
+            );
+        } catch {
+            res.json({ success: false, message: "NEIS API ERROR" });
+            return;
+        }
+        var result = [];
+        for (let t of timetable) {
+            result.push({
+                date: new Date(),
+                ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: t.SD_SCHUL_CODE,
+                ALL_TI_YMD: t.ALL_TI_YMD,
+                CLASS_NM: t.CLASS_NM,
+                GRADE: t.GRADE,
+                ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
+                PERIO: t.PERIO,
+            });
+        }
+
+        Timetable.insertMany(result);
+        res.json({
+            success: true,
+            table: refine(result),
+            friday: formatDate(friday),
+        });
     });
 
     app.get("/api/teacher/student.ban", async (req, res) => {
-        var user = await User.findOne({
-            _id: new ObjectId(req.session.user_id),
-        });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
         try {
             new ObjectId(req.query.user as string);
         } catch {
@@ -513,11 +438,10 @@ export default async (
         await User.updateOne(
             {
                 _id: new ObjectId(req.query.user as string),
-                class: user.class,
             },
             {
-                $set: {
-                    class: null,
+                $unset: {
+                    class: 1,
                 },
             }
         );
@@ -528,10 +452,6 @@ export default async (
         var user = await User.findOne({
             _id: new ObjectId(req.session.user_id),
         });
-        if (user.type != "teacher") {
-            res.redirect("/");
-            return;
-        }
         try {
             new ObjectId(req.query.user as string);
         } catch {
@@ -541,7 +461,6 @@ export default async (
         await User.updateOne(
             {
                 _id: new ObjectId(req.query.user as string),
-                class: user.class,
             },
             {
                 $set: {
@@ -575,7 +494,6 @@ export default async (
         await User.updateOne(
             {
                 _id: new ObjectId(req.query.user as string),
-                class: user.class,
             },
             {
                 $set: {
@@ -820,13 +738,6 @@ export default async (
         }
     });
 
-    // ERRORs
-    // 404 NOT FOUND
-    app.use((req, res) => {
-        console.log(req.originalUrl);
-        res.status(404).render("404.html", { user_id: req.session.user_id });
-    });
-
     // STATIC과 API는 404페이지 렌더링 안함
     app.use("/static/", (req, res) => {
         res.sendStatus(404);
@@ -835,7 +746,12 @@ export default async (
     app.use("/api/", (req, res) => {
         res.sendStatus(404);
     });
-
+    // ERRORs
+    // 404 NOT FOUND
+    app.use((req, res) => {
+        console.log(req.originalUrl);
+        res.status(404).render("404.html", { user_id: req.session.user_id });
+    });
     app.use(
         (
             err: any,

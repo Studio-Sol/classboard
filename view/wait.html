@@ -2,71 +2,27 @@
 <html lang="ko">
     <head>
         <%- include("./common/head.ejs") %>
-        <title>클래스 가입</title>
-
-        <link
-            rel="icon"
-            type="image/png"
-            href="/static/find-school/image/icons/favicon.ico"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/bootstrap/css/bootstrap.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/fonts/font-awesome-4.7.0/css/font-awesome.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/animate/animate.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/css-hamburgers/hamburgers.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/select2/select2.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/util.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/main.css"
-        />
+        <title>학급 등록</title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css" />
         <link rel="stylesheet" href="/static/style.css" />
     </head>
     <body>
-        <div class="contact1">
-            <div class="container-contact1">
-                <div class="contact1-pic js-tilt" data-tilt>
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/512/1904/1904200.png"
-                        alt="IMG"
-                    />
-                </div>
-                <form class="contact1-form validate-form">
-                    <span class="contact1-form-title" style="width: 120%">
-                        클래스 가입 신청이 완료되었습니다.<br />
-                        선생님의 승인을 기다리고있습니다.
-                    </span>
-                </form>
+        <div
+            class="container"
+            style="
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+        >
+            <div class="box p-3">
+                <h1>가입 신청이 완료되었습니다.</h1>
+                <p>선생님의 승인을 기다리고 있습니다.</p>
+                <br />
+                <a href="/">돌아가기</a>
             </div>
         </div>
-
-        <script src="/static/find-school/vendor/jquery/jquery-3.2.1.min.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/popper.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/bootstrap.min.js"></script>
-        <script src="/static/find-school/vendor/select2/select2.min.js"></script>
+        <script src="/static/common.js"></script>
     </body>
 </html>

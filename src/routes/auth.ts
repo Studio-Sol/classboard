@@ -4,8 +4,6 @@ import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.entity.js";
 import { ObjectId } from "bson";
 export default (app: express.Application, serviceURL) => {
-    console.log("[AUTH] setting up..");
-    // SIGNUP and LOGIN and LOGOUT
     app.get("/login", (req, res) => {
         res.render("login/login.html");
     });
@@ -166,7 +164,7 @@ export default (app: express.Application, serviceURL) => {
         var user = await User.findOne({
             _id: new ObjectId(req.session.user_id),
         });
-        if (user.class != null) {
+        if (user.class) {
             res.redirect("/");
         } else {
             res.render("login/type.html", { id: req.session.user_id });
@@ -177,7 +175,9 @@ export default (app: express.Application, serviceURL) => {
         var user = await User.findOne({
             _id: new ObjectId(req.session.user_id),
         });
-        if (user.class == null) {
+        if (user.class) {
+            res.redirect("/");
+        } else {
             if (req.query.type == "teacher") {
                 await User.updateOne(
                     { _id: new ObjectId(req.session.user_id) },
@@ -193,8 +193,11 @@ export default (app: express.Application, serviceURL) => {
                 res.clearCookie("next");
                 res.redirect(next);
             }
-        } else {
-            res.redirect("/");
         }
+    });
+
+    app.get("/logout", (req, res) => {
+        req.session.destroy();
+        res.redirect("/");
     });
 };

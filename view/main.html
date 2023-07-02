@@ -81,6 +81,11 @@
                 animation: fadeout 0.5s;
             }
         </style>
+        <script type="module">
+            import "https://cdn.jsdelivr.net/npm/@pwabuilder/pwaupdate";
+            const el = document.createElement("pwa-update");
+            document.body.appendChild(el);
+        </script>
     </head>
 
     <body>
@@ -399,7 +404,7 @@
                 </div>
             </div>
         </div>
-
+        <script src="/static/common.js"></script>
         <script>
             var monday = `<%= monday.replaceAll("-", "") %>`;
             var grade = "<%= grade %>";

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <%- include("./common/head.ejs") %>
+        <title>학급 등록</title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css" />
+        <link rel="stylesheet" href="/static/style.css" />
+    </head>
+    <body>
+        <div
+            class="container"
+            style="
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+        >
+            <div
+                class="box p-3"
+                style="
+                    display: flex;
+                    align-items: center;
+                    flex-direction: column;
+                "
+            >
+                <h1 style="width: fit-content">앱 설치 방법</h1>
+                <div>
+                    <div id="android" class="mt-2">
+                        <h2>1. Android</h2>
+                        <div>
+                            <ol>
+                                <li>
+                                    Android 기기에서 Chrome
+                                    <img
+                                        src="//lh3.googleusercontent.com/-20NuyB0WC36P5OvH-HnVwgMQlIRx47n0At3ZLRZuU2UIuXpsDZVhrsFJMW5DQkQVQU=w36-h36"
+                                        alt="Chrome"
+                                        data-mime-type="image/png"
+                                        data-alt-src="//lh3.googleusercontent.com/-20NuyB0WC36P5OvH-HnVwgMQlIRx47n0At3ZLRZuU2UIuXpsDZVhrsFJMW5DQkQVQU"
+                                        width="18"
+                                        height="18"
+                                    />을 엽니다.
+                                </li>
+                                <li>클래스보드 홈페이지로 이동합니다.</li>
+                                <li>
+                                    <strong>'앱 설치하기'</strong>를 탭합니다.
+                                </li>
+                                <li>화면에 표시되는 안내를 따릅니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div id="ios" class="mt-4">
+                        <h2>2. IPhone/Ipad</h2>
+                        <div>
+                            <ol>
+                                <li>
+                                    IPhone/IPad 기기에서 Safari
+                                    <img
+                                        src="https://mblogthumb-phinf.pstatic.net/MjAxNjEyMjlfMiAg/MDAxNDgzMDE4MDI5OTc4.yaDuu1PtNxZ3fW8veZ2ymYZZDCENq9zCELGaGTuHhkwg.Oc3Kq9PJOnuk6aY93IsIJfmdd1crDwo8v3yPicmhvMUg.PNG.krazymouse/%EC%82%AC%ED%8C%8C%EB%A6%AC.png?type=w800"
+                                        alt="Safari"
+                                        width="18"
+                                        height="18"
+                                    />을 엽니다.
+                                </li>
+                                <li>클래스보드 홈페이지로 이동합니다.</li>
+                                <li>
+                                    <strong>'앱 설치하기'</strong>를 탭합니다.
+                                </li>
+                                <li>화면에 표시되는 안내를 따릅니다.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <p style="color: red">
+                        크롬, 사파리 이외의 브라우저에서는 설치할 수 없습니다
+                    </p>
+                </div>
+            </div>
+        </div>
+        <script src="/static/common.js"></script>
+    </body>
+</html>

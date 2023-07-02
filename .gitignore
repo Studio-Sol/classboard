@@ -4,3 +4,4 @@
 /static/img/*.webp
 /dist/
 .env
+/.adminjs/

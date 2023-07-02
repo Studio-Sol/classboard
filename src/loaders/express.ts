@@ -106,6 +106,8 @@ export default async ({
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 30,
         },
+        resave: false,
+        saveUninitialized: false,
     });
 
     app.use(session);
@@ -119,7 +121,7 @@ export default async ({
     app.set("trust proxy", 1);
     app.use(
         cors({
-            origin: ["sol-studio.ga", "discord.com"], //frontend server localhost:8080
+            origin: ["sol-studio.ga", "discord.com"],
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials: true, // enable set cookie
         })
@@ -136,13 +138,6 @@ export default async ({
     app.disable("x-powered-by");
     app.use((req, res, next) => {
         res.setHeader("X-Powered-By", "Sol Studio Server");
-        if (
-            req.path.startsWith("/admin") &&
-            req.session.user_id != "6492c566b816d5acb3928260"
-        ) {
-            res.sendStatus(403);
-            return;
-        }
         if (req.ip != "114.207.98.231" && inspecting) {
             res.render("inspect.html");
         } else if (!req.session.user_id) {
