@@ -186,7 +186,7 @@
         <script>
             moment.locale("ko");
             document.querySelector("#timestamp").innerHTML = moment(
-                new Date(parseInt("<%= data.timestamp %>"))
+                new Date(parseInt(`<%= data.timestamp %>`))
             ).fromNow();
             var id = "<%= data._id %>";
             $(".reply-item").on("click", (event) => {
@@ -230,5 +230,6 @@
                 });
             }
         </script>
+        <script src="/static/common.js"></script>
     </body>
 </html>

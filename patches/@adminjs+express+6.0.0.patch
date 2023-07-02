@@ -1,0 +1,13 @@
+diff --git a/node_modules/@adminjs/express/lib/buildAuthenticatedRouter.js b/node_modules/@adminjs/express/lib/buildAuthenticatedRouter.js
+index 6fa1846..160e409 100644
+--- a/node_modules/@adminjs/express/lib/buildAuthenticatedRouter.js
++++ b/node_modules/@adminjs/express/lib/buildAuthenticatedRouter.js
+@@ -53,7 +53,7 @@ export const buildAuthenticatedRouter = (admin, auth, predefinedRouter, sessionO
+         next();
+     });
+     // todo fix types
+-    router.use(session(Object.assign(Object.assign({}, sessionOptions), { secret: auth.cookiePassword, name: auth.cookieName || "adminjs" })));
++    router.use(session(Object.assign(Object.assign({}, sessionOptions), { resave:false, saveUninitialized:false,  secret: auth.cookiePassword, name: auth.cookieName || "adminjs" })));
+     router.use(formidableMiddleware(formidableOptions));
+     withLogin(router, admin, auth);
+     withLogout(router, admin);

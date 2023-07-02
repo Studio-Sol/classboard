@@ -206,6 +206,9 @@ async function fetchTimeTable(fmonday, refresh) {
             setTimeout(() => {
                 $("#loading").style.display = "none";
             }, 500);
+            document
+                .querySelectorAll(".class")
+                .forEach((e) => (e.innerHTML = ""));
             var tmp = new Date(
                 fmonday.slice(0, 4) +
                     "-" +

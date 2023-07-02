@@ -5,7 +5,7 @@ interface User {
     email: string;
     name: string;
     avatar: string;
-    class: ObjectId;
+    class: ObjectId | null;
     waiting: boolean;
     signup_at: number;
 }

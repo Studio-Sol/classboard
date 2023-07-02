@@ -1,0 +1,28 @@
+{
+    "background_color": "#ffffff",
+    "description": "시간표, 급식, 공지사항, 학급 내 커뮤니티까지 언제 어디서나 확인하세요!",
+    "dir": "ltr",
+    "display": "standalone",
+    "name": "클래스보드",
+    "orientation": "any",
+    "scope": "/",
+    "short_name": "클래스보드",
+    "start_url": "/main",
+    "theme_color": "#ffffff",
+    "categories": ["education"],
+    "screenshots": [],
+    "icons": [
+        {
+            "src": "https://classboard.kr/static/common/logo.png",
+            "type": "image/png",
+            "sizes": "500x500"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "클래스보드",
+            "url": "https://classboard.kr/main",
+            "description": "홈"
+        }
+    ]
+}

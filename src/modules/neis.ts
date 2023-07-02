@@ -446,7 +446,7 @@ export default class Neis {
         this.key = KEY;
         this.api = axios.default.create({
             baseURL: "https://open.neis.go.kr/hub",
-            params: { KEY: "json" },
+            params: { type: "json", key: KEY },
         });
     }
     async getSchoolInfo(

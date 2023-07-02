@@ -11,6 +11,6 @@ const commentSchema = new Schema<Comment>({
     id: String,
     content: String,
     timestamp: Number,
-    reply: [String, null],
+    reply: Schema.Types.Mixed,
 });
 export default model("Comment", commentSchema);

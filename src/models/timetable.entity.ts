@@ -1,5 +1,9 @@
 import { Schema, model } from "mongoose";
 interface Timetable {
+    /**
+     * 캐시 관리를 위한 date
+     */
+    date: Date;
     ATPT_OFCDC_SC_CODE: string;
     SD_SCHUL_CODE: string;
     ALL_TI_YMD: string;
@@ -9,6 +13,7 @@ interface Timetable {
     PERIO: string;
 }
 const timetableSchema = new Schema<Timetable>({
+    date: Date,
     ATPT_OFCDC_SC_CODE: String,
     SD_SCHUL_CODE: String,
     ALL_TI_YMD: String,

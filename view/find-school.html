@@ -2,121 +2,54 @@
 <html lang="ko">
     <head>
         <%- include("./common/head.ejs") %>
-        <title>반 생성</title>
-
-        <link
-            rel="icon"
-            type="image/png"
-            href="/static/find-school/image/icons/favicon.ico"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/bootstrap/css/bootstrap.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/fonts/font-awesome-4.7.0/css/font-awesome.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/animate/animate.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/css-hamburgers/hamburgers.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/vendor/select2/select2.min.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/util.css"
-        />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="/static/find-school/css/main.css"
-        />
+        <title>학급 등록</title>
+        <link rel="stylesheet" href="/static/bootstrap.min.css" />
         <link rel="stylesheet" href="/static/style.css" />
     </head>
     <body>
-        <div class="contact1">
-            <div class="container-contact1">
-                <div class="contact1-pic js-tilt" data-tilt>
-                    <img
-                        src="https://cdn-icons-png.flaticon.com/512/1904/1904200.png"
-                        alt="IMG"
-                    />
+        <div
+            class="container"
+            style="
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            "
+        >
+            <form
+                class="box p-3"
+                style="
+                    display: flex;
+                    align-items: center;
+                    flex-direction: column;
+                "
+                action=""
+                method="post"
+            >
+                <h1 style="width: fit-content">학급 등록</h1>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">학교</span>
+                    </div>
+                    <input type="text" class="form-control" name="school" />
                 </div>
-
-                <form
-                    class="contact1-form validate-form"
-                    action=""
-                    method="POST"
-                >
-                    <span class="contact1-form-title"> 정보 입력 </span>
-
-                    <div
-                        class="wrap-input1 validate-input"
-                        data-validate="필수사항입니다."
-                    >
-                        <input
-                            class="input1"
-                            type="text"
-                            name="school"
-                            placeholder="학교 이름"
-                        />
-                        <span class="shadow-input1"></span>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">학년</span>
                     </div>
-
-                    <div
-                        class="wrap-input1 validate-input"
-                        data-validate="필수사항입니다."
-                    >
-                        <input
-                            class="input1"
-                            type="number"
-                            name="grade"
-                            placeholder="학년"
-                        />
-                        <span class="shadow-input1"></span>
+                    <input type="number" name="grade" class="form-control" />
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">반</span>
                     </div>
-
-                    <div
-                        class="wrap-input1 validate-input"
-                        data-validate="필수사항입니다."
-                    >
-                        <input
-                            class="input1"
-                            type="text"
-                            name="class"
-                            placeholder="반"
-                        />
-                        <span class="shadow-input1"></span>
-                    </div>
-
-                    <div class="container-contact1-form-btn">
-                        <button class="contact1-form-btn">
-                            <span>
-                                제출
-                                <i
-                                    class="fa fa-long-arrow-right"
-                                    aria-hidden="true"
-                                ></i>
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    <input type="text" class="form-control" name="class" />
+                </div>
+                <div class="input-group mb-3">
+                    <input type="submit" class="form-control" />
+                </div>
+            </form>
         </div>
-
         <script>
             switch ("<%= error %>") {
                 case "noschool": {
@@ -137,11 +70,6 @@
                 }
             }
         </script>
-
-        <script src="/static/find-school/vendor/jquery/jquery-3.2.1.min.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/popper.js"></script>
-        <script src="/static/find-school/vendor/bootstrap/js/bootstrap.min.js"></script>
-        <script src="/static/find-school/vendor/select2/select2.min.js"></script>
-        <script src="/static/find-school/js/main.js"></script>
+        <script src="/static/common.js"></script>
     </body>
 </html>

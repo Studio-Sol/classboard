@@ -1,6 +1,43 @@
 <!DOCTYPE html>
 <html lang="ko">
     <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="클래스보드" />
+        <link rel="apple-touch-icon" href="/static/common/logo.png" />
+        <link rel="manifest" href="/static/manifest.json" />
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                    .register("/static/sw.js")
+                    .then((reg) => {
+                        console.log("서비스 워커가 등록됨.", reg);
+                    });
+            }
+            let deferredPrompt;
+
+            window.addEventListener("beforeinstallprompt", (event) => {
+                event.preventDefault();
+                deferredPrompt = event;
+            });
+
+            const installApp = () => {
+                if (!deferredPrompt) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "앱 설치에 실패했습니다.",
+                        html: "이미 앱이 설치되어있거나 앱 설치를 지원하지 않는 브라우저입니다.<br><a href='/how-to-install-app'>앱 설치 방법 보기</a>",
+                    });
+                    return;
+                }
+
+                deferredPrompt.prompt();
+            };
+        </script>
         <%- include("./common/head.ejs") %>
         <script async src="/static/common.js"></script>
         <title>클래스보드</title>
@@ -85,6 +122,12 @@
                 로그인
             </a>
             <% } %>
+            <a
+                class="mt-4 btn btn-lg btn-success"
+                onclick="installApp()"
+                style="box-shadow: 0px 0px 30px 5px var(--bs-success)"
+                >앱 설치하기</a
+            >
         </div>
         <div style="background-color: var(--hover)">
             <div class="container-xl">
@@ -107,6 +150,7 @@
                 </div>
             </div>
         </div>
+        <script src="/static/common.js"></script>
         <% if (!user_id) { %>
         <script
             src="https://accounts.google.com/gsi/client"

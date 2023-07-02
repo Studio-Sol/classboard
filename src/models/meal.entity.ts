@@ -5,6 +5,10 @@ import {
 } from "mongoose";
 interface Meal {
     /**
+     * 캐시 관리를 위한 date
+     */
+    date: Date;
+    /**
      * 표준학교코드
      */
     SD_SCHUL_CODE?: string;
@@ -34,6 +38,7 @@ interface Meal {
     NTR_INFO?: string;
 }
 const mealSchema = new Schema<Meal>({
+    date: Date,
     SD_SCHUL_CODE: String,
     MLSV_YMD: String,
     MMEAL_SC_NM: String,
