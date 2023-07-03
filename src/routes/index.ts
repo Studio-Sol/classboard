@@ -1,8 +1,5 @@
 import express from "express";
 import { ObjectId } from "bson";
-
-// JWT
-import jwt from "../modules/jwt.js";
 import Neis from "../modules/neis.js";
 import auth from "./auth.js";
 import Class from "../models/class.entity.js";
@@ -113,13 +110,7 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
 
     // POST and NOTICE
     app.get("/new-post", async (req, res) => {
-        res.render("new_post.html", {
-            token: await jwt.sign({
-                sub: "sol-img-upload-post",
-                iss: "sol-studio",
-                aud: req.session.user_id,
-            }),
-        });
+        res.render("new_post.html");
     });
 
     app.get("/post", async (req, res) => {
@@ -176,13 +167,7 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
             res.redirect("/");
             return;
         }
-        res.render("new_notice.html", {
-            token: await jwt.sign({
-                sub: "sol-img-upload-notice",
-                iss: "sol-studio",
-                aud: req.session.user_id,
-            }),
-        });
+        res.render("new_notice.html");
     });
 
     app.get("/notice", async (req, res) => {
