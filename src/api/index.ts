@@ -576,8 +576,6 @@ export default async (
     });
 
     app.post("/api/upload-img", async (req, res) => {
-        var verify = await jwt.verify(req.query.token);
-        if (verify != -1) {
             if (req.files) {
                 var uid = UID.sync(64);
                 var url = `/static/img/${req.session.user_id}-${uid}.webp`;
@@ -595,9 +593,6 @@ export default async (
             } else {
                 res.json({ url: null });
             }
-        } else {
-            res.json({ code: -1, message: "JWT TOKEN IS INVALID!!" });
-        }
     });
 
     app.get("/error", (req, res) => {
