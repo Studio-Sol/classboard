@@ -112,9 +112,6 @@
                     $.ajax({
                         url: "/api/delete-user",
                         method: "POST",
-                        data: {
-                            token: "<%- token.token %>",
-                        },
                         success: (data) => {
                             if (data.success) {
                                 location = "/";
