@@ -619,12 +619,6 @@ export default async (
         var classroom = await Class.findOne({ _id: user.class });
 
         res.render("delete-user.html", {
-            token: await jwt.sign({
-                sub: "sol-delete-user",
-                iss: "sol-studio",
-                url: "/delete-user",
-                user: req.session.user_id,
-            }),
             user: user,
             classroom: classroom,
         });
