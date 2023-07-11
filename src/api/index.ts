@@ -368,7 +368,11 @@ export default async (
         });
         if (!req.query.refresh) {
             var cache = await Timetable.find({
-                date: { $lte: friday, $gt: monday },
+                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                CLASS_NM: classroom.class.CLASS_NM,
+                GRADE: classroom.class.GRADE,
+                date: { $lte: friday, $gte: monday },
             }).exec();
             if (cache.length > 0) {
                 return res.json({
@@ -378,13 +382,15 @@ export default async (
                 });
             }
         } else {
-            await Timetable.deleteMany({
-                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                CLASS_NM: classroom.class.CLASS_NM,
-                GRADE: classroom.class.GRADE,
-                date: { $lte: friday },
-            });
+            console.log(
+                await Timetable.deleteMany({
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE,
+                    date: { $lte: friday },
+                }).exec()
+            );
         }
         try {
             var timetable = await neis.getTimetable(
@@ -576,8 +582,6 @@ export default async (
     });
 
     app.post("/api/upload-img", async (req, res) => {
-        var verify = await jwt.verify(req.query.token);
-        if (verify != -1) {
             if (req.files) {
                 var uid = UID.sync(64);
                 var url = `/static/img/${req.session.user_id}-${uid}.webp`;
@@ -595,9 +599,6 @@ export default async (
             } else {
                 res.json({ url: null });
             }
-        } else {
-            res.json({ code: -1, message: "JWT TOKEN IS INVALID!!" });
-        }
     });
 
     app.get("/error", (req, res) => {
@@ -624,12 +625,6 @@ export default async (
         var classroom = await Class.findOne({ _id: user.class });
 
         res.render("delete-user.html", {
-            token: await jwt.sign({
-                sub: "sol-delete-user",
-                iss: "sol-studio",
-                url: "/delete-user",
-                user: req.session.user_id,
-            }),
             user: user,
             classroom: classroom,
         });

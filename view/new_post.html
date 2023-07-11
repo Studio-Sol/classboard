@@ -86,7 +86,6 @@
         <script src="/static/summer_note/lang/summernote-ko-KR.js"></script>
 
         <script>
-            var token = "<%= token.token %>";
             $(document).ready(function () {
                 //여기 아래 부분
                 $("#summernote").summernote({
@@ -125,7 +124,7 @@
                     $.ajax({
                         data: data,
                         type: "POST",
-                        url: "/api/upload-img?token=" + token,
+                        url: "/api/upload-img",
                         contentType: false,
                         processData: false,
                         success: function (data) {
