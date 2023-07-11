@@ -368,7 +368,11 @@ export default async (
         });
         if (!req.query.refresh) {
             var cache = await Timetable.find({
-                date: { $lte: friday, $gt: monday },
+                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                CLASS_NM: classroom.class.CLASS_NM,
+                GRADE: classroom.class.GRADE,
+                date: { $lte: friday, $gte: monday },
             }).exec();
             if (cache.length > 0) {
                 return res.json({
@@ -378,13 +382,15 @@ export default async (
                 });
             }
         } else {
-            await Timetable.deleteMany({
-                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-                CLASS_NM: classroom.class.CLASS_NM,
-                GRADE: classroom.class.GRADE,
-                date: { $lte: friday },
-            });
+            console.log(
+                await Timetable.deleteMany({
+                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                    CLASS_NM: classroom.class.CLASS_NM,
+                    GRADE: classroom.class.GRADE,
+                    date: { $lte: friday },
+                }).exec()
+            );
         }
         try {
             var timetable = await neis.getTimetable(
