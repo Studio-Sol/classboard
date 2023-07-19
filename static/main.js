@@ -202,10 +202,6 @@ async function fetchTimeTable(fmonday, refresh) {
     })
         .then((d) => d.json())
         .then((data) => {
-            $("#loading").classList.add("fadeout");
-            setTimeout(() => {
-                $("#loading").style.display = "none";
-            }, 500);
             document
                 .querySelectorAll(".class")
                 .forEach((e) => (e.innerHTML = ""));

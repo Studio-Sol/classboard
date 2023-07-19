@@ -77,6 +77,16 @@ export default async ({
     app.get("/ads.txt", (req, res) => {
         res.send("google.com, pub-8112542064837410, DIRECT, f08c47fec0942fa0");
     });
+    app.get("/robots.txt", (req, res) => {
+        res.send(
+            "User-agent: Yeti\nUser-agent: Googlebot\nUser-agent: Daum\nDisallow: /admin/"
+        );
+    });
+    app.get("/naver13c8d68c37dd2d2c0ea55b2fb5e202f2.html", (req, res) => {
+        res.send(
+            "naver-site-verification: naver13c8d68c37dd2d2c0ea55b2fb5e202f2.html"
+        );
+    });
 
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());

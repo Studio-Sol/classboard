@@ -77,22 +77,12 @@
                             href="javascript:;"
                             onclick="copy('<%= serviceURL %>/post/<%= data._id %>')"
                         >
-                            <img
+                            <i class="fa fa-share"
                                 style="width: 2rem; height: 2rem"
-                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Chain_link_icon_slanted.png"
-                            />
+                            ></i>
                         </a>
                         <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
                         <script type="text/javascript">
-                            if (
-                                window.matchMedia(
-                                    "(prefers-color-scheme: dark)"
-                                ).matches
-                            ) {
-                                document.querySelector(
-                                    "#share-link"
-                                ).style.filter = "invert()";
-                            }
                             function copy(text) {
                                 var tempElem =
                                     document.createElement("textarea");
@@ -107,15 +97,15 @@
                                 );
                             }
                             Kakao.init("9110cc5f2159504e8844c4a23cea3929");
-                            Kakao.isInitialized();
-                            Kakao.Link.createDefaultButton({
+                            Kakao.Link.createCustomButton({
                                 container: "#share-kakao",
-                                objectType: "text",
-                                text: "글을 공유했습니다 : <%= data.title %>",
-                                link: {
-                                    mobileWebUrl:
-                                        "https://sol-studio.ga/post/<%= data._id %>",
-                                    webUrl: "https://sol-studio.ga/post/<%= data._id %>",
+                                templateId: 96253,
+                                templateArgs: {
+                                    title: "<%= data.title %>",
+                                    description: "<%= data.preview %>",
+                                    avatar: "<%= author.avatar.startsWith("/") ? "https://classboard.kr"+author.avatar.split(".")[0]+".jpg":author.avatar %>",
+                                    username: "<%= author.name %>",
+                                    path: "post/<%= data._id %>"
                                 },
                             });
                         </script>

@@ -203,35 +203,34 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
             res.sendStatus(404);
             return;
         }
-        if (data.question) {
-            let raw = [];
-            if (data.question.type == "select") {
-                raw = await Reply.find({
-                    id: String(data._id),
-                }).exec();
-                var items = {};
-                for (const r of raw) {
-                    if (Object.keys(items).includes(r.answer)) {
-                        items[r.answer] += 1;
-                    } else {
-                        items[r.answer] = 1;
-                    }
-                }
-            } else {
+        let questions = [];
+        if (data.questions) {
+            for (let [idx, q] of data.questions.entries()) {
+                questions.push(q);
                 if (user.type == "teacher") {
-                    raw = await Reply.find({
+                    let rawReplies = await Reply.find({
                         id: String(data._id),
                     }).exec();
-                }
-            }
-            if (user.type == "teacher") {
-                var replies = [];
-                for (const r of raw) {
-                    replies.push({
-                        timestamp: r.timestamp,
-                        user: await User.findOne({ _id: new ObjectId(r.user) }),
-                        answer: r.answer,
-                    });
+                    questions[idx].replies = [];
+                    for (const r of rawReplies) {
+                        questions[idx].replies.push({
+                            timestamp: r.timestamp,
+                            user: await User.findOne({ _id: r.user }),
+                            answer: r.answers[idx],
+                        });
+                    }
+                } else if (q.qtype == "select") {
+                    let rawReplies = await Reply.find({
+                        id: String(data._id),
+                    }).exec();
+                    questions[idx].replies = [];
+                    for (const r of rawReplies) {
+                        questions[idx].replies.push({
+                            timestamp: r.timestamp,
+                            user: await User.findOne({ _id: r.user }),
+                            answer: r.answers[idx],
+                        });
+                    }
                 }
             }
         }
@@ -243,12 +242,12 @@ export default (app: express.Application, neis: Neis, serviceURL) => {
             res.sendStatus(404);
             return;
         }
+        console.log(questions);
         res.render("notice.html", {
-            replies: replies,
             user: user,
-            data: data,
             author: author,
-            items: items ?? null,
+            data: data,
+            questions: questions,
             formatDate: (date) => {
                 let formatted_date =
                     date.getFullYear() +

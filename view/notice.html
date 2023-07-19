@@ -1,235 +1,230 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <%- include("./common/head.ejs") %>
-        <link href="/static/bootstrap.min.css" rel="stylesheet" />
-        <link href="/static/style.css" , rel="stylesheet" />
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title><%= data.title %></title>
-        <style>
-            .reply-item {
-                display: flex;
-                justify-content: space-between;
-                background-color: var(--box-bg);
-                border-style: solid;
-                border-color: var(--text);
-            }
-            .selected {
-                background-color: var(--hover);
-            }
-            .list-group {
-                border-style: solid;
-                border-color: var(--text);
-            }
-        </style>
-    </head>
+<head>
+    <%- include("./common/head.ejs") %>
+    <link href="/static/bootstrap.min.css" rel="stylesheet" />
+    <link href="/static/style.css" , rel="stylesheet" />
 
-    <body>
-        <div class="container-xxl" style="height: 100%" id="main">
-            <div class="row mb-2" style="height: 7em">
-                <div
-                    class="col p-4 mt-3 m-lg-3 shadow box"
-                    style="
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= data.title %></title>
+    <style>
+        .reply-item {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--box-bg);
+            border-style: solid;
+            border-color: var(--text);
+        }
+
+        .selected {
+            background-color: var(--hover);
+        }
+
+        .list-group {
+            border-style: solid;
+            border-color: var(--text);
+        }
+    </style>
+    <script src="https://kit.fontawesome.com/76a19131cd.js" async></script>
+</head>
+
+<body>
+    <div class="container-xxl" style="height: 100%" id="main">
+        <div class="row mb-2" style="height: 7em">
+            <div class="col p-4 mt-3 m-lg-3 shadow box" style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                    "
-                >
-                    <div>
-                        <h2 style="margin: 0px">
-                            <strong id="school-grade-class"
-                                ><%= data.title %></strong
-                            >
-                        </h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col p-4 mt-3 m-lg-3 shadow box">
-                    <div style="float: left">
-                        <img
-                            style="
-                                width: 4rem;
-                                height: 4rem;
-                                margin-right: 1rem;
-                            "
-                            src="<%= author.avatar %>"
-                        />
-                    </div>
-                    <div>
-                        <h5 style="margin: 0px; padding: 0px">
-                            <%= author.name %>
-                        </h5>
-                        <p id="timestamp" style="color: gray"></p>
-                    </div>
-
-                    <hr />
-                    <div class="p-3"><%- data.content %></div>
-
-                    <% if (data.question) { %>
-                    <hr />
-                    <h1>회신</h1>
-                    <% if (data.question.type == "text") { %>
-                    <h3>질문 : <%= data.question.content %></h3>
-                    <div class="input-group">
-                        <textarea
-                            style="width: 100%; background-color: var(--box-bg)"
-                            id="reply-reply"
-                            placeholder="응답을 입력해주세요."
-                        ></textarea
-                        ><br />
-                        <button class="btn btn-primary" onclick="submitText();">
-                            제출
-                        </button>
-                    </div>
-
-                    <% } %> <% if (data.question.type == "select") { %>
-                    <h3>질문 : <%= data.question.content %></h3>
-                    <ul class="list-group">
-                        <% var i = 0 %> <% for (const item of
-                        data.question.items) { %>
-                        <li
-                            class="reply-item list-group-item"
-                            id="reply-item-<%= i %>"
-                        >
-                            <span><%= item.content %></span><% if (item.limit !=
-                            null) { %><span
-                                ><%= items[i]??0 %>/<%= item.limit??"∞" %></span
-                            ><% } %>
-                        </li>
-                        <% i++ %> <% } %>
-                    </ul>
-                    <button class="btn btn-primary" onclick="submitSelect();">
-                        제출
-                    </button>
-                    <% } %> <% if (user.type == "teacher") { %>
-                    <div>
-                        <hr class="mt-5" />
-                        <div class="mt-5">
-                            <div class="alert alert-info" role="alert">
-                                이 부분은 선생님만 보입니다.
-                            </div>
-                            <h3>응답</h3>
-                            <table class="table table-active">
-                                <thead>
-                                    <tr>
-                                        <th>이름</th>
-                                        <th>응답</th>
-                                        <th>시각</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% for (const reply of replies) { %>
-                                    <tr>
-                                        <td><%= reply.user.name %></td>
-                                        <td>
-                                            <%= data.question.type == "select" ?
-                                            data.question.items[reply.answer].content:
-                                            reply.answer %>
-                                        </td>
-                                        <td>
-                                            <%= formatDate(new
-                                            Date(reply.timestamp)) %>
-                                        </td>
-                                    </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <% } %>
-                    </div>
-                    <% } %>
-                    <hr />
-                    <div class="p-3 pt-0">
-                        <p>공유</p>
-                        <a id="share-kakao" href="javascript:;">
-                            <img
-                                style="width: 2rem; height: 2rem"
-                                src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
-                                alt="카카오톡으로 공유"
-                            />
-                        </a>
-                        <a
-                            class="ms-1"
-                            id="share-link"
-                            href="javascript:;"
-                            onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')"
-                        >
-                            <img
-                                style="width: 2rem; height: 2rem"
-                                src="https://upload.wikimedia.org/wikipedia/commons/5/56/Chain_link_icon_slanted.png"
-                            />
-                        </a>
-                        <script type="text/javascript">
-                            function copy(text) {
-                                var tempElem =
-                                    document.createElement("textarea");
-                                tempElem.value = text;
-                                document.body.appendChild(tempElem);
-
-                                tempElem.select();
-                                document.execCommand("copy");
-                                document.body.removeChild(tempElem);
-                                alert(
-                                    "URL이 복사되었습니다. 원하시는 곳에 붙여넣어주세요."
-                                );
-                            }
-                        </script>
-                    </div>
+                    ">
+                <div>
+                    <h2 style="margin: 0px">
+                        <strong id="school-grade-class"><%= data.title %></strong>
+                    </h2>
                 </div>
             </div>
         </div>
-        <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
-        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-        <script>
-            moment.locale("ko");
-            document.querySelector("#timestamp").innerHTML = moment(
-                new Date(parseInt(`<%= data.timestamp %>`))
-            ).fromNow();
-            var id = "<%= data._id %>";
-            $(".reply-item").on("click", (event) => {
-                console.log(event.target);
-                $(".selected").removeClass("selected");
-                if (event.target.id.startsWith("reply-item-"))
-                    $("#" + event.target.id).addClass("selected");
-                else
-                    $("#" + event.target.parentElement.id).addClass("selected");
-            });
-            function submitSelect() {
-                $.ajax({
-                    url: "/api/notice/question/reply",
-                    method: "post",
-                    data: {
-                        id: id,
-                        answer: $(".selected")[0].id.split("-")[2],
-                    },
-                    success: (data) => {
-                        if (!data.success) {
-                            alert(data.message);
-                        } else {
-                            alert("제출되었습니다.");
+        <div class="row">
+            <div class="col p-4 mt-3 m-lg-3 shadow box">
+                <div style="float: left">
+                    <img style="
+                                width: 4rem;
+                                height: 4rem;
+                                margin-right: 1rem;
+                            " src="<%= author.avatar %>" />
+                </div>
+                <div>
+                    <h5 style="margin: 0px; padding: 0px">
+                        <%= author.name %>
+                    </h5>
+                    <p id="timestamp" style="color: gray"></p>
+                </div>
+
+                <hr />
+                <div class="p-3"><%- data.content %></div>
+
+                <% if (questions) { %>
+                    <hr />
+                    <h1>회신</h1>
+                    <div id="replies">
+                        <%let idx = 0%>
+                        <% for (let q of questions) { %> 
+                            <div id="reply-<%= idx %>" data-type="<%= q.qtype %>">
+                                <% if (q.qtype == "text") { %>
+                                    <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
+                                    <div>
+                                        <textarea style="width: 100%; background-color: var(--box-bg)" onkeyup="answers[<%= idx %>] = event.target.value" placeholder="응답을 입력해주세요."></textarea>
+                                    </div>
+                                <% } %> 
+                                <% if (q.qtype == "select") { %>
+                                    <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
+                                    <div>
+                                        <ul class="list-group">
+                                            <% var i = 0 %> 
+                                            <% for (const item of q.items) { %>
+                                                <li class="reply-item list-group-item" onclick="answers[<%= idx %>] = <%= i %>">
+                                                    <span>
+                                                        <%= item.content %>
+                                                    </span>
+                                                    <% if (item.limit != null) { %>
+                                                        <span>
+                                                            <%= item.current??0 %>/<%= item.limit??"∞" %>
+                                                        </span>
+                                                    <% } %>
+                                                </li>
+                                                <% i++ %> 
+                                            <% } %>
+                                        </ul>
+                                    </div>
+                                <% } %> 
+                            </div>
+                            <% idx++%>
+                        <% } %>
+                    </div>
+                    <button class="btn btn-primary mt-2" onclick="submit();">
+                        제출
+                    </button>
+                    <br>
+                    <% if (user.type == "teacher") { %>
+                        <button class="btn btn-secondary mt-5" onclick="hided.style.display='block'; event.target.remove()">응답 보기</button>
+                        <div style="display: none;" id="hided">
+                            <hr class="mt-5" />
+                            <h3>응답</h3>
+                            <%let idx = 0%>
+                            <% for (let q of questions) { %>
+                                <div>
+                                    <div class="mt-5">
+                                        <%= idx+1 %>번 질문
+                                        <table class="table table-active">
+                                            <thead>
+                                                <tr>
+                                                    <th>이름</th>
+                                                    <th>응답</th>
+                                                    <th>시각</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% for (const reply of q.replies) { %>
+                                                <tr>
+                                                    <td><%= reply.user.name %></td>
+                                                    <td>
+                                                        <%= q.qtype == "select" ?
+                                                            q.items[reply.answer].content:
+                                                            reply.answer %>
+                                                    </td>
+                                                    <td>
+                                                        <%= formatDate(new Date(reply.timestamp)) %>
+                                                    </td>
+                                                </tr>
+                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <% idx++ %>
+                            <% } %>
+                        </div>
+                    <% } %>
+                <% } %>
+                <hr />
+                <div class="p-3 pt-0">
+                    <p>공유</p>
+                    <a id="share-kakao" href="javascript:;">
+                        <img style="width: 2rem; height: 2rem" src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" alt="카카오톡으로 공유" />
+                    </a>
+                    <a class="ms-1" id="share-link" href="javascript:;" onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')">
+                        <i class="fa fa-share"style="width: 2rem; height: 2rem"></i>
+                    </a>
+                    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+                    <script type="text/javascript">
+                        function copy(text) {
+                            var tempElem =
+                                document.createElement("textarea");
+                            tempElem.value = text;
+                            document.body.appendChild(tempElem);
+
+                            tempElem.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(tempElem);
+                            alert(
+                                "URL이 복사되었습니다. 원하시는 곳에 붙여넣어주세요."
+                            );
                         }
-                        location.reload();
-                    },
-                });
-            }
-            function submitText() {
-                $.ajax({
-                    url: "/api/notice/question/reply",
-                    method: "post",
-                    data: {
-                        id: id,
-                        answer: $("#reply-reply").val(),
-                    },
-                    success: () => {
+                        Kakao.init("9110cc5f2159504e8844c4a23cea3929");
+                        Kakao.Link.createCustomButton({
+                            container: "#share-kakao",
+                            templateId: 96253,
+                            templateArgs: {
+                                title: "<%= data.title %>",
+                                description: "<%= data.preview %>",
+                                avatar: "<%= author.avatar.startsWith("/") ? "https://classboard.kr"+author.avatar.split(".")[0]+".jpg":author.avatar %>",
+                                username: "<%= author.name %>",
+                                path: "notice/<%= data._id %>"
+                            },
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        let answers = [];
+        answers.length = parseInt(`<%= questions.length %>`);
+        answers.fill(null)
+        moment.locale("ko");
+        document.querySelector("#timestamp").innerHTML = moment(
+            new Date(parseInt(`<%= data.timestamp %>`))
+        ).fromNow();
+        $(".reply-item").on("click", (event) => {
+            $(".selected").removeClass("selected");
+            if (event.target.classList.contains("reply-item"))
+                event.target.classList.add("selected");
+            else
+                event.target.parentElement.classList.add("selected");
+        });
+        var id = "<%= data._id %>";
+        function submit() {
+            $.ajax({
+                url: "/api/notice/question/reply",
+                method: "post",
+                data: {
+                    id: id,
+                    answers: answers,
+                },
+                success: (data) => {
+                    if (!data.success) {
+                        alert(data.message);
+                    } else {
                         alert("제출되었습니다.");
-                        location.reload();
-                    },
-                });
-            }
-        </script>
-        <script src="/static/common.js"></script>
-    </body>
+                    }
+                    location.reload();
+                },
+            });
+        }
+    </script>
+    <script src="/static/common.js"></script>
+</body>
+
 </html>
