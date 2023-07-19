@@ -110,7 +110,7 @@
                     confirm("정말 탈퇴하시겠습니까? 계정을 복구할 수 없습니다.")
                 )
                     $.ajax({
-                        url: "/api/delete-user",
+                        url: `/api/delete-user?t=${new Date().getTime()}`,
                         method: "POST",
                         success: (data) => {
                             if (data.success) {

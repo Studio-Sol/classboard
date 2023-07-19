@@ -2,6 +2,7 @@
 /logs/
 /static/avatar/*.webp
 /static/img/*.webp
+/static/avatar/*.jpg
 /dist/
 .env
 /.adminjs/

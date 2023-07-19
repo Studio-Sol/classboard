@@ -160,7 +160,7 @@
                             <button
                                 class="btn p-0"
                                 style="width: 2em"
-                                onclick="fetchTimeTable(monday, 'true')"
+                                onclick="fetchTimeTable(currentMonday, 'true')"
                                 title="시간표 업데이트"
                             >
                                 <i class="fa fa-refresh"></i>
@@ -361,24 +361,6 @@
             "
         >
             <div></div>
-        </div>
-        <div
-            id="loading"
-            style="
-                position: fixed;
-                height: 100%;
-                width: 100%;
-                background-color: rgba(0, 0, 0, 0.6);
-                top: 0px;
-                left: 0px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            "
-        >
-            <div>
-                <div class="spinner"></div>
-            </div>
         </div>
         <div class="modal fade" tabindex="-1" role="dialog" id="error">
             <div class="modal-dialog" role="document">

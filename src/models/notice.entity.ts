@@ -6,14 +6,14 @@ interface Notice {
     author: ObjectId;
     class: ObjectId;
     timestamp: number;
-    question?: {
-        type:string;
+    questions?: {
+        qtype: string;
         content: string;
-        items?:{
-            content:string;
-            limit:number|null;
-        }
-    };
+        items?: {
+            content: string;
+            limit: number | null;
+        }[];
+    }[];
 }
 const noticeSchema = new Schema<Notice>({
     title: String,
@@ -22,13 +22,17 @@ const noticeSchema = new Schema<Notice>({
     author: Schema.Types.ObjectId,
     class: Schema.Types.ObjectId,
     timestamp: Number,
-    question: {
-        type:String,
-        content: String,
-        items:{
-            content:String,
-            limit:[Number,null],
-        }
-    }
+    questions: [
+        {
+            qtype: String,
+            content: String,
+            items: [
+                {
+                    content: String,
+                    limit: Number,
+                },
+            ],
+        },
+    ],
 });
 export default model("Notice", noticeSchema);
