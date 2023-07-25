@@ -444,7 +444,7 @@ export default class Neis {
     public api: AxiosInstance;
     constructor(KEY: string) {
         this.key = KEY;
-        this.api = axios.default.create({
+        this.api = axios.create({
             baseURL: "https://open.neis.go.kr/hub",
             params: { type: "json", key: KEY },
         });

@@ -1,5 +1,5 @@
-import { ObjectID } from "bson";
 import userEntity from "../models/user.entity.js";
+import { ObjectId } from "bson";
 
 export function getMondayDate(paramDate: Date) {
     paramDate.setUTCHours(0, 0, 0, 0);
@@ -21,6 +21,11 @@ export function choice(a: string, k = 1) {
     }
     return return_array;
 }
-export async function getUserById(id: ObjectID | string) {
-    return await userEntity.findOne({ _id: new ObjectID(id) });
+export async function getUserById(id: any) {
+    const user = await userEntity.findOne({ _id: new ObjectId(String(id)) });
+    if (!user) throw Error(`User Not Found : ${id}`);
+    else return user;
+}
+export function formatDate(date: Date) {
+    return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
 }
