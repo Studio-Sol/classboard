@@ -26,6 +26,8 @@ import replyEntity from "../models/reply.entity.js";
 import sessionEntity from "../models/session.entity.js";
 import timetableEntity from "../models/timetable.entity.js";
 import userEntity from "../models/user.entity.js";
+import apiRouter from "../api/index.js";
+import pageRouter from "../routes/index.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const DEFAULT_ADMIN = { email: "sol762@classboard.kr", password: "sol762!" };
 export default async ({
@@ -86,6 +88,9 @@ export default async ({
         res.send(
             "naver-site-verification: naver13c8d68c37dd2d2c0ea55b2fb5e202f2.html"
         );
+    });
+    app.head("/", (req, res) => {
+        res.sendStatus(200);
     });
 
     app.use(express.urlencoded({ extended: true }));
@@ -170,5 +175,32 @@ export default async ({
         }
     });
 
-    return app;
+    app.use(pageRouter);
+    app.use(apiRouter);
+
+    // STATIC과 API는 404페이지 렌더링 안함
+    app.use("/static/", (req, res) => {
+        res.sendStatus(404);
+    });
+
+    app.use("/api/", (req, res) => {
+        res.sendStatus(404);
+    });
+    // ERRORs
+    // 404 NOT FOUND
+    app.use((req, res) => {
+        console.log(req.originalUrl);
+        res.status(404).render("404.html", { user_id: req.session.user_id });
+    });
+    app.use(
+        (
+            err: any,
+            _req: express.Request,
+            res: express.Response,
+            _next: express.NextFunction
+        ) => {
+            console.error(err.stack);
+            return res.sendStatus(500);
+        }
+    );
 };

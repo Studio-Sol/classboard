@@ -106,10 +106,45 @@
                     </button>
                     <br>
                     <% if (user.type == "teacher") { %>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.mini.min.js" integrity="sha512-NDQhXrK2pOCL18FV5/Nc+ya9Vz+7o8dJV1IGRwuuYuRMFhAR0allmjWdZCSHFLDYgMvXKyN2jXlSy2JJEmq+ZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                        <script>
+                            const downloadExcel = () => {
+                                let result = []
+                                let questions = <%- JSON.stringify(questions) %>
+                                let raw = <%- JSON.stringify(questions.map(e=>e.replies)) %>
+                                result.length = raw[0].length
+                                let idx = 0;
+                                for (let a of raw) {
+                                    let user = 0;
+                                    for (let reply of a) {
+                                        if (!result[user]) {
+                                            result[user] = {
+                                                "학생" : reply.user.name,
+                                                "학생 이메일" : reply.user.email,
+                                                "제출시각" : new Date(reply.timestamp)
+                                            }
+                                        }
+                                        console.log(idx, user, questions[idx].content, reply.answer)
+                                        result[user][questions[idx].content] = questions[idx].qtype == "select" ?
+                                        questions[idx].items[reply.answer].content:
+                                                                reply.answer
+                                        user++;
+                                    }
+                                    idx++
+                                }
+                                const worksheet = XLSX.utils.json_to_sheet(result, {dateNF: 'yyyy-mm-dd'});
+                                const workbook = XLSX.utils.book_new();
+                                XLSX.utils.book_append_sheet(workbook, worksheet, 'my_sheet');
+                                XLSX.writeFile(workbook, 'json_to_excel.xlsx');
+                            };
+                            
+                            
+                        </script>
                         <button class="btn btn-secondary mt-5" onclick="hided.style.display='block'; event.target.remove()">응답 보기</button>
                         <div style="display: none;" id="hided">
                             <hr class="mt-5" />
                             <h3>응답</h3>
+                            <button  class="btn btn-primary" onclick="downloadExcel();">엑셀 파일로 다운로드</button>
                             <%let idx = 0%>
                             <% for (let q of questions) { %>
                                 <div>
