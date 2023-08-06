@@ -11,6 +11,64 @@
             textarea {
                 background-color: var(--box-bg);
             }
+            .dropdown {
+	display: inline-block;
+}
+
+.dropdown li {
+	float: left;
+	list-style-type: none;
+	position: relative;
+}
+
+.dropdown li a {
+	font-size: 16px; 
+	color: var(--text);
+	display: block;
+	line-height: 60px;
+	padding: 0 26px;
+	text-decoration: none;
+	border-left: 1px solid #2e2e2e;
+	font-family: Montserrat, sans-serif;
+	text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+#options a{
+	border-left: 0 none;
+}
+#options>a {
+	background-position: 85% center;
+	background-repeat: no-repeat;
+	padding-right: 42px;
+}
+.subnav {
+	visibility: hidden;
+	position: absolute;
+	top: 110%;
+	right: 0;
+	width: 200px;
+	height: auto;
+	opacity: 0;
+	transition: all 0.1s;
+	background: var(--bg);
+}
+.subnav {
+    padding: 0px;
+}
+.subnav li {
+	float: none;
+}
+.subnav li a {
+	border-bottom: 1px solid #2e2e2e;
+}
+#options:hover .subnav {
+	visibility: visible;
+	top: 100%;
+	opacity: 1;
+}
+.subnav li:nth-child(1)>a:hover {
+    color: red;
+}
         </style>
         <script
             src="https://kit.fontawesome.com/76a19131cd.js"
@@ -52,11 +110,27 @@
                             src="<%= author.avatar %>"
                         />
                     </div>
-                    <div>
-                        <h5 style="margin: 0px; padding: 0px">
-                            <%= author.name %>
-                        </h5>
-                        <p id="timestamp" style="color: gray"></p>
+                    <div style="display: flex;justify-content: space-between;">
+                        <div>
+                            <h5 style="margin: 0px; padding: 0px">
+                                <%= author.name %>
+                            </h5>
+                            <p id="timestamp" style="color: gray"></p>
+                        </div>
+                        <div class="dropdown" style="z-index: 999;">
+                            <% if (String(user._id) ==  String(author._id) || user.type == "teacher") { %>
+                                <li id="options">
+                                    <a href="#"><i class="fa fa-bars"></i></a>
+                                    <ul class="subnav">
+                                        <li><a href="#" onclick="deletePost();"><i class="fa fa-trash"></i>삭제</a></li>
+                                        <% if (String(user._id) ==  String(author._id)) { %>
+                                            <li><a href="/post/<%= data._id %>/edit"><i class="fa fa-pen-to-square"></i>수정</a></li>
+                                        <% } %>
+                                        <li><a href="#" onclick="copy('<%= serviceURL %>/post/<%= data._id %>')"><i class="fa fa-copy"></i>URL 복사</a></li>
+                                    </ul>
+                                </li>
+                            <% } %>
+                        </div>
                     </div>
 
                     <hr />
@@ -140,15 +214,22 @@
                 </div>
             </div>
         </div>
-        <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
-        <script>
-            moment.locale("ko");
-            document.querySelector("#timestamp").innerHTML = moment(new Date(<%= data.timestamp %>)).fromNow()
-        </script>
+        <script src=" https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js "></script>
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script>
             var id = '<%= data._id %>'
+            
             var user = <%- JSON.stringify(user) %>
+            document.querySelector("#timestamp").innerHTML = new luxon.DateTime("<%= data.timestamp %>").toLocaleString()
+            function deletePost() {
+                if (!confirm("정말 삭제하시겠습니까?")) return
+                $.ajax({
+                    url: `/api/post/<%= data._id %>`,
+                    method:"delete",
+                    success: (d) => {alert(d.message);location.href="/post"},
+                    error:(d) => {alert(d.message);},
+                })
+            }
         </script>
         <script src="/static/common.js"></script>
         <script src="/static/comment.js" onload="loadComment()" async></script>

@@ -15,7 +15,7 @@ router.get("/new-notice", async (req, res) => {
         res.redirect("/");
         return;
     }
-    res.render("new_notice.html");
+    res.render("new_notice.html", { mode: "new", notice: null });
 });
 
 router.get("/notice", async (req, res) => {
@@ -106,6 +106,17 @@ router.get("/notice/:id", async (req, res) => {
             return formatted_date;
         },
         serviceURL: process.env.SERVICE_URL,
+    });
+});
+router.get("/notice/:id/edit", async (req, res) => {
+    let notice = await Notice.findById(req.params.id);
+    if (String(req.session.user_id) != String(notice.author)) {
+        res.redirect("/");
+        return;
+    }
+    res.render("new_notice.html", {
+        mode: "edit",
+        notice: await Notice.findById(req.params.id),
     });
 });
 export default router;

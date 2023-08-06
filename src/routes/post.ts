@@ -7,7 +7,7 @@ import { getUserById } from "../util/index.js";
 const router = express.Router();
 
 router.get("/new-post", async (req, res) => {
-    res.render("new_post.html");
+    res.render("new_post.html", { mode: "new" });
 });
 
 router.get("/post", async (req, res) => {
@@ -47,8 +47,24 @@ router.get("/post/:id", async (req, res) => {
     res.render("post.html", {
         data: data,
         author: author,
-        user: { name: user.name, avatar: user.avatar },
+        user: {
+            _id: user._id,
+            type: user.type,
+            name: user.name,
+            avatar: user.avatar,
+        },
         serviceURL: process.env.SERVICE_URL,
+    });
+});
+router.get("/post/:id/edit", async (req, res) => {
+    let post = await Post.findById(req.params.id);
+    if (String(req.session.user_id) != String(post.author)) {
+        res.redirect("/");
+        return;
+    }
+    res.render("new_post.html", {
+        mode: "edit",
+        post: await Post.findById(req.params.id),
     });
 });
 export default router;
