@@ -30,6 +30,7 @@
         "sharp": "^0.32.4",
         "uid-safe": "^2.1.5",
         "url": "^0.11.1",
+        "web-push": "^3.6.4",
         "winston": "^3.10.0",
         "winston-daily-rotate-file": "^4.7.1"
     },

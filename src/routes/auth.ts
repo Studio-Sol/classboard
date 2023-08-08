@@ -53,7 +53,9 @@ router.get("/login/callback/google", async (req, res) => {
     var user = await User.findOne({ email: payload.email, auth: "google" });
     if (user != null) {
         req.session.user_id = user._id;
-        var next = req.cookies.next ?? "/";
+        req.session.user_type = user.type;
+        var next = req.cookies.next ?? "/main";
+        if (next.startsWith("/login")) next = "/main";
         res.clearCookie("next");
         res.redirect(next);
     } else {
@@ -68,6 +70,7 @@ router.get("/login/callback/google", async (req, res) => {
             signup_at: new Date().getTime(),
         }).save();
         req.session.user_id = user._id;
+        req.session.user_type = user.type;
         req.session.save(() => {
             res.redirect("/login/type");
         });
@@ -130,7 +133,9 @@ router.get("/login/callback/naver", async (req, res) => {
                     });
                     if (user != null) {
                         req.session.user_id = user._id;
-                        var next = req.cookies.next ?? "/";
+                        req.session.user_type = user.type;
+                        var next = req.cookies.next ?? "/main";
+                        if (next.startsWith("/login")) next = "/main";
                         res.clearCookie("next");
                         res.redirect(next);
                     } else {
@@ -145,6 +150,7 @@ router.get("/login/callback/naver", async (req, res) => {
                             signup_at: new Date().getTime(),
                         }).save();
                         req.session.user_id = user._id;
+                        req.session.user_type = user.type;
                         req.session.save(() => {
                             res.redirect("/login/type");
                         });
@@ -190,7 +196,8 @@ router.get("/login/type/callback", async (req, res) => {
                 { _id: new ObjectId(req.session.user_id) },
                 { $set: { type: "student" } }
             );
-            var next = req.cookies.next ?? "/";
+            var next = req.cookies.next ?? "/main";
+            if (next.startsWith("/login")) next = "/main";
             res.clearCookie("next");
             res.redirect(next);
         }

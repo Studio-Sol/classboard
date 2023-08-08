@@ -1,4 +1,3 @@
-import api from "../api/index.js";
 import expressLoader from "./express.js";
 import mongooseLoader from "./mongoose.js";
 import dotenv from "dotenv";
