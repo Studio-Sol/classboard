@@ -89,6 +89,11 @@ export default async ({
             "naver-site-verification: naver13c8d68c37dd2d2c0ea55b2fb5e202f2.html"
         );
     });
+    app.get("/pwabuilder-sw.js", (req, res) => {
+        res.sendFile(
+            path.join(__dirname, "..", "..", "static", "pwabuilder-sw.js")
+        );
+    });
     app.head("/", (req, res) => {
         res.sendStatus(200);
     });
@@ -152,6 +157,8 @@ export default async ({
 
     app.disable("x-powered-by");
     app.use((req, res, next) => {
+        res.locals.user_id = req.session.user_id;
+        res.locals.user_type = req.session.user_type;
         res.setHeader("X-Powered-By", "Sol Studio Server");
         if (req.ip != "114.207.98.231" && inspecting) {
             res.render("inspect.html");

@@ -37,6 +37,8 @@
     </head>
 
     <body>
+        <%- include("./common/navbar.ejs") %>
+        <% if (mode == "new") { %>
         <div
             id="reply-type-choose"
             style="
@@ -90,6 +92,7 @@
                 </div>
             </div>
         </div>
+        <% } %>
         <div class="container-xxl" style="height: 100%" id="main">
             <div class="row mb-2" style="height: 7em">
                 <div
@@ -119,11 +122,14 @@
                                 name="title"
                                 style="width: 100%; font-size: x-large"
                                 placeholder="제목을 입력해주세요"
+                                value="<%= notice?.title ?? "" %>"
                             />
                         </div>
                         <div class="p-3">
-                            <textarea id="summernote" name="content"></textarea>
-                        </div>
+                            <textarea id="summernote" name="content">
+                                <%- notice?.content ?? "" %>
+                            </textarea>
+                        </div><% if (mode == "new") { %>
                         <hr />
                         <button
                             class="btn btn-bs5-primary"
@@ -138,12 +144,12 @@
                             style="border-style: solid; display: none"
                         ></div>
                         <hr />
-                        <div class="p-3">
-                            <div style="float: right">
-                                <button class="btn btn-bs5-primary" id="submit">
-                                    제출
-                                </button>
-                            </div>
+                        <% } %>
+                        <div class="p-3" style="height: 5rem;display: flex;justify-content: space-between;">
+                            <p style="color: red;">공지 수정시에는 회신 항목을 수정할 수 없습니다!</p>
+                            <button class="btn btn-bs5-primary" id="submit">
+                                제출
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -247,9 +253,9 @@
                     }
                     index++;
                 }
-                console.log(questions);
+                let mode = "<%= mode %>"
                 $.ajax({
-                    url: "/api/notice",
+                    url: "/api/notice/" + ((mode == "edit") ? "<%= notice?._id %>":""),
                     method: "POST",
                     datatype: "JSON",
                     data: {
@@ -281,8 +287,8 @@
                     $("#replies").append(`
                                    <div id="reply-${idx}" data-type="text">
                                        <input id="reply-content-${idx}" type="text" placeholder="질문을 입력해주세요">
+                                       <button class="btn btn-bs5-secondary" onclick="$('#reply-${idx}').remove();">회신 삭제</button>
                                    </div>
-                                   <hr />
                                `);
                 } else if ($("#reply-type").val() == "select") {
                     selections[idx] = 2;
@@ -295,7 +301,6 @@
                                            <li id="reply-item-${idx}-2"><input type="text" value="옵션 1"><input type="number" max="100" placeholder="최대 응답수"><button class="btn btn-danger" onclick="deleteOption(${idx}, ${selections[idx]})">옵션 삭제</button></li>
                                        </ul>
                                    </div>
-                                   <hr />
                                `);
                 }
                 idx++;

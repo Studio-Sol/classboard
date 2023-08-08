@@ -8,7 +8,7 @@ import { getUserById } from "../util/index.js";
 const router = express.Router();
 router.post("/api/notice", async (req, res) => {
     let questions = [];
-    for (let q of req.body.questions) {
+    for (let q of req.body.questions ?? []) {
         if (q.qtype == "text") {
             questions.push(q);
         } else {
@@ -22,7 +22,7 @@ router.post("/api/notice", async (req, res) => {
         }
     }
     var user = await getUserById(req.session.user_id);
-    console.log(JSON.stringify(questions));
+
     var notice_new = await new Notice({
         title: req.body.title,
         content: req.body.content,
@@ -32,9 +32,39 @@ router.post("/api/notice", async (req, res) => {
         timestamp: new Date().getTime(),
         questions: questions,
     }).save();
-    res.json({ status: "success", id: notice_new._id });
+    return res.json({ status: "success", id: notice_new._id });
 });
-
+router.post("/api/notice/:id", async (req, res) => {
+    let notice = await Notice.findById(req.params.id);
+    if (String(req.session.user_id) != String(notice.author)) {
+        return res.json({
+            status: "failed",
+            message: "수정 권한이 없습니다.",
+        });
+    }
+    let notice_update = await Notice.updateOne(
+        {
+            _id: new ObjectId(req.params.id),
+        },
+        {
+            $set: {
+                title: req.body.title,
+                content: req.body.content,
+                preview: req.body.content
+                    .replace(/<[^>]*>?/gm, "")
+                    .slice(0, 20),
+            },
+        },
+        { upsert: false }
+    ).exec();
+    if (notice_update.modifiedCount == 0) {
+        return res.json({
+            status: "failed",
+            message: `요청이 잘못되었습니다. 존재하지 않는 ID(${req.params.id})`,
+        });
+    }
+    return res.json({ status: "success", id: notice._id });
+});
 router.post("/api/notice/question/reply", async (req, res) => {
     var user = await getUserById(req.session.user_id);
     try {
@@ -139,5 +169,18 @@ router.get("/api/notice", async (req, res) => {
             message: "알 수 없는 에러 (GET 파라미터를 확인해주세요)",
         });
     }
+});
+router.delete("/api/notice/:id", async (req, res) => {
+    let notice = await Notice.findById(req.params.id);
+    if (String(req.session.user_id) != String(notice.author)) {
+        return res
+            .status(403)
+            .json({ status: "failed", message: "삭제 권한이 없습니다" });
+    }
+    notice.deleteOne();
+    return res.json({
+        status: "success",
+        message: "성공적으로 삭제되었습니다.",
+    });
 });
 export default router;

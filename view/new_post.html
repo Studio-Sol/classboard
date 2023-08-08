@@ -3,7 +3,8 @@
     <head>
         <%- include("./common/head.ejs") %>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>글 작성</title>
+        <title>공지 작성</title>
+
         <link href="/static/bootstrap.min.css" rel="stylesheet" />
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -15,6 +16,7 @@
             rel="stylesheet"
         />
         <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+
         <style>
             input,
             select,
@@ -32,10 +34,10 @@
                 color: var(--bs-white);
             }
         </style>
-        <link href="/static/style.css" rel="stylesheet" />
     </head>
 
     <body>
+        <%- include("./common/navbar.ejs") %>
         <div class="container-xxl" style="height: 100%" id="main">
             <div class="row mb-2" style="height: 7em">
                 <div
@@ -48,14 +50,16 @@
                 >
                     <div>
                         <h2 style="margin: 0px">
-                            <strong id="school-grade-class">학급 글쓰기</strong>
+                            <strong id="school-grade-class"
+                                >학급 공지 작성</strong
+                            >
                         </h2>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
-                    <form action="/api/post" method="post">
+                    <div>
                         <div class="p-3">
                             <input
                                 type="text"
@@ -63,26 +67,22 @@
                                 name="title"
                                 style="width: 100%; font-size: x-large"
                                 placeholder="제목을 입력해주세요"
+                                value="<%= post?.title ?? "" %>"
                             />
                         </div>
                         <div class="p-3">
-                            <textarea id="summernote" name="content"></textarea>
+                            <textarea id="summernote" name="content">
+                                <%- post?.content ?? "" %>
+                            </textarea>
                         </div>
-                        <hr />
-                        <div class="p-3">
-                            <div style="float: right">
-                                <button
-                                    class="btn btn-bs5-primary"
-                                    type="submit"
-                                >
-                                    제출
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        <button class="p-3 btn btn-bs5-primary" id="submit">
+                            제출
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+        <script src="/static/common.js"></script>
         <script src="/static/summer_note/lang/summernote-ko-KR.js"></script>
 
         <script>
@@ -133,23 +133,126 @@
                     });
                 }
             });
-
-            $("form").on("submit", (event) => {
+            $("#submit").on("click", (event) => {
+                /*
                 if (
                     $("#summernote").summernote("code") == "<p><br></p>" ||
                     $("#title").val() == ""
                 ) {
                     event.preventDefault();
                     alert("제목과 내용을 모두 입력해주세요.");
+                    return false;
                 }
                 if (
-                    $($("#summernote").summernote("code")).text().length > 4096
+                    $(
+                        "<div>" + $("#summernote").summernote("code") + "</div>"
+                    ).text().length > 4096
                 ) {
                     event.preventDefault();
                     alert("내용은 4096자 이하만 가능합니다");
+                    return false;
+                }
+                */
+                var questions = [];
+                var index = 0;
+                for (let q of $("#replies").children()) {
+                    if (q.tagName == "HR") continue;
+                    if ($(q).data("type") == "text") {
+                        questions.push({
+                            qtype: "text",
+                            content: $(q).children()[0].value,
+                        });
+                    } else if ($(q).data("type") == "select") {
+                        var items = [];
+                        Array.from($(q).children().children()).forEach(
+                            (item) => {
+                                items.push({
+                                    content: item.children[0].value,
+                                    limit: parseInt(item.children[1].value),
+                                });
+                            }
+                        );
+                        questions.push({
+                            qtype: "select",
+                            content: $(q).children()[0].value,
+                            items: items,
+                        });
+                    }
+                    index++;
+                }
+                let mode = "<%= mode %>"
+                $.ajax({
+                    url: "/api/post/" + ((mode == "edit") ? "<%= post?._id %>":""),
+                    method: "POST",
+                    datatype: "JSON",
+                    data: {
+                        title: $("#title").val(),
+                        content: $("#summernote").val(),
+                        questions: questions,
+                    },
+                    success: (data) => {
+                        location = "/post/" + data.id;
+                    },
+                    error: (err) => {
+                        alert(
+                            "오류가 발생했습니다. 잠시 후에 다시 시도해주세요."
+                        );
+                    },
+                });
+            });
+            let idx = 0;
+            var selections = {};
+            function addReply() {
+                $("#replies").show();
+                if ($("#reply-type").val() == "null") {
+                    alert("회신 유형을 선택해주세요.");
+                    return;
+                }
+                $("#reply-type-choose").css("display", "none");
+
+                if ($("#reply-type").val() == "text") {
+                    $("#replies").append(`
+                                   <div id="reply-${idx}" data-type="text">
+                                       <input id="reply-content-${idx}" type="text" placeholder="질문을 입력해주세요">
+                                       <button class="btn btn-bs5-secondary" onclick="$('#reply-${idx}').remove();">회신 삭제</button>
+                                   </div>
+                               `);
+                } else if ($("#reply-type").val() == "select") {
+                    selections[idx] = 2;
+                    $("#replies").append(`
+                                   <div id="reply-${idx}" data-type="select">
+                                       <input id="reply-content-${idx}" type="text" placeholder="질문을 입력해주세요">
+                                       <button class="btn btn-bs5-primary" onclick="addOption(${idx});">옵션 추가</button>
+                                       <button class="btn btn-bs5-secondary" onclick="$('#reply-${idx}').remove();">회신 삭제</button><br>
+                                       <ul id="reply-items-${idx}">
+                                           <li id="reply-item-${idx}-2"><input type="text" value="옵션 1"><input type="number" max="100" placeholder="최대 응답수"><button class="btn btn-danger" onclick="deleteOption(${idx}, ${selections[idx]})">옵션 삭제</button></li>
+                                       </ul>
+                                   </div>
+                               `);
+                }
+                idx++;
+            }
+            $("#reply-type-choose").on("click", (event) => {
+                if (
+                    event.target == document.querySelector("#reply-type-choose")
+                ) {
+                    $("#reply-type-choose").css("display", "none");
                 }
             });
+
+            function addOption(i) {
+                if (selections[i] > 10) {
+                    alert("옵션은 최대 10개까지만 가능합니다");
+                    return;
+                }
+                $(`#reply-${i} > ul`).append(
+                    `<li id="reply-item-${i}-${selections[i]}"><input type="text" value="옵션 ${selections[i]}"><input type="number" max="100" placeholder="최대 응답수"><button class="btn btn-danger" onclick="deleteOption(${i}, ${selections[i]})">옵션 삭제</button></li>`
+                );
+                selections[i]++;
+            }
+            function deleteOption(i, j) {
+                document.querySelector(`#reply-item-${i}-${j}`).remove();
+            }
         </script>
-        <script src="/static/common.js"></script>
     </body>
 </html>

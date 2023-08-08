@@ -62,4 +62,48 @@ router.get("/api/post", async (req, res) => {
         });
     }
 });
+router.post("/api/post/:id", async (req, res) => {
+    let post = await Post.findById(req.params.id);
+    if (String(req.session.user_id) != String(post.author)) {
+        return res.json({
+            status: "failed",
+            message: "수정 권한이 없습니다.",
+        });
+    }
+    let post_update = await Post.updateOne(
+        {
+            _id: new ObjectId(req.params.id),
+        },
+        {
+            $set: {
+                title: req.body.title,
+                content: req.body.content,
+                preview: req.body.content
+                    .replace(/<[^>]*>?/gm, "")
+                    .slice(0, 20),
+            },
+        },
+        { upsert: false }
+    ).exec();
+    if (post_update.modifiedCount == 0) {
+        return res.json({
+            status: "failed",
+            message: `요청이 잘못되었습니다. 존재하지 않는 ID(${req.params.id})`,
+        });
+    }
+    return res.json({ status: "success", id: post._id });
+});
+router.delete("/api/post/:id", async (req, res) => {
+    let post = await Post.findById(req.params.id);
+    if (String(req.session.user_id) != String(post.author)) {
+        return res
+            .status(403)
+            .json({ status: "failed", message: "삭제 권한이 없습니다" });
+    }
+    post.deleteOne();
+    return res.json({
+        status: "success",
+        message: "성공적으로 삭제되었습니다.",
+    });
+});
 export default router;
