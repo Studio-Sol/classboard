@@ -25,8 +25,7 @@ $("td.class, th.dayofweek").forEach((e) => {
     e.addEventListener("click", (event) => {
         $(".active")?.classList?.remove("active");
         event.target.classList.add("active");
-        var date = formatDate(parseInt(event.target.dataset.date));
-        fetchMeal(date);
+        fetchMeal(event.target.dataset.date);
     });
 });
 
@@ -71,16 +70,16 @@ async function fetchAllNotice() {
         });
     }
 }
-async function fetchMeal(date) {
+async function fetchMeal(dateString) {
     $("#meal").innerHTML = "로드중...";
-    var dateString =
-        date.slice(0, 4) + "/" + date.slice(4, 6) + "/" + date.slice(6);
-    $("#meal-date").innerHTML = `${dateString}(${
-        "일월화수목금토"[new Date(dateString).getDay()]
+    $("#meal-date").innerHTML = `${
+        getDate(dateString).getMonth() + 1
+    }/${getDate(dateString).getDate()}(${
+        "일월화수목금토"[getDate(dateString).getDay()]
     })`;
 
-    if (Object.keys(cache.meal).indexOf(date) != -1) {
-        var data = cache.meal[date];
+    if (Object.keys(cache.meal).indexOf(dateString) != -1) {
+        var data = cache.meal[dateString];
         if (data.meal.length == 0) {
             $("#meal").innerHTML = "데이터 없음";
         } else {
@@ -98,13 +97,13 @@ async function fetchMeal(date) {
         return;
     }
 
-    fetch("/api/meal?date=" + date, {
+    fetch("/api/meal?date=" + dateString, {
         method: "GET",
     })
         .then((d) => d.json())
         .then((data) => {
             if (data.success) {
-                cache.meal[date] = data;
+                cache.meal[dateString] = data;
                 if (data.meal.length == 0) {
                     $("#meal").innerHTML = "데이터 없음";
                 } else {
