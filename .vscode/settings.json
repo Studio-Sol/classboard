@@ -1,7 +1,4 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "[html]": {
-        "editor.defaultFormatter": null
-    },
     "js-beautify.indent_size": 4
 }

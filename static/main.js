@@ -14,10 +14,7 @@ function window_onresize() {
             "#school-grade-class"
         ).innerHTML = `${school_name} ${grade}학년 ${class_}반`;
     } else {
-        $("#school-grade-class").innerHTML = `${school_name.slice(
-            0,
-            -3
-        )} ${grade}-${class_}`;
+        $("#school-grade-class").innerHTML = `${grade}-${class_}`;
     }
 }
 window_onresize();
@@ -133,7 +130,7 @@ async function fetchMeal(date) {
 async function fetchpost() {
     $("#posts").innerHTML = "로드중...";
 
-    fetch(`/api/post?skip=0&_=${Math.random()}`, {
+    fetch(`/api/post?skip=0`, {
         method: "GET",
     })
         .then((d) => d.json())
@@ -167,7 +164,7 @@ async function fetchpost() {
 async function fetchNotice() {
     $("#notice").innerHTML = "로드중...";
 
-    fetch(`/api/notice?_=${Math.random()}&skip=0`, {
+    fetch(`/api/notice?skip=0`, {
         method: "GET",
     })
         .then((response) => response.json())
@@ -195,82 +192,63 @@ async function fetchNotice() {
             }
         });
 }
-
+function getDate(stringDate) {
+    return new Date(
+        stringDate.slice(0, 4) +
+            "-" +
+            stringDate.slice(4, 6) +
+            "-" +
+            stringDate.slice(6)
+    );
+}
 async function fetchTimeTable(fmonday, refresh) {
-    await fetch(`/api/timetable?monday=${fmonday}&refresh=${refresh ?? ""}`, {
-        method: "GET",
-    })
+    document.querySelectorAll(".class").forEach((e) => (e.innerHTML = ""));
+    var fmonday = getDate(fmonday);
+    var ffriday = new Date(fmonday.getTime() + 1000 * 60 * 60 * 24 * 4);
+    if (window.innerWidth < 800) {
+        $("#timetable-title").innerHTML = "<span id='timetable-date'></span>";
+    }
+    $("#timetable-date").textContent = `${fmonday.getMonth() + 1}.
+        ${fmonday.getDate()} ~ ${ffriday.getMonth() + 1}.${ffriday.getDate()}`;
+    await fetch(
+        `/api/timetable?monday=${formatDate(fmonday)}&refresh=${refresh ?? ""}`,
+        {
+            method: "GET",
+        }
+    )
         .then((d) => d.json())
         .then((data) => {
-            document
-                .querySelectorAll(".class")
-                .forEach((e) => (e.innerHTML = ""));
-            var tmp = new Date(
-                fmonday.slice(0, 4) +
-                    "-" +
-                    fmonday.slice(4, 6) +
-                    "-" +
-                    fmonday.slice(6)
-            );
-            var tmp2 = new Date(tmp.getTime() + 1000 * 60 * 60 * 24 * 4);
-            if (window.innerWidth < 800) {
-                $("#timetable-title").innerHTML =
-                    "<span id='timetable-date'></span>";
-            }
-            $("#timetable-date").textContent = `${
-                tmp.getMonth() + 1
-            }.${tmp.getDate()} ~ ${tmp2.getMonth() + 1}.${tmp2.getDate()}`;
             if (data.success) {
-                var lastDate = "";
-                var tmp = 0;
                 data.table.forEach((b) => {
-                    if (lastDate != b.ALL_TI_YMD) {
-                        tmp++;
-                        lastDate = b.ALL_TI_YMD;
-                    }
                     $(
                         `tbody > tr:nth-child(${b.PERIO}) > td:nth-child(${
-                            tmp + 1
+                            (getDate(b.ALL_TI_YMD) - fmonday) / 86400000 + 2
                         })`
-                    ).innerHTML = `${b.ITRT_CNTNT.replace("-", "")}`;
+                    ).innerHTML = b.ITRT_CNTNT.replace("-", "");
                 });
                 for (var i = 0; i < 5; i++) {
                     $(`thead > tr > th:nth-child(${i + 2})`).dataset.date =
-                        new Date(
-                            fmonday.slice(0, 4) +
-                                "-" +
-                                fmonday.slice(4, 6) +
-                                "-" +
-                                fmonday.slice(6)
-                        ).getTime() +
-                        1000 * 60 * 60 * 24 * i;
+                        formatDate(
+                            new Date(
+                                fmonday.getTime() + 1000 * 60 * 60 * 24 * i
+                            )
+                        );
 
                     for (var j = 0; j < 7; j++) {
                         $(
                             `tbody > tr:nth-child(${j + 1}) > td:nth-child(${
                                 i + 2
                             })`
-                        ).dataset.date =
+                        ).dataset.date = formatDate(
                             new Date(
-                                fmonday.slice(0, 4) +
-                                    "-" +
-                                    fmonday.slice(4, 6) +
-                                    "-" +
-                                    fmonday.slice(6)
-                            ).getTime() +
-                            1000 * 60 * 60 * 24 * i;
+                                fmonday.getTime() + 1000 * 60 * 60 * 24 * i
+                            )
+                        );
                     }
                 }
                 if (refresh) {
-                    alert("새로고침을 완료했습니다.");
+                    setTimeout(() => alert("새로고침을 완료했습니다."));
                 }
-            } else {
-                window.onerror(
-                    new Error(
-                        data.message ??
-                            "fetchTimetable:success->false, no message"
-                    )
-                );
             }
         });
 }
@@ -320,15 +298,15 @@ function getNextMonday() {
 }
 
 function openNotice(link) {
-    open("/notice/" + link);
+    location.href = "/notice/" + link;
 }
 
 function openPost(link) {
-    open("/post/" + link);
+    location.href = "/post/" + link;
 }
 
 function newPost() {
-    open("/new-post");
+    location.href = "/new-post";
 }
 
 window.onerror = (message, url, lineNumber) => {

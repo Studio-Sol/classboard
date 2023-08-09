@@ -29,19 +29,7 @@
         ></script>
     </head>
     <body>
-        <nav class="navbar fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">클래스보드</a>
-                <div>
-                    <button
-                        class="btn btn-outline-primary"
-                        onclick="location='/'"
-                    >
-                        홈화면으로 가기
-                    </button>
-                </div>
-            </div>
-        </nav>
+        <%- include("./common/navbar.ejs") %>
         <div
             style="
                 display: flex;

@@ -13,7 +13,7 @@
         <script>
             if ("serviceWorker" in navigator) {
                 navigator.serviceWorker
-                    .register("/static/sw.js")
+                    .register("/pwabuilder-sw.js")
                     .then((reg) => {
                         console.log("서비스 워커가 등록됨.", reg);
                     });
@@ -23,6 +23,14 @@
             window.addEventListener("beforeinstallprompt", (event) => {
                 event.preventDefault();
                 deferredPrompt = event;
+                document.getElementById("install-pwa").style.display = "block"
+            });
+            window.addEventListener('DOMContentLoaded', () => {
+                window.matchMedia('(display-mode: standalone)')
+                    .addListener(event => {
+                        if (event.matches) 
+                            document.getElementById("install-pwa").style.display = "none"
+                    });
             });
 
             const installApp = () => {
@@ -68,25 +76,7 @@
         ></script>
     </head>
     <body>
-        <nav class="navbar fixed-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">클래스보드</a>
-                <div>
-                    <% if (user_id) { %>
-                    <a class="btn btn-outline-primary" href="/main">
-                        내 클래스 바로가기
-                    </a>
-                    <% } else { %>
-                    <a class="btn btn-outline-primary" href="/login">
-                        로그인
-                    </a>
-                    <% } %>
-                    <a class="btn btn-outline-primary" href="/setting">
-                        설정
-                    </a>
-                </div>
-            </div>
-        </nav>
+        <%- include("./common/navbar.ejs") %>
         <div
             style="
                 display: flex;
@@ -123,9 +113,10 @@
             </a>
             <% } %>
             <a
+                id="install-pwa"
                 class="mt-4 btn btn-lg btn-success"
                 onclick="installApp()"
-                style="box-shadow: 0px 0px 30px 5px var(--bs-success)"
+                style="display:none;box-shadow: 0px 0px 30px 5px var(--bs-success)"
                 >앱 설치하기</a
             >
         </div>

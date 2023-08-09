@@ -93,6 +93,7 @@
     </head>
 
     <body>
+        <%- include("./common/navbar.ejs") %>
         <div class="container-xxl" style="height: 100%" id="main">
             <div class="row mb-2" style="height: 7em">
                 <div
@@ -160,7 +161,6 @@
                     <% if (!user.class) { %>
                     <a
                         class="btn btn-primary"
-                        target="_blank"
                         href="/login/type"
                         >변경</a
                     >
@@ -192,7 +192,6 @@
                     <h2>로그아웃</h2>
                     <a
                         class="btn btn-danger"
-                        target="_blank"
                         onclick="location = '/logout'"
                         >로그아웃</a
                     >
@@ -203,7 +202,6 @@
                     <h2>회원 탈퇴</h2>
                     <a
                         class="btn btn-danger"
-                        target="_blank"
                         onclick="if (confirm('정말 탈퇴하시겠습니까?'))location = '/delete-user'"
                         >탈퇴</a
                     >
