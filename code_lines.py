@@ -6,12 +6,16 @@ ROOT_DIR = "K:/classboard"
 
 # 조사할 확장자 목록
 extensions = [
-    '*.ts'
+    '*.ts',
+'*.html',
+'*.ejs',
+'*.css'
 ]
 
 # 무시할 디렉토리 경로 목록
 ignore_paths = [
-    'node_modules'
+    'node_modules',
+'static'
 ]
 
 # 무시할 파일 목록

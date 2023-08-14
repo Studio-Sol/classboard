@@ -1,7 +1,11 @@
 import loaders from "./loaders/index.js";
 import express from "express";
 import http from "http";
-
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+console.log(dotenv.config({ path: path.join(__dirname, "..", ".env") }));
 (async () => {
     const app = express();
     const httpServer = new http.Server(app);

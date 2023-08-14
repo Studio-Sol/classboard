@@ -23,13 +23,16 @@
             window.addEventListener("beforeinstallprompt", (event) => {
                 event.preventDefault();
                 deferredPrompt = event;
-                document.getElementById("install-pwa").style.display = "block"
+                document.getElementById("install-pwa").style.display = "block";
             });
-            window.addEventListener('DOMContentLoaded', () => {
-                window.matchMedia('(display-mode: standalone)')
-                    .addListener(event => {
-                        if (event.matches) 
-                            document.getElementById("install-pwa").style.display = "none"
+            window.addEventListener("DOMContentLoaded", () => {
+                window
+                    .matchMedia("(display-mode: standalone)")
+                    .addListener((event) => {
+                        if (event.matches)
+                            document.getElementById(
+                                "install-pwa"
+                            ).style.display = "none";
                     });
             });
 
@@ -62,11 +65,14 @@
                 font-style: normal;
                 font-display: swap;
             }
-            * {
+            #main {
+                display: flex;
+                width: 100vw;
+                height: 100vh;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
                 font-family: "ROKAFSansBold";
-            }
-            .navbar {
-                background-color: var(--box-bg);
             }
         </style>
         <script
@@ -77,16 +83,7 @@
     </head>
     <body>
         <%- include("./common/navbar.ejs") %>
-        <div
-            style="
-                display: flex;
-                width: 100vw;
-                height: 100vh;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-            "
-        >
+        <div id="main">
             <h1>클래스보드</h1>
             <div class="container">
                 <p style="text-align: center; color: calc(var(--text))">
@@ -116,7 +113,10 @@
                 id="install-pwa"
                 class="mt-4 btn btn-lg btn-success"
                 onclick="installApp()"
-                style="display:none;box-shadow: 0px 0px 30px 5px var(--bs-success)"
+                style="
+                    display: none;
+                    box-shadow: 0px 0px 30px 5px var(--bs-success);
+                "
                 >앱 설치하기</a
             >
         </div>

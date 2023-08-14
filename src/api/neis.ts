@@ -62,7 +62,7 @@ router.get("/api/timetable", async (req, res) => {
     var classroom = await Class.findOne({
         _id: user.class,
     });
-    if (!req.query.refresh) {
+    if (req.query.refresh != "true") {
         var cache = await Timetable.find({
             ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
             SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
@@ -93,7 +93,7 @@ router.get("/api/timetable", async (req, res) => {
                 SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
             },
             {
-                TI_FROM_YMD: req.query.monday as string,
+                TI_FROM_YMD: formatDate(monday),
                 TI_TO_YMD: formatDate(friday),
                 CLASS_NM: classroom.class.CLASS_NM,
                 GRADE: classroom.class.GRADE,
@@ -130,6 +130,8 @@ router.get("/api/timetable", async (req, res) => {
         success: true,
         table: refine(result),
         friday: formatDate(friday),
+        TI_FROM_YMD: formatDate(monday),
+        TI_TO_YMD: formatDate(friday),
     });
 });
 export default router;

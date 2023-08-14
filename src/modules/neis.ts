@@ -443,10 +443,9 @@ export default class Neis {
     public key: string;
     public api: AxiosInstance;
     constructor(KEY: string) {
-        this.key = KEY;
         this.api = axios.create({
             baseURL: "https://open.neis.go.kr/hub",
-            params: { type: "json", key: KEY },
+            params: { type: "json", key: "451d037d3e6343f097c4d6ff75d543f1" },
         });
     }
     async getSchoolInfo(
@@ -525,7 +524,7 @@ export default class Neis {
             ["고등학교"]: "hisTimetable",
             ["특수학교"]: "spsTimetable",
         };
-        const { data } = await this.api.get(
+        const { data, request } = await this.api.get(
             `/${schoolType[school.SCHUL_KND_SC_NM]}`,
             {
                 params: {
@@ -536,6 +535,7 @@ export default class Neis {
                 },
             }
         );
+        console.log(request);
         const timetable: ITimeTableResponse =
             data[schoolType[school.SCHUL_KND_SC_NM]];
 
