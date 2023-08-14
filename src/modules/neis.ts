@@ -535,7 +535,6 @@ export default class Neis {
                 },
             }
         );
-        console.log(request);
         const timetable: ITimeTableResponse =
             data[schoolType[school.SCHUL_KND_SC_NM]];
 

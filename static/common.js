@@ -42,3 +42,29 @@ function switchTheme() {
 }
 switchTheme();
 window.onfocus = switchTheme;
+window.addEventListener("load", () => {
+    function handleNetworkChange() {
+        if (navigator.onLine) {
+            console.log("online");
+            localStorage.setItem("showOfflineMessage", "true");
+        } else {
+            console.log("offline");
+            if (localStorage.getItem("showOfflineMessage") == "true") {
+                let offlineMessageBox = document.createElement("div");
+                offlineMessageBox.style.position = "fixed";
+                offlineMessageBox.style.top = "0px";
+                offlineMessageBox.style.width = "100vw";
+                offlineMessageBox.style.justifyContent = "space-between";
+                offlineMessageBox.style.display = "flex";
+                offlineMessageBox.style.background = "var(--bs-danger)";
+                offlineMessageBox.style.alignItems = "center";
+                offlineMessageBox.style.zIndex = "10000000000";
+                offlineMessageBox.id = "offlineMessageBox";
+
+                offlineMessageBox.innerHTML = `<h1>오프라인 모드입니다</h1><i onclick="document.getElementById('offlineMessageBox').remove();localStorage.setItem('showOfflineMessage','false')" style="font-size: 2rem" class="pe-3 fa fa-close"></i>`;
+                document.body.append(offlineMessageBox);
+            }
+        }
+    }
+    setInterval(handleNetworkChange, 1000);
+});

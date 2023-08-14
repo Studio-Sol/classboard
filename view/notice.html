@@ -1,347 +1,401 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <%- include("./common/head.ejs") %>
+        <link href="/static/bootstrap.min.css" rel="stylesheet" />
+        <link href="/static/style.css" , rel="stylesheet" />
 
-<head>
-    <%- include("./common/head.ejs") %>
-    <link href="/static/bootstrap.min.css" rel="stylesheet" />
-    <link href="/static/style.css" , rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><%= data.title %></title>
+        <style>
+            .reply-item {
+                display: flex;
+                justify-content: space-between;
+                background-color: var(--box-bg);
+                border-style: solid;
+                border-color: var(--text);
+            }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= data.title %></title>
-    <style>
-        .reply-item {
-            display: flex;
-            justify-content: space-between;
-            background-color: var(--box-bg);
-            border-style: solid;
-            border-color: var(--text);
-        }
+            .selected {
+                background-color: var(--hover);
+            }
 
-        .selected {
-            background-color: var(--hover);
-        }
+            .list-group {
+                border-style: solid;
+                border-color: var(--text);
+            }
+            @import url(https://fonts.googleapis.com/css?family=Montserrat);
 
-        .list-group {
-            border-style: solid;
-            border-color: var(--text);
-        }
-        @import url(https://fonts.googleapis.com/css?family=Montserrat);
+            .dropdown {
+                display: inline-block;
+            }
 
+            .dropdown li {
+                float: left;
+                list-style-type: none;
+                position: relative;
+            }
 
-.dropdown {
-	display: inline-block;
-}
+            .dropdown li a {
+                font-size: 16px;
+                color: var(--text);
+                display: block;
+                line-height: 60px;
+                padding: 0 26px;
+                text-decoration: none;
+                border-left: 1px solid #2e2e2e;
+                font-family: Montserrat, sans-serif;
+                text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+            }
 
-.dropdown li {
-	float: left;
-	list-style-type: none;
-	position: relative;
-}
+            #options a {
+                border-left: 0 none;
+            }
+            #options > a {
+                background-position: 85% center;
+                background-repeat: no-repeat;
+                padding-right: 42px;
+            }
+            .subnav {
+                visibility: hidden;
+                position: absolute;
+                top: 110%;
+                right: 0;
+                width: 200px;
+                height: auto;
+                opacity: 0;
+                transition: all 0.1s;
+                background: var(--bg);
+            }
+            .subnav {
+                padding: 0px;
+            }
+            .subnav li {
+                float: none;
+            }
+            .subnav li a {
+                border-bottom: 1px solid #2e2e2e;
+            }
+            #options:hover .subnav {
+                visibility: visible;
+                top: 100%;
+                opacity: 1;
+            }
+            .subnav li:nth-child(1) > a:hover {
+                color: red;
+            }
+        </style>
+        <script src="https://kit.fontawesome.com/76a19131cd.js" async></script>
+    </head>
 
-.dropdown li a {
-	font-size: 16px; 
-	color: var(--text);
-	display: block;
-	line-height: 60px;
-	padding: 0 26px;
-	text-decoration: none;
-	border-left: 1px solid #2e2e2e;
-	font-family: Montserrat, sans-serif;
-	text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
-}
-
-#options a{
-	border-left: 0 none;
-}
-#options>a {
-	background-position: 85% center;
-	background-repeat: no-repeat;
-	padding-right: 42px;
-}
-.subnav {
-	visibility: hidden;
-	position: absolute;
-	top: 110%;
-	right: 0;
-	width: 200px;
-	height: auto;
-	opacity: 0;
-	transition: all 0.1s;
-	background: var(--bg);
-}
-.subnav {
-    padding: 0px;
-}
-.subnav li {
-	float: none;
-}
-.subnav li a {
-	border-bottom: 1px solid #2e2e2e;
-}
-#options:hover .subnav {
-	visibility: visible;
-	top: 100%;
-	opacity: 1;
-}
-.subnav li:nth-child(1)>a:hover {
-    color: red;
-}
-    </style>
-    <script src="https://kit.fontawesome.com/76a19131cd.js" async></script>
-</head>
-
-<body>
-    <%- include("./common/navbar.ejs") %>
-    <div class="container-xxl" style="height: 100%" id="main">
-        <div class="row mb-2" style="height: 7em">
-            <div class="col p-4 mt-3 m-lg-3 shadow box" style="
+    <body>
+        <%- include("./common/navbar.ejs") %>
+        <div class="container-xxl" style="height: 100%" id="main">
+            <div class="row mb-2" style="height: 7em">
+                <div
+                    class="col p-4 mt-3 m-lg-3 shadow box"
+                    style="
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                    ">
-                <div>
-                    <h2 style="margin: 0px">
-                        <strong id="school-grade-class"><%= data.title %></strong>
-                    </h2>
+                    "
+                >
+                    <div>
+                        <h2 style="margin: 0px">
+                            <strong id="school-grade-class"
+                                ><%= data.title %></strong
+                            >
+                        </h2>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col p-4 mt-3 m-lg-3 shadow box">
-                <div style="float: left">
-                    <img style="
+            <div class="row">
+                <div class="col p-4 mt-3 m-lg-3 shadow box">
+                    <div style="float: left">
+                        <img
+                            style="
                                 width: 4rem;
                                 height: 4rem;
                                 margin-right: 1rem;
                                 border-radius: 2rem;
-                            " src="<%= author.avatar %>" />
-                </div>
-                <div style="display: flex;justify-content: space-between;">
-                    <div>
-                        <h5 style="margin: 0px; padding: 0px">
-                            <%= author.name %>
-                        </h5>
-                        <p id="timestamp" style="color: gray"></p>
+                            "
+                            src="<%= author.avatar %>"
+                        />
                     </div>
-                    <div class="dropdown" style="z-index: 999;">
-                        <% if (String(user._id) ==  String(author._id)) { %>
+                    <div style="display: flex; justify-content: space-between">
+                        <div>
+                            <h5 style="margin: 0px; padding: 0px">
+                                <%= author.name %>
+                            </h5>
+                            <p id="timestamp" style="color: gray"></p>
+                        </div>
+                        <div class="dropdown" style="z-index: 999">
+                            <% if (String(user._id) == String(author._id)) { %>
                             <li id="options">
                                 <a href="#"><i class="fa fa-bars"></i></a>
                                 <ul class="subnav">
-                                    <li><a href="#" onclick="deleteNotice();"><i class="fa fa-trash"></i>삭제</a></li>
-                                    <li><a href="/notice/<%= data._id %>/edit"><i class="fa fa-pen-to-square"></i>수정</a></li>
-                                    <li><a href="#" onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')"><i class="fa fa-copy"></i>URL 복사</a></li>
+                                    <li>
+                                        <a href="#" onclick="deleteNotice();"
+                                            ><i class="fa fa-trash"></i>삭제</a
+                                        >
+                                    </li>
+                                    <li>
+                                        <a href="/notice/<%= data._id %>/edit"
+                                            ><i class="fa fa-pen-to-square"></i
+                                            >수정</a
+                                        >
+                                    </li>
+                                    <li>
+                                        <a
+                                            href="#"
+                                            onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')"
+                                            ><i class="fa fa-copy"></i>URL
+                                            복사</a
+                                        >
+                                    </li>
                                 </ul>
                             </li>
-                        <% } %>
+                            <% } %>
+                        </div>
                     </div>
-                </div>
-                <hr />
-                <div class="p-3"><%- data.content %></div>
+                    <hr />
+                    <div class="p-3"><%- data.content %></div>
 
-                <% if (questions) { %>
+                    <% if (questions) { %>
                     <hr />
                     <h1>회신</h1>
                     <div id="replies">
-                        <%let idx = 0%>
-                        <% for (let q of questions) { %> 
-                            <div id="reply-<%= idx %>" data-type="<%= q.qtype %>">
-                                <% if (q.qtype == "text") { %>
-                                    <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
-                                    <div>
-                                        <textarea style="width: 100%; background-color: var(--box-bg)" onkeyup="answers[<%= idx %>] = event.target.value" placeholder="응답을 입력해주세요."></textarea>
-                                    </div>
-                                <% } %> 
-                                <% if (q.qtype == "select") { %>
-                                    <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
-                                    <div>
-                                        <ul class="list-group">
-                                            <% var i = 0 %> 
-                                            <% for (const item of q.items) { %>
-                                                <li class="reply-item list-group-item" onclick="answers[<%= idx %>] = <%= i %>">
-                                                    <span>
-                                                        <%= item.content %>
-                                                    </span>
-                                                    <% if (item.limit != null) { %>
-                                                        <span>
-                                                            <%= item.current??0 %>/<%= item.limit??"∞" %>
-                                                        </span>
-                                                    <% } %>
-                                                </li>
-                                                <% i++ %> 
-                                            <% } %>
-                                        </ul>
-                                    </div>
-                                <% } %> 
+                        <%let idx = 0%> <% for (let q of questions) { %>
+                        <div id="reply-<%= idx %>" data-type="<%= q.qtype %>">
+                            <% if (q.qtype == "text") { %>
+                            <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
+                            <div>
+                                <textarea
+                                    style="
+                                        width: 100%;
+                                        background-color: var(--box-bg);
+                                    "
+                                    onkeyup="answers[<%= idx %>] = event.target.value"
+                                    placeholder="응답을 입력해주세요."
+                                ></textarea>
                             </div>
-                            <% idx++%>
-                        <% } %>
+                            <% } %> <% if (q.qtype == "select") { %>
+                            <h3 class="mt-5"><%= idx+1 %>. <%= q.content %></h3>
+                            <div>
+                                <ul class="list-group">
+                                    <% var i = 0 %> <% for (const item of
+                                    q.items) { %>
+                                    <li
+                                        class="reply-item list-group-item"
+                                        onclick="answers[<%= idx %>] = <%= i %>"
+                                    >
+                                        <span> <%= item.content %> </span>
+                                        <% if (item.limit != null) { %>
+                                        <span>
+                                            <%= item.current??0 %>/<%=
+                                            item.limit??"∞" %>
+                                        </span>
+                                        <% } %>
+                                    </li>
+                                    <% i++ %> <% } %>
+                                </ul>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% idx++%> <% } %>
                     </div>
                     <button class="btn btn-primary mt-2" onclick="submit();">
                         제출
                     </button>
-                    <br>
+                    <br />
                     <% if (user.type == "teacher") { %>
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.mini.min.js" integrity="sha512-NDQhXrK2pOCL18FV5/Nc+ya9Vz+7o8dJV1IGRwuuYuRMFhAR0allmjWdZCSHFLDYgMvXKyN2jXlSy2JJEmq+ZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-                        <script>
-                            const downloadExcel = () => {
-                                let result = []
-                                let questions = <%- JSON.stringify(questions) %>
-                                let raw = <%- JSON.stringify(questions.map(e=>e.replies)) %>
-                                result.length = raw[0].length
-                                let idx = 0;
-                                for (let a of raw) {
-                                    let user = 0;
-                                    for (let reply of a) {
-                                        if (!result[user]) {
-                                            result[user] = {
-                                                "학생" : reply.user.name,
-                                                "학생 이메일" : reply.user.email,
-                                                "제출시각" : new Date(reply.timestamp)
-                                            }
+                    <script
+                        src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.mini.min.js"
+                        integrity="sha512-NDQhXrK2pOCL18FV5/Nc+ya9Vz+7o8dJV1IGRwuuYuRMFhAR0allmjWdZCSHFLDYgMvXKyN2jXlSy2JJEmq+ZA=="
+                        crossorigin="anonymous"
+                        referrerpolicy="no-referrer"
+                    ></script>
+                    <script>
+                        const downloadExcel = () => {
+                            let result = []
+                            let questions = <%- JSON.stringify(questions) %>
+                            let raw = <%- JSON.stringify(questions.map(e=>e.replies)) %>
+                            result.length = raw[0].length
+                            let idx = 0;
+                            for (let a of raw) {
+                                let user = 0;
+                                for (let reply of a) {
+                                    if (!result[user]) {
+                                        result[user] = {
+                                            "학생" : reply.user.name,
+                                            "학생 이메일" : reply.user.email,
+                                            "제출시각" : new Date(reply.timestamp)
                                         }
-                                        console.log(idx, user, questions[idx].content, reply.answer)
-                                        result[user][questions[idx].content] = questions[idx].qtype == "select" ?
-                                        questions[idx].items[reply.answer].content:
-                                                                reply.answer
-                                        user++;
                                     }
-                                    idx++
+                                    result[user][questions[idx].content] = questions[idx].qtype == "select" ?
+                                    questions[idx].items[reply.answer].content:
+                                                            reply.answer
+                                    user++;
                                 }
-                                const worksheet = XLSX.utils.json_to_sheet(result, {dateNF: 'yyyy-mm-dd'});
-                                const workbook = XLSX.utils.book_new();
-                                XLSX.utils.book_append_sheet(workbook, worksheet, 'my_sheet');
-                                XLSX.writeFile(workbook, 'json_to_excel.xlsx');
-                            };
-                            
-                            
-                        </script>
-                        <button class="btn btn-secondary mt-5" onclick="hided.style.display='block'; event.target.remove()">응답 보기</button>
-                        <div style="display: none;" id="hided">
-                            <hr class="mt-5" />
-                            <h3>응답</h3>
-                            <button  class="btn btn-primary" onclick="downloadExcel();">엑셀 파일로 다운로드</button>
-                            <%let idx = 0%>
-                            <% for (let q of questions) { %>
-                                <div>
-                                    <div class="mt-5">
-                                        <%= idx+1 %>번 질문
-                                        <table class="table table-active">
-                                            <thead>
-                                                <tr>
-                                                    <th>이름</th>
-                                                    <th>응답</th>
-                                                    <th>시각</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <% for (const reply of q.replies) { %>
-                                                <tr>
-                                                    <td><%= reply.user.name %></td>
-                                                    <td>
-                                                        <%= q.qtype == "select" ?
-                                                            q.items[reply.answer].content:
-                                                            reply.answer %>
-                                                    </td>
-                                                    <td>
-                                                        <%= formatDate(new Date(reply.timestamp)) %>
-                                                    </td>
-                                                </tr>
-                                                <% } %>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <% idx++ %>
-                            <% } %>
-                        </div>
-                    <% } %>
-                <% } %>
-                <hr />
-                <div class="p-3 pt-0">
-                    <p>공유</p>
-                    <a id="share-kakao" href="javascript:;">
-                        <img style="width: 2rem; height: 2rem" src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" alt="카카오톡으로 공유" />
-                    </a>
-                    <a class="ms-1" id="share-link" href="javascript:;" onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')">
-                        <i class="fa fa-share"style="width: 2rem; height: 2rem"></i>
-                    </a>
-                    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
-                    <script type="text/javascript">
-                        function copy(text) {
-                            var tempElem =
-                                document.createElement("textarea");
-                            tempElem.value = text;
-                            document.body.appendChild(tempElem);
-
-                            tempElem.select();
-                            document.execCommand("copy");
-                            document.body.removeChild(tempElem);
-                            alert(
-                                "URL이 복사되었습니다. 원하시는 곳에 붙여넣어주세요."
-                            );
-                        }
-                        Kakao.init("9110cc5f2159504e8844c4a23cea3929");
-                        Kakao.Link.createCustomButton({
-                            container: "#share-kakao",
-                            templateId: 96253,
-                            templateArgs: {
-                                title: "<%= data.title %>",
-                                description: "<%= data.preview %>",
-                                avatar: "<%= author.avatar.startsWith("/") ? "https://classboard.kr"+author.avatar.split(".")[0]+".jpg":author.avatar %>",
-                                username: "<%= author.name %>",
-                                path: "notice/<%= data._id %>"
-                            },
-                        });
+                                idx++
+                            }
+                            const worksheet = XLSX.utils.json_to_sheet(result, {dateNF: 'yyyy-mm-dd'});
+                            const workbook = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(workbook, worksheet, 'my_sheet');
+                            XLSX.writeFile(workbook, 'json_to_excel.xlsx');
+                        };
                     </script>
+                    <button
+                        class="btn btn-secondary mt-5"
+                        onclick="hided.style.display='block'; event.target.remove()"
+                    >
+                        응답 보기
+                    </button>
+                    <div style="display: none" id="hided">
+                        <hr class="mt-5" />
+                        <h3>응답</h3>
+                        <button
+                            class="btn btn-primary"
+                            onclick="downloadExcel();"
+                        >
+                            엑셀 파일로 다운로드
+                        </button>
+                        <%let idx = 0%> <% for (let q of questions) { %>
+                        <div>
+                            <div class="mt-5">
+                                <%= idx+1 %>번 질문
+                                <table class="table table-active">
+                                    <thead>
+                                        <tr>
+                                            <th>이름</th>
+                                            <th>응답</th>
+                                            <th>시각</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% for (const reply of q.replies) { %>
+                                        <tr>
+                                            <td><%= reply.user.name %></td>
+                                            <td>
+                                                <%= q.qtype == "select" ?
+                                                q.items[reply.answer].content:
+                                                reply.answer %>
+                                            </td>
+                                            <td>
+                                                <%= formatDate(new
+                                                Date(reply.timestamp)) %>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <% idx++ %> <% } %>
+                    </div>
+                    <% } %> <% } %>
+                    <hr />
+                    <div class="p-3 pt-0">
+                        <p>공유</p>
+                        <a id="share-kakao" href="javascript:;">
+                            <img
+                                style="width: 2rem; height: 2rem"
+                                src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
+                                alt="카카오톡으로 공유"
+                            />
+                        </a>
+                        <a
+                            class="ms-1"
+                            id="share-link"
+                            href="javascript:;"
+                            onclick="copy('<%= serviceURL %>/notice/<%= data._id %>')"
+                        >
+                            <i
+                                class="fa fa-share"
+                                style="width: 2rem; height: 2rem"
+                            ></i>
+                        </a>
+                        <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+                        <script type="text/javascript">
+                            function copy(text) {
+                                var tempElem =
+                                    document.createElement("textarea");
+                                tempElem.value = text;
+                                document.body.appendChild(tempElem);
+
+                                tempElem.select();
+                                document.execCommand("copy");
+                                document.body.removeChild(tempElem);
+                                alert(
+                                    "URL이 복사되었습니다. 원하시는 곳에 붙여넣어주세요."
+                                );
+                            }
+                            Kakao.init("9110cc5f2159504e8844c4a23cea3929");
+                            Kakao.Link.createCustomButton({
+                                container: "#share-kakao",
+                                templateId: 96253,
+                                templateArgs: {
+                                    title: "<%= data.title %>",
+                                    description: "<%= data.preview %>",
+                                    avatar: "<%= author.avatar.startsWith("/") ? "https://classboard.kr"+author.avatar.split(".")[0]+".jpg":author.avatar %>",
+                                    username: "<%= author.name %>",
+                                    path: "notice/<%= data._id %>"
+                                },
+                            });
+                        </script>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script src=" https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js "></script>
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-    <script>
-        let answers = [];
-        answers.length = parseInt(`<%= questions.length %>`);
-        answers.fill(null)
-        document.querySelector("#timestamp").innerHTML = new luxon.DateTime("<%= data.timestamp %>").toLocaleString()
-        $(".reply-item").on("click", (event) => {
-            $(".selected").removeClass("selected");
-            if (event.target.classList.contains("reply-item"))
-                event.target.classList.add("selected");
-            else
-                event.target.parentElement.classList.add("selected");
-        });
-        var id = "<%= data._id %>";
-        function submit() {
-            $.ajax({
-                url: "/api/notice/question/reply",
-                method: "post",
-                data: {
-                    id: id,
-                    answers: answers,
-                },
-                success: (data) => {
-                    if (!data.success) {
-                        alert(data.message);
-                    } else {
-                        alert("제출되었습니다.");
-                    }
-                    location.reload();
-                },
+        <script src=" https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js "></script>
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script>
+            let answers = [];
+            answers.length = parseInt(`<%= questions.length %>`);
+            answers.fill(null);
+            document.querySelector("#timestamp").innerHTML = new luxon.DateTime(
+                "<%= data.timestamp %>"
+            ).toLocaleString();
+            $(".reply-item").on("click", (event) => {
+                $(".selected").removeClass("selected");
+                if (event.target.classList.contains("reply-item"))
+                    event.target.classList.add("selected");
+                else event.target.parentElement.classList.add("selected");
             });
-        }
-        function deleteNotice() {
-            if (!confirm("정말 삭제하시겠습니까?")) return
-            $.ajax({
-                url: `/api/notice/<%= data._id %>`,
-                method:"delete",
-                success: (d) => {alert(d.message);location.href="/notice"},
-                error:(d) => {alert(d.message);},
-            })
-        }
-    </script>
-    <script src="/static/common.js"></script>
-</body>
-
+            var id = "<%= data._id %>";
+            function submit() {
+                $.ajax({
+                    url: "/api/notice/question/reply",
+                    method: "post",
+                    data: {
+                        id: id,
+                        answers: answers,
+                    },
+                    success: (data) => {
+                        if (!data.success) {
+                            alert(data.message);
+                        } else {
+                            alert("제출되었습니다.");
+                        }
+                        location.reload();
+                    },
+                });
+            }
+            function deleteNotice() {
+                if (!confirm("정말 삭제하시겠습니까?")) return;
+                $.ajax({
+                    url: `/api/notice/<%= data._id %>`,
+                    method: "delete",
+                    success: (d) => {
+                        alert(d.message);
+                        location.href = "/notice";
+                    },
+                    error: (d) => {
+                        alert(d.message);
+                    },
+                });
+            }
+        </script>
+        <script src="/static/common.js"></script>
+    </body>
 </html>

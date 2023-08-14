@@ -58,7 +58,6 @@ router.get("/error", (req, res) => {
 
 router.post("/api/delete-user", async (req, res) => {
     if (new Date().getTime() - parseInt(req.query.t as string) > 5000) {
-        console.log("yeah?");
         return res.json({ success: false });
     }
     let user = await getUserById(req.session.user_id);

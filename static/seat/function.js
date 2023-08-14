@@ -146,7 +146,6 @@ function createTableWithButton() {
 }
 
 function createTableAuto(rows, columns) {
-    console.log("Make", rows, columns);
     var tablemaker = document.createElement("table"); //새로운 테이블 엘리먼트 생성
     tablemaker.setAttribute("class", "table"); //class 설정
     var a = "";
@@ -234,7 +233,6 @@ function afterRemove(value) {
             input.readOnly = true;
             input.disabled = true;
             input.placeholder = "지울 분단 없음!";
-            console.log("테스트");
             document.getElementsByClassName("sleep")[0].style.display =
                 "inline-block";
         } else {
@@ -585,7 +583,6 @@ function loadSeats() {
             try {
                 var data = JSON.parse(readerEvent.target.result);
                 document.querySelectorAll("table").forEach((e) => e.remove());
-                console.log(data);
                 if (!data) {
                     return;
                 }
@@ -613,7 +610,6 @@ function loadSeats() {
     input.click();
 }
 function beforePrint() {
-    console.log("hello");
     localStorage.setItem("seat", JSON.stringify(generageSaveData()));
     location.href = "/teacher/seat/print";
 }
@@ -627,7 +623,6 @@ if (window.matchMedia) {
     });
 }
 document.body.onload = () => {
-    console.log("hello");
     if (localStorage.getItem("seat")) {
         let data = JSON.parse(localStorage.getItem("seat"));
         for (var i = 0; i < data.scale.length; i++) {
@@ -791,7 +786,6 @@ function createTableWithButton() {
 }
 
 function createTableAuto(rows, columns) {
-    console.log("Make", rows, columns);
     var tablemaker = document.createElement("table"); //새로운 테이블 엘리먼트 생성
     tablemaker.setAttribute("class", "table"); //class 설정
     var a = "";
@@ -879,7 +873,6 @@ function afterRemove(value) {
             input.readOnly = true;
             input.disabled = true;
             input.placeholder = "지울 분단 없음!";
-            console.log("테스트");
             document.getElementsByClassName("sleep")[0].style.display =
                 "inline-block";
         } else {
@@ -1225,7 +1218,6 @@ function loadSeats() {
         reader.onload = (readerEvent) => {
             try {
                 var data = JSON.parse(readerEvent.target.result);
-                console.log(data);
                 if (!data) {
                     return;
                 }
@@ -1253,7 +1245,6 @@ function loadSeats() {
     input.click();
 }
 function beforePrint() {
-    console.log("hello");
     localStorage.setItem("seat", JSON.stringify(generageSaveData()));
     location.href = "/teacher/seat/print";
 }
@@ -1267,7 +1258,6 @@ if (window.matchMedia) {
     });
 }
 document.body.onload = () => {
-    console.log("hello");
     if (localStorage.getItem("seat")) {
         let data = JSON.parse(localStorage.getItem("seat"));
         for (var i = 0; i < data.scale.length; i++) {

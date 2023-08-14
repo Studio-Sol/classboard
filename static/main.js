@@ -168,7 +168,6 @@ async function fetchNotice() {
     })
         .then((response) => response.json())
         .then((data) => {
-            console.log(data);
             if (data.success) {
                 $("#notice").innerHTML = "";
                 for (const d of data.notice) {

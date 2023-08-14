@@ -55,7 +55,6 @@ router.get("/register-class", async (req, res) => {
 router.post("/register-class", async (req, res) => {
     var user = await getUserById(req.session.user_id);
     if (user.type != "teacher" || user.class) return res.redirect("/");
-    console.log(req.body);
     let schools;
     try {
         schools = await neis.getSchoolInfo(
