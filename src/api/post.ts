@@ -16,7 +16,7 @@ router.post("/api/post", async (req, res) => {
         timestamp: new Date().getTime(),
     }).save();
 
-    res.redirect("/post/" + post_new._id.toString());
+    res.json({ status: "success", id: post_new._id });
 });
 
 router.get("/api/post", async (req, res) => {

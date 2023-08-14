@@ -1205,6 +1205,7 @@ function saveSeats() {
 function loadSeats() {
     var input = document.createElement("input");
     input.type = "file";
+    input.accept = ".seat";
 
     input.onchange = (e) => {
         // getting a hold of the file reference
