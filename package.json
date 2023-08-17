@@ -7,6 +7,7 @@
     "dependencies": {
         "@adminjs/express": "^6.0.0",
         "@adminjs/mongoose": "^4.0.0",
+        "@eximius/winston-graylog2": "^2.1.3",
         "@types/express-fileupload": "^1.4.1",
         "adminjs": "^7.2.0",
         "axios": "^1.4.0",
@@ -32,7 +33,8 @@
         "url": "^0.11.1",
         "web-push": "^3.6.4",
         "winston": "^3.10.0",
-        "winston-daily-rotate-file": "^4.7.1"
+        "winston-daily-rotate-file": "^4.7.1",
+        "winston-gelf": "^1.7.0"
     },
     "scripts": {
         "build": "tsc",
