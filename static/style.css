@@ -25,10 +25,9 @@
 }
 html,
 body {
-    min-height: 100vh;
+    min-height: 90vh;
     margin: 0px;
     padding: 0px;
-    width: 100vw;
     background-color: var(--bg);
 }
 

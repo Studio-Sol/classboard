@@ -93,9 +93,9 @@ function renderComment(d) {
                         ${xsssafe(d.content).replaceAll("\n", "<br>")}
                     </div>
                     <div class="p-3 pt-0" style="font-size: small; color: #888;">
-                        ${moment(new Date(d.timestamp)).format(
-                            "YYYY.MM.DD HH:mm"
-                        )} ${replycount(
+                        ${new luxon.DateTime(
+                            d.timestamp
+                        ).toLocaleString()} ${replycount(
             d
         )} <span class="btn" style="color: #888" onclick="$('#reply-${
             d._id
@@ -136,9 +136,7 @@ function renderComment(d) {
                         ${d.content}
                     </div>
                     <div class="p-3 pt-0" style="font-size: small; color: #888;">
-                        ${moment(new Date(d.timestamp)).format(
-                            "YYYY.MM.DD HH:mm"
-                        )}
+                        ${new luxon.DateTime(d.timestamp).toLocaleString()}
                     </div>
                 </div>
             </div>

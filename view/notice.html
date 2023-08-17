@@ -8,6 +8,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title><%= data.title %></title>
         <style>
+            textarea {
+                background-color: var(--box-bg);
+            }
             .reply-item {
                 display: flex;
                 justify-content: space-between;
@@ -161,7 +164,7 @@
                     <hr />
                     <div class="p-3"><%- data.content %></div>
 
-                    <% if (questions) { %>
+                    <% if (questions.length > 0) { %>
                     <hr />
                     <h1>회신</h1>
                     <div id="replies">
@@ -208,7 +211,7 @@
                         제출
                     </button>
                     <br />
-                    <% if (user.type == "teacher") { %>
+                    <% if (user.type == "teacher" && questions.length > 0) { %>
                     <script
                         src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.mini.min.js"
                         integrity="sha512-NDQhXrK2pOCL18FV5/Nc+ya9Vz+7o8dJV1IGRwuuYuRMFhAR0allmjWdZCSHFLDYgMvXKyN2jXlSy2JJEmq+ZA=="
@@ -346,6 +349,33 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col pt-4 p-lg-4 mt-3 m-lg-3 shadow box">
+                    <div>
+                        <h2>댓글 달기</h2>
+                        <textarea
+                            id="content-"
+                            style="width: 100%"
+                            placeholder="댓글을 남겨보세요"
+                        ></textarea>
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: space-between;
+                            "
+                        >
+                            <div></div>
+                            <button
+                                class="btn btn-primary"
+                                onclick="addComment()"
+                            >
+                                등록
+                            </button>
+                        </div>
+                    </div>
+                    <div id="comment"></div>
+                </div>
+            </div>
         </div>
         <script src=" https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js "></script>
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
@@ -397,5 +427,6 @@
             }
         </script>
         <script src="/static/common.js"></script>
+        <script src="/static/comment.js" onload="loadComment()" async></script>
     </body>
 </html>
