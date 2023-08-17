@@ -132,9 +132,12 @@ export default async ({
 
     app.use(session);
     app.use(
-        morgan("combined", {
-            stream: stream,
-        })
+        morgan(
+            `:remote-addr :user - :method ":url" HTTP/:http-version :status :res[content-length] ":referrer"`,
+            {
+                stream: stream,
+            }
+        )
     );
     app.use(cookieParser());
     app.use(fileUpload());

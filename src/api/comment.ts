@@ -68,4 +68,14 @@ router.post("/api/comment", async (req, res) => {
         },
     });
 });
+
+router.delete("/api/comment/:id", async (req, res) => {
+    const comment = await Comment.findById(req.params.id).exec();
+    if (String(comment.author) == req.session.user_id) {
+        comment.deleteOne();
+        res.json({ status: "success" });
+    } else {
+        res.status(403).json({ status: "failed" });
+    }
+});
 export default router;

@@ -80,13 +80,20 @@ function renderComment(d) {
     if (!d.reply) {
         $("#comment").append(`
             <div class="mt-4 p-1" id="${d._id}">
-                <div style="display: flex;">
-                    <img class="rounded" style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${
-                        d.author.avatar
-                    }">
-                    <h4 style="width: fit-content; margin: 0px; padding: 0px;"><strong>${
-                        d.author.name
-                    }</strong></h4>
+                <div style="display: flex; justify-content: space-between">
+                    <div style="display: flex;">
+                        <img class="rounded" style="width: 2rem; height: 2rem; margin-right: 1rem;" src="${
+                            d.author.avatar
+                        }">
+                        <h4 style="width: fit-content; margin: 0px; padding: 0px;"><strong>${
+                            d.author.name
+                        }</strong></h4>
+                    </div>
+                    <div>
+                        <a href="#" onclick="deleteComment('${
+                            d._id
+                        }');"><i class="fa fa-trash"></i>삭제</a>
+                    </div>
                 </div>
                 <div style="margin-left: 2rem">
                     <div class="p-3 pt-0 pb-1" style="font-size: large;">
@@ -150,5 +157,75 @@ function replycount(d) {
         return "";
     }
 }
-
+function deleteComment(id) {
+    if (confirm("정말 삭제하시겠습니까?"))
+        $.ajax({
+            url: "/api/comment/" + id,
+            method: "DELETE",
+            success: (data) => {
+                if (data.status == "success") {
+                    $("#" + id).remove();
+                    setTimeout(() => alert("삭제되었습니다."));
+                } else alert("삭제에 실패했습니다.");
+            },
+        });
+}
 var replyStorage = {};
+document.head.append(`<style>.dropdown {
+    display: inline-block;
+}
+
+.dropdown li {
+    float: left;
+    list-style-type: none;
+    position: relative;
+}
+
+.dropdown li a {
+    font-size: 16px;
+    color: var(--text);
+    display: block;
+    line-height: 60px;
+    padding: 0 26px;
+    text-decoration: none;
+    border-left: 1px solid #2e2e2e;
+    font-family: Montserrat, sans-serif;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+#options a {
+    border-left: 0 none;
+}
+#options > a {
+    background-position: 85% center;
+    background-repeat: no-repeat;
+    padding-right: 42px;
+}
+.subnav {
+    visibility: hidden;
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 200px;
+    height: auto;
+    opacity: 0;
+    transition: all 0.1s;
+    background: var(--bg);
+}
+.subnav {
+    padding: 0px;
+}
+.subnav li {
+    float: none;
+}
+.subnav li a {
+    border-bottom: 1px solid #2e2e2e;
+}
+#options:hover .subnav {
+    visibility: visible;
+    top: 100%;
+    opacity: 1;
+}
+.subnav li:nth-child(1) > a:hover {
+    color: red;
+}</style>`);

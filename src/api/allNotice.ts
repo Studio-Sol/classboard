@@ -1,8 +1,6 @@
 import express from "express";
 import AllNotice from "../models/all_notice.entity.js";
 import AllNoticeNoagain from "../models/all_notice_noagain.entity.js";
-import { getUserById } from "../util/index.js";
-import { ObjectId } from "bson";
 
 const router = express.Router();
 

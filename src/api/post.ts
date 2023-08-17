@@ -3,7 +3,7 @@ import Post from "../models/post.entity.js";
 import { ObjectId } from "bson";
 import User from "../models/user.entity.js";
 import { getUserById } from "../util/index.js";
-
+import Comment from "../models/comment.entity.js";
 const router = express.Router();
 router.post("/api/post", async (req, res) => {
     var user = await getUserById(req.session.user_id);
@@ -100,7 +100,10 @@ router.delete("/api/post/:id", async (req, res) => {
             .status(403)
             .json({ status: "failed", message: "삭제 권한이 없습니다" });
     }
+
+    await Comment.deleteMany({ id: String(post._id) });
     post.deleteOne();
+
     return res.json({
         status: "success",
         message: "성공적으로 삭제되었습니다.",
