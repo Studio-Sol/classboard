@@ -131,25 +131,25 @@
                 }
             });
             $("#submit").on("click", (event) => {
-                /*
                 if (
-                    $("#summernote").summernote("code") == "<p><br></p>" ||
-                    $("#title").val() == ""
+                    $("#summernote")
+                        .summernote("code")
+                        .replace(/<[^>]*>?/gm, "")
+                        .replace(/ /g, "") == "" ||
+                    $("#title").val().replace(/ /g, "") == ""
                 ) {
-                    event.preventDefault();
                     alert("제목과 내용을 모두 입력해주세요.");
                     return false;
                 }
                 if (
-                    $(
-                        "<div>" + $("#summernote").summernote("code") + "</div>"
-                    ).text().length > 4096
+                    $("#summernote")
+                        .summernote("code")
+                        .replace(/<[^>]*>?/gm, "")
+                        .replace(/ /g, "").length > 5000
                 ) {
-                    event.preventDefault();
-                    alert("내용은 4096자 이하만 가능합니다");
+                    alert("내용은 5000자 이하만 가능합니다");
                     return false;
                 }
-                */
                 var questions = [];
                 var index = 0;
                 for (let q of $("#replies").children()) {

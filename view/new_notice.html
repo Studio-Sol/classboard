@@ -37,8 +37,7 @@
     </head>
 
     <body>
-        <%- include("./common/navbar.ejs") %>
-        <% if (mode == "new") { %>
+        <%- include("./common/navbar.ejs") %> <% if (mode == "new") { %>
         <div
             id="reply-type-choose"
             style="
@@ -116,20 +115,17 @@
                 <div class="col p-lg-4 mt-3 m-lg-3 shadow box">
                     <div>
                         <div class="p-3">
-                            <input
-                                type="text"
-                                id="title"
-                                name="title"
-                                style="width: 100%; font-size: x-large"
-                                placeholder="제목을 입력해주세요"
-                                value="<%= notice?.title ?? "" %>"
-                            />
+                            <input type="text" id="title" name="title"
+                            style="width: 100%; font-size: x-large"
+                            placeholder="제목을 입력해주세요" value="<%=
+                            notice?.title ?? "" %>" />
                         </div>
                         <div class="p-3">
                             <textarea id="summernote" name="content">
                                 <%- notice?.content ?? "" %>
                             </textarea>
-                        </div><% if (mode == "new") { %>
+                        </div>
+                        <% if (mode == "new") { %>
                         <hr />
                         <button
                             class="btn btn-bs5-primary"
@@ -145,8 +141,17 @@
                         ></div>
                         <hr />
                         <% } %>
-                        <div class="p-3" style="height: 5rem;display: flex;justify-content: space-between;">
-                            <p style="color: red;">공지 수정시에는 회신 항목을 수정할 수 없습니다!</p>
+                        <div
+                            class="p-3"
+                            style="
+                                height: 5rem;
+                                display: flex;
+                                justify-content: space-between;
+                            "
+                        >
+                            <p style="color: red">
+                                공지 수정시에는 회신 항목을 수정할 수 없습니다!
+                            </p>
                             <button class="btn btn-bs5-primary" id="submit">
                                 제출
                             </button>
@@ -207,25 +212,27 @@
                 }
             });
             $("#submit").on("click", (event) => {
-                /*
                 if (
-                    $("#summernote").summernote("code") == "<p><br></p>" ||
-                    $("#title").val() == ""
+                    $("#summernote")
+                        .summernote("code")
+                        .replace(/<[^>]*>?/gm, "")
+                        .replace(/ /g, "") == "" ||
+                    $("#title").val().replace(/ /g, "") == ""
                 ) {
                     event.preventDefault();
                     alert("제목과 내용을 모두 입력해주세요.");
                     return false;
                 }
                 if (
-                    $(
-                        "<div>" + $("#summernote").summernote("code") + "</div>"
-                    ).text().length > 4096
+                    $("#summernote")
+                        .summernote("code")
+                        .replace(/<[^>]*>?/gm, "")
+                        .replace(/ /g, "").length > 5000
                 ) {
                     event.preventDefault();
-                    alert("내용은 4096자 이하만 가능합니다");
+                    alert("내용은 5000자 이하만 가능합니다");
                     return false;
                 }
-                */
                 var questions = [];
                 var index = 0;
                 for (let q of $("#replies").children()) {
@@ -253,9 +260,11 @@
                     }
                     index++;
                 }
-                let mode = "<%= mode %>"
+                let mode = "<%= mode %>";
                 $.ajax({
-                    url: "/api/notice/" + ((mode == "edit") ? "<%= notice?._id %>":""),
+                    url:
+                        "/api/notice/" +
+                        (mode == "edit" ? "<%= notice?._id %>" : ""),
                     method: "POST",
                     datatype: "JSON",
                     data: {
