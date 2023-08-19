@@ -195,8 +195,9 @@
                                         <span> <%= item.content %> </span>
                                         <% if (item.limit != null) { %>
                                         <span>
-                                            <%= item.current??0 %>/<%=
-                                            item.limit??"∞" %>
+                                            <%- q["replies"].filter((e) =>
+                                            {return e.answer == idx}).length
+                                            %>/<%= item.limit??"∞" %>
                                         </span>
                                         <% } %>
                                     </li>

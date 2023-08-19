@@ -55,10 +55,10 @@ router.get("/notice/:id", async (req, res) => {
     if (data.questions) {
         for (let [idx, q] of data.questions.entries()) {
             questions.push(q);
+            let rawReplies = await Reply.find({
+                id: String(data._id),
+            }).exec();
             if (user.type == "teacher") {
-                let rawReplies = await Reply.find({
-                    id: String(data._id),
-                }).exec();
                 questions[idx]["replies"] = [];
                 for (const r of rawReplies) {
                     questions[idx]["replies"].push({
@@ -68,14 +68,9 @@ router.get("/notice/:id", async (req, res) => {
                     });
                 }
             } else if (q.qtype == "select") {
-                let rawReplies = await Reply.find({
-                    id: String(data._id),
-                }).exec();
                 questions[idx]["replies"] = [];
                 for (const r of rawReplies) {
                     questions[idx]["replies"].push({
-                        timestamp: r.timestamp,
-                        user: await User.findOne({ _id: r.user }),
                         answer: r.answers[idx],
                     });
                 }
