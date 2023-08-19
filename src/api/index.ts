@@ -20,6 +20,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
 router.use("/api/*", async (req, res, next) => {
+    if (req.originalUrl.startsWith("/api/intercept")) return next();
     var user = await getUserById(req.session.user_id);
     if (!user.class) return res.sendStatus(403);
     req.session.user = user;
