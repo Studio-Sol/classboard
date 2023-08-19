@@ -4,7 +4,8 @@
         <title>관리</title>
     </head>
     <body>
-        <a href="/api/intercept/teacher?nocache=1">새로고침</a>
+        <a href="/api/intercept/teacher?nocache=1">새로고침</a> |
+        <a href="#" onclick="openTabAll()"> 일괄 탭 열기 </a>
         <table border="1">
             <thead>
                 <th>학생(<%= Object.values(students).length %>)</th>
@@ -38,6 +39,10 @@
                             탭 닫기
                         </a>
                         |
+                        <a href="#" onclick="openTab('<%= student.id %>')">
+                            탭 열기
+                        </a>
+                        |
                         <a
                             href="/api/intercept/teacher/release/<%= student.id %>?nocache=1"
                         >
@@ -57,5 +62,22 @@
             <br />
             <input type="submit" />
         </form>
+        <script>
+            function openTab(student) {
+                let url = prompt("URL 입력");
+                if (url)
+                    location.href =
+                        "/api/intercept/teacher/open/" +
+                        student +
+                        "?url=" +
+                        encodeURI(url);
+            }
+            function openTabAll() {
+                let url = prompt("URL 입력");
+                if (url)
+                    location.href =
+                        "/api/intercept/teacher/open?url=" + encodeURI(url);
+            }
+        </script>
     </body>
 </html>

@@ -12,7 +12,8 @@ const students: {
     [key: string]: {
         id: string;
         profile: any;
-        queue: string;
+        close: string;
+        open: string;
         tab: Tab;
         timestamp: Date;
     };
@@ -44,26 +45,40 @@ router.post("/api/intercept/student", async (req, res) => {
             id: student_id,
             profile: profile,
             tab: body,
-            queue: "",
+            close: "",
+            open: "",
             timestamp: new Date(),
         };
     }
     students[student_id].tab = body;
     students[student_id].timestamp = new Date();
-    const queue = students[student_id].queue;
-    students[student_id].queue = "";
-
+    const close = students[student_id].close;
+    students[student_id].close = "";
+    const open = students[student_id].open;
+    students[student_id].open = "";
     return res.json({
         status: "success",
         banned:
             new RegExp(banData.regexp).test(body.url) ||
             banData.hosts.includes(new URL(body.url).hostname),
-        closeTab: queue,
+        closeTab: close,
+        openTab: open,
     });
 });
-router.get("/api/intercept/teacher/queue/:student/:id", (req, res) => {
+router.get("/api/intercept/teacher/close/:student/:id", (req, res) => {
     let student = req.params.student;
-    students[student].queue = req.params.id;
+    students[student].close = req.params.id;
+    res.redirect("/api/intercept/teacher");
+});
+router.get("/api/intercept/teacher/open", (req, res) => {
+    for (let i of Object.keys(students)) {
+        students[i].open = req.query.url as string;
+    }
+    res.redirect("/api/intercept/teacher");
+});
+router.get("/api/intercept/teacher/open/:student", (req, res) => {
+    students[req.params.student].open = req.query.url as string;
+
     res.redirect("/api/intercept/teacher");
 });
 router.post("/api/intercept/teacher/banData", (req, res) => {
