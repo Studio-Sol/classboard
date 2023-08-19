@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>관리</title>
+    </head>
+    <body>
+        <a href="/api/intercept/teacher?nocache=1">새로고침</a>
+        <table border="1">
+            <thead>
+                <th>학생(<%= Object.values(students).length %>)</th>
+                <th>웹사이트 제목</th>
+                <th>URL</th>
+                <th>ID</th>
+                <th>탭 관리</th>
+            </thead>
+            <tbody>
+                <% for (let student of Object.values(students)) { %>
+                <tr>
+                    <td><%= student.profile.name %></td>
+                    <td>
+                        <img
+                            src="<%= student.tab.favIconUrl %>"
+                            width="20"
+                            height="20"
+                        /><%= student.tab.title %>
+                    </td>
+                    <td><%= student.tab.url %></td>
+                    <td><%= student.tab.id%></td>
+                    <td>
+                        <a
+                            href="/api/intercept/teacher/queue/<%= student.id %>/<%= student.tab.id %>?nocache=1"
+                        >
+                            탭 닫기
+                        </a>
+                    </td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+        <hr />
+        <h2 style="color: red">개발자 전용 ⬇</h2>
+        <form action="/api/intercept/teacher/banData" method="POST">
+            <textarea style="width: 50vw; height: 50vh" name="banData">
+<%-JSON.stringify(banData)%></textarea
+            >
+            <br />
+            <input type="submit" />
+        </form>
+    </body>
+</html>

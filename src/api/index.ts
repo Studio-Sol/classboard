@@ -15,6 +15,7 @@ import calanderRouter from "./calander.js";
 import commentRouter from "./comment.js";
 import postRouter from "./post.js";
 import neisRouter from "./neis.js";
+import interceptRouter from "./intercept.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
@@ -135,4 +136,5 @@ router.use(calanderRouter);
 router.use(commentRouter);
 router.use(postRouter);
 router.use(neisRouter);
+router.use(interceptRouter);
 export default router;
