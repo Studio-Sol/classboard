@@ -26,10 +26,10 @@ router.post("/api/intercept/student", async (req, res) => {
         req.session.intercept = "User-" + (await UID(16));
     }
     let student_id;
-    if (req.session.intercept) {
-        student_id = req.session.intercept;
-    } else {
+    if (req.session.user_id) {
         student_id = req.session.user_id;
+    } else {
+        student_id = req.session.intercept;
     }
 
     const body: Tab = req.body.tab;
