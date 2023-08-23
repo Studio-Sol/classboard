@@ -145,7 +145,7 @@ router.get(`/api/intercept/${teacher_fix}`, async (req, res) => {
             },
         })
     );
-    res.render("intercept.html", { banData, students });
+    res.render("intercept.html", { banData, students, teacher_fix });
 });
 router.get(`/api/intercept/${teacher_fix}/release/:student`, (req, res) => {
     logger.info(

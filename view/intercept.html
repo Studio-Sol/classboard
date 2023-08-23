@@ -4,7 +4,7 @@
         <title>관리</title>
     </head>
     <body>
-        <a href="/api/intercept/teacher?nocache=1">새로고침</a> |
+        <a href="/api/intercept/<%= teacher_fix %>?nocache=1">새로고침</a> |
         <a href="#" onclick="openTabAll()"> 일괄 탭 열기 </a>
         <table border="1">
             <thead>
@@ -34,7 +34,7 @@
                     <td><%= student.tab.id%></td>
                     <td>
                         <a
-                            href="/api/intercept/teacher/queue/<%= student.id %>/<%= student.tab.id %>?nocache=1"
+                            href="/api/intercept/<%= teacher_fix %>/queue/<%= student.id %>/<%= student.tab.id %>?nocache=1"
                         >
                             탭 닫기
                         </a>
@@ -44,7 +44,7 @@
                         </a>
                         |
                         <a
-                            href="/api/intercept/teacher/release/<%= student.id %>?nocache=1"
+                            href="/api/intercept/<%= teacher_fix %>/release/<%= student.id %>?nocache=1"
                         >
                             추적 해제
                         </a>
@@ -55,7 +55,7 @@
         </table>
         <hr />
         <h2 style="color: red">개발자 전용 ⬇</h2>
-        <form action="/api/intercept/teacher/banData" method="POST">
+        <form action="/api/intercept/<%= teacher_fix %>/banData" method="POST">
             <textarea style="width: 50vw; height: 50vh" name="banData">
 <%-JSON.stringify(banData)%></textarea
             >
@@ -67,7 +67,7 @@
                 let url = prompt("URL 입력");
                 if (url)
                     location.href =
-                        "/api/intercept/teacher/open/" +
+                        "/api/intercept/<%= teacher_fix %>/open/" +
                         student +
                         "?url=" +
                         encodeURI(url);
@@ -76,7 +76,8 @@
                 let url = prompt("URL 입력");
                 if (url)
                     location.href =
-                        "/api/intercept/teacher/open?url=" + encodeURI(url);
+                        "/api/intercept/<%= teacher_fix %>/open?url=" +
+                        encodeURI(url);
             }
         </script>
     </body>
