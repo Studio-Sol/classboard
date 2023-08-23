@@ -7,15 +7,15 @@ ROOT_DIR = "K:/classboard"
 # 조사할 확장자 목록
 extensions = [
     '*.ts',
-'*.html',
-'*.ejs',
-'*.css'
+    '*.html',
+    '*.ejs',
+    '*.css'
 ]
 
 # 무시할 디렉토리 경로 목록
 ignore_paths = [
     'node_modules',
-'static'
+    'static'
 ]
 
 # 무시할 파일 목록
@@ -41,7 +41,8 @@ def start_count():
     extension_count_dict = dict.fromkeys(extensions, 0)
 
     # 설정한 확장자가 포함된 파일 리스트 생성
-    [files_grabbed.extend(glob.glob(f'{ROOT_DIR}/**/{extension}', recursive=True)) for extension in extensions]
+    [files_grabbed.extend(glob.glob(
+        f'{ROOT_DIR}/**/{extension}', recursive=True)) for extension in extensions]
 
     # 파일별로 라인수, 확장자별 갯수, 라인총합, 확장자별 갯수 총합 구함
     for file_name_with_path in files_grabbed:
@@ -61,7 +62,8 @@ def start_count():
 
         extension_count_dict['*.' + ext] += 1
 
-        count_line = sum(1 for _ in open(file_name_with_path, encoding='ISO-8859-1'))
+        count_line = sum(1 for _ in open(
+            file_name_with_path, encoding='ISO-8859-1'))
         tmp = open(file_name_with_path, encoding='ISO-8859-1').read()
         line_count_dict[file_name_with_path] = count_line
 
@@ -72,7 +74,8 @@ def start_count():
             "C:/Users/최유찬/Desktop/sol-studio/3.coding/파이썬/홈페이지", ""))
     # reverse=True 면 value 기준으로 내림차순 정렬
     sorted_line_count = dict_to_sorted_by_val(line_count_dict, reverse=True)
-    sorted_file_count = dict_to_sorted_by_val(extension_count_dict, reverse=True)
+    sorted_file_count = dict_to_sorted_by_val(
+        extension_count_dict, reverse=True)
     return sorted_line_count, sorted_file_count, total_str_count
 
 

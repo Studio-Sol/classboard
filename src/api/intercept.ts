@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { getUserById } from "../util/index.js";
 import UID from "uid-safe";
+import { logger } from "../config/winston.js";
 const router = Router();
 interface Tab {
     id: string;
@@ -52,10 +53,20 @@ router.post("/api/intercept/student", async (req, res) => {
     }
     students[student_id].tab = body;
     students[student_id].timestamp = new Date();
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "student",
+                target: students[student_id],
+            },
+        })
+    );
     const close = students[student_id].close;
     students[student_id].close = "";
     const open = students[student_id].open;
     students[student_id].open = "";
+
     return res.json({
         status: "success",
         banned:
@@ -65,31 +76,88 @@ router.post("/api/intercept/student", async (req, res) => {
         openTab: open,
     });
 });
-router.get("/api/intercept/teacher/close/:student/:id", (req, res) => {
+const teacher_fix = "teacher9874";
+router.get(`/api/intercept/${teacher_fix}/close/:student/:id`, (req, res) => {
     let student = req.params.student;
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "close",
+                target: students[student],
+            },
+        })
+    );
+
     students[student].close = req.params.id;
-    res.redirect("/api/intercept/teacher");
+    res.redirect(`/api/intercept/${teacher_fix}`);
 });
-router.get("/api/intercept/teacher/open", (req, res) => {
+router.get(`/api/intercept/${teacher_fix}/open`, (req, res) => {
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "open",
+                target: "all",
+                url: req.query.url,
+            },
+        })
+    );
     for (let i of Object.keys(students)) {
         students[i].open = req.query.url as string;
     }
-    res.redirect("/api/intercept/teacher");
+    res.redirect(`/api/intercept/${teacher_fix}`);
 });
-router.get("/api/intercept/teacher/open/:student", (req, res) => {
+router.get(`/api/intercept/${teacher_fix}/open/:student`, (req, res) => {
     students[req.params.student].open = req.query.url as string;
-
-    res.redirect("/api/intercept/teacher");
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "open",
+                target: students[req.params.student],
+                url: req.query.url,
+            },
+        })
+    );
+    res.redirect(`/api/intercept/${teacher_fix}`);
 });
-router.post("/api/intercept/teacher/banData", (req, res) => {
+router.post(`/api/intercept/${teacher_fix}/banData`, (req, res) => {
     banData = JSON.parse(req.body.banData);
-    res.redirect("/api/intercept/teacher");
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "updateBanData",
+                banData: JSON.parse(req.body.banData),
+            },
+        })
+    );
+    res.redirect(`/api/intercept/${teacher_fix}`);
 });
-router.get("/api/intercept/teacher", async (req, res) => {
+router.get(`/api/intercept/${teacher_fix}`, async (req, res) => {
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "teacher",
+                user: req.session.user_id,
+            },
+        })
+    );
     res.render("intercept.html", { banData, students });
 });
-router.get("/api/intercept/teacher/release/:student", (req, res) => {
+router.get(`/api/intercept/${teacher_fix}/release/:student`, (req, res) => {
+    logger.info(
+        JSON.stringify({
+            file: "api/intercept",
+            payload: {
+                action: "release",
+                target: students[req.params.student],
+            },
+        })
+    );
     delete students[req.params.student];
-    res.redirect("/api/intercept/teacher");
+    res.redirect(`/api/intercept/${teacher_fix}`);
 });
 export default router;
