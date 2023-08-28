@@ -139,7 +139,7 @@ router.get("/api/notice", async (req, res) => {
         })
             .sort({ _id: -1 })
             .skip(parseInt(req.query.skip as string))
-            .limit(10)
+            .limit(5)
             .exec();
 
         var result = [];

@@ -17,7 +17,7 @@ function window_onresize() {
         $("#school-grade-class").innerHTML = `${grade}-${class_}`;
     }
 }
-window_onresize();
+
 window.onresize = window_onresize;
 
 // FETCH WITH USER INTERACTION
@@ -126,70 +126,6 @@ async function fetchMeal(dateString) {
         });
 }
 
-async function fetchpost() {
-    $("#posts").innerHTML = "로드중...";
-
-    fetch(`/api/post?skip=0`, {
-        method: "GET",
-    })
-        .then((d) => d.json())
-        .then((data) => {
-            if (data.success) {
-                $("#posts").innerHTML = "";
-                for (const d of data.post) {
-                    $("#posts").insertAdjacentHTML(
-                        "beforeend",
-                        `<li class="list-group-item" onclick="openPost('${d.id}')">${d.title}</li>`
-                    );
-                }
-                if (data.post.length == 0) {
-                    $("#posts").insertAdjacentHTML(
-                        "beforeend",
-                        `<li class="list-group-item"><strong style="color: black;">게시글 없음</strong></li>`
-                    );
-                }
-            } else {
-                $("#posts").insertAdjacentHTML(
-                    "beforeend",
-                    `<li class="list-group-item"><strong style="color: black;">오류 발생</strong></li>`
-                );
-                throw Error(
-                    data.message ?? "fetchpost:success->false, no message"
-                );
-            }
-        });
-}
-
-async function fetchNotice() {
-    $("#notice").innerHTML = "로드중...";
-
-    fetch(`/api/notice?skip=0`, {
-        method: "GET",
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.success) {
-                $("#notice").innerHTML = "";
-                for (const d of data.notice) {
-                    $("#notice").insertAdjacentHTML(
-                        "beforeend",
-                        `<li class="list-group-item" onclick="openNotice('${d.id}')">${d.title}</li>`
-                    );
-                }
-                if (data.notice.length == 0) {
-                    $("#notice").insertAdjacentHTML(
-                        "beforeend",
-                        `<strong class="list-group-item">공지 없음</strong>`
-                    );
-                }
-            } else {
-                $("#notice").innerHTML = "오류가 발생했습니다.";
-                throw Error(
-                    data.message ?? "fetchNotice:success->false, no message"
-                );
-            }
-        });
-}
 function getDate(stringDate) {
     return new Date(
         stringDate.slice(0, 4) +
@@ -259,13 +195,12 @@ var cache = {
 var today = formatDate(new Date());
 
 // FETCH
-window.onload = async () => {
+window.addEventListener("load", async () => {
     fetchTimeTable(monday);
     fetchMeal(today);
-    fetchpost();
-    fetchNotice();
     fetchAllNotice();
-};
+    window_onresize();
+});
 
 var currentMonday = monday;
 function getLastMonday() {
@@ -297,14 +232,6 @@ function getNextMonday() {
 
 function openNotice(link) {
     location.href = "/notice/" + link;
-}
-
-function openPost(link) {
-    location.href = "/post/" + link;
-}
-
-function newPost() {
-    location.href = "/new-post";
 }
 
 window.onerror = (message, url, lineNumber) => {

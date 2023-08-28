@@ -1,0 +1,58 @@
+<div class="row p-4 mt-4 shadow box">
+    <div style="display: flex; justify-content: space-between">
+        <a href="/post" style="width: fit-content">
+            <h3 style="display: inline-block; width: fit-content">
+                <strong>게시물</strong>
+            </h3>
+        </a>
+        <a href="/new-post" style="color: var(--link)">
+            <i class="fa fa-pencil"></i>
+            게시물 작성
+        </a>
+    </div>
+    <ul id="posts" class="list-group"></ul>
+    <script>
+        async function fetchpost() {
+            $("#posts").innerHTML = "로드중...";
+
+            fetch(`/api/post?skip=0`, {
+                method: "GET",
+            })
+                .then((d) => d.json())
+                .then((data) => {
+                    if (data.success) {
+                        $("#posts").innerHTML = "";
+                        for (const d of data.post) {
+                            $("#posts").insertAdjacentHTML(
+                                "beforeend",
+                                `<li class="list-group-item" onclick="openPost('${d.id}')">${d.title}</li>`
+                            );
+                        }
+                        if (data.post.length == 0) {
+                            $("#posts").insertAdjacentHTML(
+                                "beforeend",
+                                `<li class="list-group-item"><strong style="color: black;">게시글 없음</strong></li>`
+                            );
+                        }
+                    } else {
+                        $("#posts").insertAdjacentHTML(
+                            "beforeend",
+                            `<li class="list-group-item"><strong style="color: black;">오류 발생</strong></li>`
+                        );
+                        throw Error(
+                            data.message ??
+                                "fetchpost:success->false, no message"
+                        );
+                    }
+                });
+        }
+        function openPost(link) {
+            location.href = "/post/" + link;
+        }
+
+        function newPost() {
+            location.href = "/new-post";
+        }
+        window.addEventListener("load", fetchpost)
+    </script>
+</div>

@@ -38,6 +38,7 @@ router.get("/main", async (req, res) => {
         classroom: classroom.class.CLASS_NM,
         school_name: classroom.school.SCHUL_NM,
         user: user,
+        sidebar: ["notice", "post", "d-day", "calander"],
     });
 });
 

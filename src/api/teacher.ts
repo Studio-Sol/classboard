@@ -4,17 +4,54 @@ import { getUserById } from "../util/index.js";
 import { ObjectId } from "bson";
 
 const router = express.Router();
-
-router.get("/api/teacher/student.ban", async (req, res) => {
+router.post("/api/teacher/grant-permission", async (req, res) => {
     try {
-        new ObjectId(req.query.user as string);
+        new ObjectId(req.body.user as string);
     } catch {
         res.json({ success: false });
         return;
     }
     await User.updateOne(
         {
-            _id: new ObjectId(req.query.user as string),
+            _id: new ObjectId(req.body.user as string),
+        },
+        {
+            $set: {
+                type: "teacher",
+            },
+        }
+    );
+    res.json({ success: true });
+});
+router.post("/api/teacher/deprive-permission", async (req, res) => {
+    try {
+        new ObjectId(req.body.user as string);
+    } catch {
+        res.json({ success: false });
+        return;
+    }
+    await User.updateOne(
+        {
+            _id: new ObjectId(req.body.user as string),
+        },
+        {
+            $set: {
+                type: "student",
+            },
+        }
+    );
+    res.json({ success: true });
+});
+router.post("/api/teacher/student.ban", async (req, res) => {
+    try {
+        new ObjectId(req.body.user as string);
+    } catch {
+        res.json({ success: false });
+        return;
+    }
+    await User.updateOne(
+        {
+            _id: new ObjectId(req.body.user as string),
         },
         {
             $unset: {
@@ -25,17 +62,17 @@ router.get("/api/teacher/student.ban", async (req, res) => {
     res.json({ success: true });
 });
 
-router.get("/api/teacher/join.accept", async (req, res) => {
+router.post("/api/teacher/join.accept", async (req, res) => {
     var user = await getUserById(req.session.user_id);
     try {
-        new ObjectId(req.query.user as string);
+        new ObjectId(req.body.user as string);
     } catch {
         res.json({ success: false });
         return;
     }
     await User.updateOne(
         {
-            _id: new ObjectId(req.query.user as string),
+            _id: new ObjectId(req.body.user as string),
         },
         {
             $set: {
@@ -46,27 +83,27 @@ router.get("/api/teacher/join.accept", async (req, res) => {
     res.json({
         success: true,
         user: await User.findOne({
-            _id: new ObjectId(req.query.user as string),
+            _id: new ObjectId(req.body.user as string),
             class: user.class,
         }),
     });
 });
 
-router.get("/api/teacher/join.reject", async (req, res) => {
+router.post("/api/teacher/join.reject", async (req, res) => {
     var user = await getUserById(req.session.user_id);
     if (user.type != "teacher") {
         res.redirect("/");
         return;
     }
     try {
-        new ObjectId(req.query.user as string);
+        new ObjectId(req.body.user as string);
     } catch {
         res.json({ success: false });
         return;
     }
     await User.updateOne(
         {
-            _id: new ObjectId(req.query.user as string),
+            _id: new ObjectId(req.body.user as string),
         },
         {
             $set: {

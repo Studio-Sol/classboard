@@ -22,21 +22,21 @@ router.get("/teacher", async (req, res) => {
     var students = await User.find({
         class: classroom._id,
         waiting: false,
-        type: "student",
     }).exec();
     var join_request = await User.find({
         class: classroom._id,
         waiting: true,
-        type: "student",
     }).exec();
-    res.render("teacher.html", {
-        classroom: classroom,
-        user: user,
-        students: students,
-        join_request: join_request,
+    res.render("teacher/index.html", {
+        classroom,
+        students,
+        join_request,
+        user,
     });
 });
-
+router.get("/teacher/sidebar", async (req, res) => {
+    res.render("teacher/edit_main.html");
+});
 router.get("/teacher/seat", async (req, res) => {
     res.render("seat/index.html");
 });

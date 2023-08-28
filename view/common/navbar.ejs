@@ -88,6 +88,6 @@
     shadow
         .getElementById("navbar")
         .classList.add("navbar-" + localStorage.getItem("theme"));
-    if (new URL(location.href).pathname == "/")
+    if (new URL(location.href).pathname == "/" || new URL(location.href).pathname.startsWith("/login"))
         shadow.getElementById("logo").setAttribute("href", "/");
 </script>
