@@ -11,12 +11,16 @@
     "start_url": "/main?source=pwa",
     "theme_color": "#ffffff",
     "categories": ["education"],
-    "screenshots": [],
     "icons": [
         {
             "src": "https://classboard.kr/static/common/logo.png",
             "type": "image/png",
             "sizes": "500x500"
+        },
+        {
+            "src": "https://classboard.kr/static/common/logo1080.png",
+            "type": "image/png",
+            "sizes": "1080x1080"
         }
     ],
     "shortcuts": [
@@ -24,6 +28,13 @@
             "name": "클래스보드",
             "url": "https://classboard.kr/main",
             "description": "홈"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "https://classboard.kr/static/screenshot_0.png",
+            "sizes": "1920x1080",
+            "type": "image/png"
         }
     ]
 }

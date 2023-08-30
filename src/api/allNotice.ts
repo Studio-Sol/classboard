@@ -33,6 +33,6 @@ router.get("/api/all-notice/noagain", async (req, res) => {
         },
         { upsert: true }
     );
-    return res.json({ success: true });
+    return res.sendStatus(200);
 });
 export default router;

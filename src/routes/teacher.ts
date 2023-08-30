@@ -168,7 +168,7 @@ router.post("/register-class", async (req, res) => {
         }
     );
     if (req.body.select_school) {
-        res.json({ success: true, redirect: "/main" });
+        res.json({ redirect: "/main" });
         return;
     }
     res.redirect("/");
