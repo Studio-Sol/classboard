@@ -1,20 +1,19 @@
-// 오프라인 경험을 향상시키기 위한 SOL-Dynamic-Caching이 적용된 Service Worker입니다.
+/* 
+    오프라인 경험을 향상시키기 위한 클래스보드의 service worker입니다.
+    ⓒ Sol Studio 2023
+*/
 const CACHE = "classboard-pwa";
-/*
 importScripts(
     "https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js"
 );
-*/
 self.addEventListener("message", (event) => {
     if (event.data && event.data.type === "SKIP_WAITING") {
         self.skipWaiting();
     }
 });
-/*
 if (workbox.navigationPreload.isSupported()) {
     workbox.navigationPreload.enable();
 }
-*/
 self.addEventListener("fetch", (event) => {
     console.log("fetch!");
     event.respondWith(
