@@ -20,15 +20,6 @@ function window_onresize() {
 
 window.onresize = window_onresize;
 
-// FETCH WITH USER INTERACTION
-$("td.class, th.dayofweek").forEach((e) => {
-    e.addEventListener("click", (event) => {
-        $(".active")?.classList?.remove("active");
-        event.target.classList.add("active");
-        fetchMeal(event.target.dataset.date);
-    });
-});
-
 // Date to NeisDate
 function formatDate(date) {
     var date = new Date(date);
@@ -196,12 +187,18 @@ var today = formatDate(new Date());
 
 // FETCH
 window.addEventListener("load", async () => {
+    $("td.class, th.dayofweek").forEach((e) => {
+        e.addEventListener("click", (event) => {
+            $(".active")?.classList?.remove("active");
+            event.target.classList.add("active");
+            fetchMeal(event.target.dataset.date);
+        });
+    });
     fetchTimeTable(monday);
     fetchMeal(today);
     fetchAllNotice();
     window_onresize();
 });
-
 var currentMonday = monday;
 function getLastMonday() {
     var tmp = new Date(

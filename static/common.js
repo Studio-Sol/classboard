@@ -66,5 +66,6 @@ window.addEventListener("load", () => {
             }
         }
     }
-    setInterval(handleNetworkChange, 1000);
+    window.addEventListener("online", handleNetworkChange);
+    window.addEventListener("offline", handleNetworkChange);
 });
