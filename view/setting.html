@@ -185,6 +185,14 @@
             </div>
             <div class="row">
                 <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
+                    <h2>데이터 관리</h2>
+                    <a class="btn btn-danger" onclick="deleteCache()"
+                        >캐시 삭제</a
+                    >일시적으로 오프라인에서 앱 이용이 불가능합니다
+                </div>
+            </div>
+            <div class="row">
+                <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
                     <h2>로그아웃</h2>
                     <a class="btn btn-danger" onclick="location = '/logout'"
                         >로그아웃</a
@@ -222,6 +230,16 @@
 
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script>
+            function deleteCache() {
+                if ("serviceWorker" in navigator) {
+                    caches.keys().then(function (cacheNames) {
+                        cacheNames.forEach(function (cacheName) {
+                            caches.delete(cacheName);
+                        });
+                    });
+                    setTimeout(() => alert("캐시가 삭제되었습니다"));
+                }
+            }
             var theme = localStorage.getItem("theme");
             const toggle = document.querySelector(
                 ".switch__input[data-theme-toggle]"
