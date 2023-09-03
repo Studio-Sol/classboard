@@ -159,11 +159,7 @@
                         >
                     </div>
                     <% if (!user.class) { %>
-                    <a
-                        class="btn btn-primary"
-                        href="/login/type"
-                        >변경</a
-                    >
+                    <a class="btn btn-primary" href="/login/type">변경</a>
                     <% } %>
                 </div>
             </div>
@@ -190,9 +186,7 @@
             <div class="row">
                 <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
                     <h2>로그아웃</h2>
-                    <a
-                        class="btn btn-danger"
-                        onclick="location = '/logout'"
+                    <a class="btn btn-danger" onclick="location = '/logout'"
                         >로그아웃</a
                     >
                 </div>
@@ -242,7 +236,7 @@
             var original_name = "<%= user.name %>";
             var original_avatar = "<%= user.avatar %>";
             var submit = false;
-            document.getElementById("name").onkeyup = (e) => {
+            document.getElementById("name").oninput = (e) => {
                 if (this.value != original_name) {
                     $("#changed").css("display", "flex");
                 } else {
@@ -267,13 +261,13 @@
                 oReq.send(data);
             }
 
-            $("#avatar_file").on("change", (e) => {
+            document.getElementById("avatar_file").oninput = (e) => {
                 $("#avatar-img").attr(
                     "src",
                     URL.createObjectURL(e.target.files[0])
                 );
                 $("#changed").css("display", "flex");
-            });
+            };
         </script>
         <script src="/static/common.js"></script>
     </body>
