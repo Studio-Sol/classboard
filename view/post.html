@@ -240,7 +240,7 @@
             var id = '<%= data._id %>'
 
             var user = <%- JSON.stringify(user) %>
-            document.querySelector("#timestamp").innerHTML = new luxon.DateTime("<%= data.timestamp %>").toLocaleString()
+            document.querySelector("#timestamp").innerHTML = luxon.DateTime.fromMillis(<%= data.timestamp %>).toFormat('yyyy.MM.dd');
             function deletePost() {
                 if (!confirm("정말 삭제하시겠습니까?")) return
                 $.ajax({

@@ -177,13 +177,9 @@
                     }
                     index++;
                 }
-                let mode = "<%= mode %>";
                 $.ajax({
                     url:
-                        "/api/post/" +
-                        (mode == "edit"
-                            ? `<% if (mode!= "new") post?.id %>`
-                            : ""),
+                        "/api/post/<% if (mode!= "new") { %><%= post._id %><% } %>",
                     method: "POST",
                     datatype: "JSON",
                     data: {

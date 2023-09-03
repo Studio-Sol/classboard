@@ -104,14 +104,14 @@ router.get("/notice/:id", async (req, res) => {
     });
 });
 router.get("/notice/:id/edit", async (req, res) => {
-    let notice = await Notice.findById(req.params.id);
+    let notice = await Notice.findOne({ _id: new ObjectId(req.params.id) });
     if (String(req.session.user_id) != String(notice.author)) {
         res.redirect("/");
         return;
     }
     res.render("new_notice.html", {
         mode: "edit",
-        notice: await Notice.findById(req.params.id),
+        notice: notice,
     });
 });
 export default router;

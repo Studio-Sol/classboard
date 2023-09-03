@@ -233,44 +233,44 @@
                     alert("내용은 5000자 이하만 가능합니다");
                     return false;
                 }
-                var questions = [];
-                var index = 0;
-                for (let q of $("#replies").children()) {
-                    if (q.tagName == "HR") continue;
-                    if ($(q).data("type") == "text") {
-                        questions.push({
-                            qtype: "text",
-                            content: $(q).children()[0].value,
-                        });
-                    } else if ($(q).data("type") == "select") {
-                        var items = [];
-                        Array.from($(q).children().children()).forEach(
-                            (item) => {
-                                items.push({
-                                    content: item.children[0].value,
-                                    limit: parseInt(item.children[1].value),
-                                });
-                            }
-                        );
-                        questions.push({
-                            qtype: "select",
-                            content: $(q).children()[0].value,
-                            items: items,
-                        });
+                <% if (mode == "new") { %>
+                    var questions = [];
+                    var index = 0;
+                    for (let q of $("#replies").children()) {
+                        if (q.tagName == "HR") continue;
+                        if ($(q).data("type") == "text") {
+                            questions.push({
+                                qtype: "text",
+                                content: $(q).children()[0].value,
+                            });
+                        } else if ($(q).data("type") == "select") {
+                            var items = [];
+                            Array.from($(q).children().children()).forEach(
+                                (item) => {
+                                    items.push({
+                                        content: item.children[0].value,
+                                        limit: parseInt(item.children[1].value),
+                                    });
+                                }
+                            );
+                            questions.push({
+                                qtype: "select",
+                                content: $(q).children()[0].value,
+                                items: items,
+                            });
+                        }
+                        index++;
                     }
-                    index++;
-                }
-                let mode = "<%= mode %>";
+                <% } %>
                 $.ajax({
                     url:
-                        "/api/notice/" +
-                        (mode == "edit" ? "<%= notice?._id %>" : ""),
+                        "/api/notice/<%= (mode == "edit") ? notice?._id : "" %>",
                     method: "POST",
                     datatype: "JSON",
                     data: {
                         title: $("#title").val(),
                         content: $("#summernote").val(),
-                        questions: questions,
+                        <% if (mode == "new") { %>questions: questions,<% } %>
                     },
                     success: (data) => {
                         location = "/notice/" + data.id;
@@ -282,6 +282,7 @@
                     },
                 });
             });
+            <%if (mode == "new") { %>
             let idx = 0;
             var selections = {};
             function addReply() {
@@ -335,6 +336,7 @@
             function deleteOption(i, j) {
                 document.querySelector(`#reply-item-${i}-${j}`).remove();
             }
+            <% } %>
         </script>
     </body>
 </html>

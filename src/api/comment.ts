@@ -71,7 +71,10 @@ router.post("/api/comment", async (req, res) => {
 
 router.delete("/api/comment/:id", async (req, res) => {
     const comment = await Comment.findById(req.params.id).exec();
-    if (String(comment.author) == req.session.user_id) {
+    if (
+        String(comment.author) == req.session.user_id ||
+        req.session.user_type == "teacher"
+    ) {
         comment.deleteOne();
         res.json({ status: "success" });
     } else {

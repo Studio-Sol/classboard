@@ -1,7 +1,9 @@
 import loaders from "./loaders/index.js";
 import express from "express";
 import http from "http";
+import dotenv from "dotenv";
 (async () => {
+    dotenv.config();
     const app = express();
     const httpServer = new http.Server(app);
     const allow_hosts = [
@@ -14,7 +16,8 @@ import http from "http";
 
     await loaders(app, allow_hosts, inspecting);
 
-    httpServer.listen(3000, "0.0.0.0", () => {
-        console.log("listening...", 3000);
+    const port = parseInt(process.env.PORT);
+    httpServer.listen(port, "0.0.0.0", () => {
+        console.log("listening...", port);
     });
 })();

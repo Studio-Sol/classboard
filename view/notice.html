@@ -384,9 +384,7 @@
             let answers = [];
             answers.length = parseInt(`<%= questions.length %>`);
             answers.fill(null);
-            document.querySelector("#timestamp").innerHTML = new luxon.DateTime(
-                "<%= data.timestamp %>"
-            ).toLocaleString();
+            document.querySelector("#timestamp").innerHTML = luxon.DateTime.fromMillis(<%= data.timestamp %>).toFormat('yyyy.MM.dd');
             $(".reply-item").on("click", (event) => {
                 $(".selected").removeClass("selected");
                 if (event.target.classList.contains("reply-item"))

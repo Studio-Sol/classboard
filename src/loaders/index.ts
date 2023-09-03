@@ -1,6 +1,5 @@
 import expressLoader from "./express.js";
 import mongooseLoader from "./mongoose.js";
-import dotenv from "dotenv";
 import express from "express";
 import cron from "./cron.js";
 
@@ -9,8 +8,6 @@ export default async (
     allow_hosts,
     inspecting
 ) => {
-    dotenv.config();
-
     console.log("[LOADER] Neis Intialized");
 
     await mongooseLoader();

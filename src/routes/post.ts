@@ -64,7 +64,7 @@ router.get("/post/:id/edit", async (req, res) => {
     }
     res.render("new_post.html", {
         mode: "edit",
-        post: await Post.findById(req.params.id),
+        post: post,
     });
 });
 export default router;
