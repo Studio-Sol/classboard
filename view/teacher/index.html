@@ -91,7 +91,7 @@
                         <thead>
                             <th class="col-1">이름</th>
 
-                            <th class="col-1 d-lg-block d-none">이메일</th>
+                            <th class="col-1 email">이메일</th>
                             <% if (String(user._id) ==
                             String(classroom.class.MADE)) { %>
                             <th class="col-1">학급 관리 권한</th>
@@ -107,13 +107,11 @@
                                     <img
                                         style="width: 2rem"
                                         src="<%= student.avatar %>"
-                                        class="d-lg-block d-none"
+                                        class="avatar"
                                     />
                                     <%= student.name ?? "실명 없음" %>
                                 </td>
-                                <td class="d-lg-block d-none">
-                                    <%= student.email %>
-                                </td>
+                                <td class="email"><%= student.email %></td>
                                 <% if (String(user._id) ==
                                 String(classroom.class.MADE)) { %>
                                 <td>
@@ -220,6 +218,14 @@
         <script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
         <script src="http://code.jquery.com/jquery-latest.min.js"></script>
         <script>
+            if (window.matchMedia("(max-width: 600px)").matches) {
+                Array.from(document.getElementsByClassName("avatar")).forEach(
+                    (e) => e.remove()
+                );
+                Array.from(document.getElementsByClassName("email")).forEach(
+                    (e) => e.remove()
+                );
+            }
             function openProfile(event, id) {
                 event.stopPropagation();
                 event.preventDefault();

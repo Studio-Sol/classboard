@@ -238,6 +238,8 @@
                         });
                     });
                     setTimeout(() => alert("캐시가 삭제되었습니다"));
+                } else {
+                    alert("캐시 삭제에 실패했습니다");
                 }
             }
             var theme = localStorage.getItem("theme");

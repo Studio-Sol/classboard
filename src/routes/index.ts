@@ -8,8 +8,11 @@ import authRouter from "./auth.js";
 import noticeRouter from "./notice.js";
 import postRouter from "./post.js";
 const router = express.Router();
-router.get("/", (req, res) => {
-    res.render("index.html", { user_id: req.session.user_id ?? false });
+router.get("/", async (req, res) => {
+    let user = null;
+    if (req.session.user_id) user = await getUserById(req.session.user_id);
+
+    res.render("index.html", { user });
 });
 
 // MAIN

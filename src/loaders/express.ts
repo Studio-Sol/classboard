@@ -162,6 +162,7 @@ export default async ({
     app.use((req, res, next) => {
         res.locals.user_id = req.session.user_id;
         res.locals.user_type = req.session.user_type;
+        res.locals.path = req.path;
         res.setHeader("X-Powered-By", "Sol Studio Server");
         if (req.ip != "114.207.98.231" && inspecting) {
             res.render("inspect.html");
