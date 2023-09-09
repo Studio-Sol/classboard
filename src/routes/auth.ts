@@ -190,6 +190,7 @@ router.get("/login/type/callback", async (req, res) => {
                 { _id: new ObjectId(req.session.user_id) },
                 { $set: { type: "teacher" } }
             );
+            req.session.user_type = "teacher";
             res.redirect("/register-class");
         } else if (req.query.type == "student") {
             await User.updateOne(
@@ -199,6 +200,7 @@ router.get("/login/type/callback", async (req, res) => {
             var next = req.cookies.next ?? "/main";
             if (next.startsWith("/login")) next = "/main";
             res.clearCookie("next");
+            req.session.user_type = "student";
             res.redirect(next);
         }
     }
