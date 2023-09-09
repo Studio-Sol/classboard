@@ -31,7 +31,9 @@ router.use("/api/teacher/*", async (req, res, next) => {
     if (req.session.user.type != "teacher") return res.sendStatus(403);
     next();
 });
-
+router.get("/api/session", (req, res) => {
+    return res.json(req.session ?? {});
+});
 router.post("/api/upload-img", async (req, res) => {
     if (req.files) {
         var uid = UID.sync(64);

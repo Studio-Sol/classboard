@@ -175,7 +175,8 @@ export default async ({
                 req.path == "/terms" ||
                 req.path == "/privacy" ||
                 req.path == "/favicon.ico" ||
-                req.path == "/jobs"
+                req.path == "/jobs" ||
+                req.path == "/api/session"
             ) {
                 next();
             } else {
