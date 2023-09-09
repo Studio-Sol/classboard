@@ -32,6 +32,7 @@ router.use("/api/teacher/*", async (req, res, next) => {
     next();
 });
 router.get("/api/session", (req, res) => {
+    console.log("session");
     return res.json(req.session ?? {});
 });
 router.post("/api/upload-img", async (req, res) => {
