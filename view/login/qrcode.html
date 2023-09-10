@@ -44,7 +44,9 @@
                         parseInt(timerLeft % 60)
                     ).padStart(2, "0")}`;
                     timerLeft -= 1;
-                    console.log(timerLeft);
+                    if (timerLeft == 0) {
+                        location.reload();
+                    }
                 }, 1000);
             });
         </script>

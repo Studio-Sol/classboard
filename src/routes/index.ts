@@ -9,7 +9,8 @@ import noticeRouter from "./notice.js";
 import postRouter from "./post.js";
 const router = express.Router();
 router.get("/", async (req, res) => {
-    let user = await getUserById(req.session.user_id);
+    let user = null;
+    if (req.session.user_id) user = await getUserById(req.session.user_id);
     return res.render("index.html", { user });
 });
 // MAIN
