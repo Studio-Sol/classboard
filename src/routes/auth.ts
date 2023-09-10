@@ -212,6 +212,9 @@ router.get("/logout", (req, res) => {
     res.clearCookie("connect.sid");
     res.redirect("/");
 });
+router.get("/login/qrcode", async (req, res) => {
+    res.render("login/qrcode_scan.html");
+});
 router.get("/auth/qrcode", async (req, res) => {
     let token = await UID(16);
     await new Token({
