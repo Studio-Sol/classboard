@@ -16,6 +16,7 @@ import commentRouter from "./comment.js";
 import postRouter from "./post.js";
 import neisRouter from "./neis.js";
 import interceptRouter from "./intercept.js";
+import tokenRouter from "./token.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
@@ -141,4 +142,5 @@ router.use(commentRouter);
 router.use(postRouter);
 router.use(neisRouter);
 router.use(interceptRouter);
+router.use(tokenRouter);
 export default router;

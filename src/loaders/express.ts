@@ -28,6 +28,7 @@ import timetableEntity from "../models/timetable.entity.js";
 import userEntity from "../models/user.entity.js";
 import apiRouter from "../api/index.js";
 import pageRouter from "../routes/index.js";
+import tokenEntity from "../models/token.entity.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const DEFAULT_ADMIN = { email: "sol762@classboard.kr", password: "sol762!" };
 export default async ({
@@ -59,6 +60,7 @@ export default async ({
                 sessionEntity,
                 timetableEntity,
                 userEntity,
+                tokenEntity,
             ],
             rootPath: "/admin",
         }),

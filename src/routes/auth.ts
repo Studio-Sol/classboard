@@ -3,6 +3,9 @@ import request from "request";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.entity.js";
 import { ObjectId } from "bson";
+import { getUserById } from "../util/index.js";
+import Token from "../models/token.entity.js";
+import UID from "uid-safe";
 const router = express.Router();
 router.get("/login", (req, res) => {
     res.render("login/login.html");
@@ -168,9 +171,7 @@ router.get("/login/callback/naver", async (req, res) => {
 });
 
 router.get("/login/type", async (req, res) => {
-    var user = await User.findOne({
-        _id: new ObjectId(req.session.user_id),
-    });
+    var user = await getUserById(req.session.user_id);
     if (user.class) {
         res.redirect("/");
     } else {
@@ -210,5 +211,30 @@ router.get("/logout", (req, res) => {
     req.session.destroy();
     res.clearCookie("connect.sid");
     res.redirect("/");
+});
+router.get("/auth/qrcode", async (req, res) => {
+    let token = await UID(16);
+    await new Token({
+        token,
+        payload: JSON.stringify({
+            user_id: req.session.user_id,
+        }),
+        expireAt: new Date(Date.now() + 1000 * 60 * 3),
+    }).save();
+    res.render("login/qrcode.html", { token });
+});
+router.get("/login/t/:token", async (req, res) => {
+    try {
+        var token = await Token.findOne({
+            token: req.params.token,
+        });
+        console.log(token);
+        var user = await getUserById(JSON.parse(token.payload).user_id);
+        req.session.user_id = user._id;
+        req.session.user_type = user.type;
+        return res.redirect("/main");
+    } catch (e) {
+        return res.sendStatus(400);
+    }
 });
 export default router;
