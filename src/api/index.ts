@@ -20,22 +20,20 @@ import tokenRouter from "./token.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
+router.get("/api/client", async (req, res) => {
+    return res.json({ user: await getUserById(req.session.user_id) });
+});
 router.use("/api/*", async (req, res, next) => {
     if (req.originalUrl.startsWith("/api/intercept")) return next();
     var user = await getUserById(req.session.user_id);
-    if (!user.class) return res.sendStatus(403);
-    req.session.user = user;
+    if (!user.class) return res.sendStatus(400);
     next();
 });
 router.use("/api/teacher/*", async (req, res, next) => {
-    console.log(req.session.user);
-    if (req.session.user.type != "teacher") return res.sendStatus(403);
+    if (req.session.user_type != "teacher") return res.sendStatus(403);
     next();
 });
-router.get("/api/session", (req, res) => {
-    console.log("session");
-    return res.json(req.session ?? {});
-});
+
 router.post("/api/upload-img", async (req, res) => {
     if (req.files) {
         var uid = UID.sync(64);
