@@ -3,6 +3,8 @@
     <%- include("./common/head.ejs") %>
     <head>
         <title>학급 캘린더</title>
+
+        <link rel="stylesheet" href="/static/bootstrap.min.css" />
         <style>
             :root {
                 --light-bg: #f3f5f7;
@@ -17,16 +19,15 @@
                 --dark-hover: rgba(255, 255, 255, 0.1);
                 --dark-link: #57acdc;
             }
+            html,
+            body {
+                margin: 0px;
+            }
             body {
                 color: var(--text);
                 background-color: var(--bg);
             }
-        </style>
-        <link rel="stylesheet" href="/static/bootstrap.min.css" />
-
-        <style>
-            html,
-            body {
+            #calendar {
                 margin: 5px;
             }
             .popper,
@@ -125,11 +126,21 @@
                 margin-left: 0;
                 margin-right: 0;
             }
+            a {
+                text-decoration: none;
+                color: var(--color);
+            }
+            a:hover {
+                color: var(--bs-primary);
+            }
+            th {
+                background-color: var(--bg) !important;
+            }
         </style>
-        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
         <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
         <script src="https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.8/index.global.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.9/index.global.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             if (localStorage.getItem("theme") == "dark") {
@@ -160,7 +171,7 @@
             document.addEventListener("DOMContentLoaded", function () {
                 var calendarEl = document.getElementById("calendar");
                 var calendar = new FullCalendar.Calendar(calendarEl, {
-                    longPressDelay: 0,
+                    longPressDelay: 200,
                     themeSystem: "standard",
                     defaultAllDay: true,
                     timeZone: "UTC",
@@ -254,7 +265,11 @@
     </head>
     <body>
         <%- include("./common/navbar.ejs") %>
-        <div id="calendar" style="height: 100vh"></div>
+
+        <div class="mt-lg-3 d-flex align-items-center justify-content-center">
+            <div id="calendar" class="container"></div>
+        </div>
+
         <script src="/static/common.js"></script>
     </body>
 </html>

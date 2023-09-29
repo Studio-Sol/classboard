@@ -87,6 +87,12 @@
             .subnav li:nth-child(1) > a:hover {
                 color: red;
             }
+            #content img {
+                width: 100%;
+            }
+            #content a {
+                word-wrap: break-word;
+            }
         </style>
         <script src="https://kit.fontawesome.com/76a19131cd.js" async></script>
     </head>
@@ -162,7 +168,7 @@
                         </div>
                     </div>
                     <hr />
-                    <div class="p-3"><%- data.content %></div>
+                    <div class="p-3" id="content"><%- data.content %></div>
 
                     <% if (questions.length > 0) { %>
                     <hr />

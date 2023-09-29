@@ -40,8 +40,9 @@
     },
     "scripts": {
         "build": "tsc",
-        "start": "tsc & supervisor dist/app.js",
-        "postinstall": "patch-package"
+        "start": "tsc & node dist/app.js",
+        "postinstall": "patch-package",
+        "dev": "start tsc -w & supervisor -w dist dist/app.js"
     },
     "devDependencies": {
         "@types/express": "^4.17.17",

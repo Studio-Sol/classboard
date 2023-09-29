@@ -17,11 +17,14 @@ import postRouter from "./post.js";
 import neisRouter from "./neis.js";
 import interceptRouter from "./intercept.js";
 import tokenRouter from "./token.js";
+import { logger } from "../config/winston.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
 router.get("/api/client", async (req, res) => {
-    return res.json({ user: await getUserById(req.session.user_id) });
+    if (req.session.user_id)
+        return res.json({ user: await getUserById(req.session.user_id) });
+    else return res.json({ user: null });
 });
 router.use("/api/*", async (req, res, next) => {
     if (req.originalUrl.startsWith("/api/intercept")) return next();
@@ -68,7 +71,15 @@ router.post("/api/delete-user", async (req, res) => {
         __v: __,
         ...deletedUser
     } = JSON.parse(JSON.stringify(user));
-    console.log(deletedUser);
+    logger.info(
+        JSON.stringify({
+            file: "api/index",
+            payload: {
+                action: "delete-user",
+                user: user,
+            },
+        })
+    );
     new DeletedUser(deletedUser).save();
     await User.deleteOne({ _id: user._id });
 

@@ -96,7 +96,7 @@
 
     <body>
         <%- include("./common/navbar.ejs") %>
-        <div class="container-xl w-auto" style="height: 100%" id="main">
+        <div class="container-xl w-auto" style="min-height: 100vh" id="main">
             <div class="row mb-2" style="height: 7em">
                 <div class="col p-lg-4 p-3 mt-3 m-lg-3 shadow box">
                     <div class="row d-flex align-items-center h-100">
@@ -269,6 +269,34 @@
                         .getElementById("widgets")
                         .children[0].classList.remove("mt-4");
                 </script>
+            </div>
+        </div>
+        <div style="background-color: var(--hover)" id="footer">
+            <div class="container p-4">
+                <h3>클래스보드</h3>
+                <div class="row">
+                    <div class="col-8 d-flex">
+                        <a class="me-1" href="/privacy">개인정보처리방침</a>
+                        |
+                        <a class="ms-1 me-1" href="/terms">이용약관</a>
+                        |
+                        <a
+                            class="ms-1 me-1"
+                            href="https://sol-studio.tistory.com/category/클래스보드"
+                            target="_blank"
+                            >기술블로그</a
+                        >
+                    </div>
+                    <div class="col-4">
+                        <h5>문의</h5>
+                        모든 문의는
+                        <a href="mailto:contact@classboard.kr"
+                            >contact@classboard.kr</a
+                        >
+                    </div>
+                </div>
+
+                <p>Copyright &copy;Sol-Studio. All rights reserved.</p>
             </div>
         </div>
         <div class="modal fade" tabindex="-1" role="dialog" id="error">

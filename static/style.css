@@ -44,8 +44,11 @@ li {
 }
 a > h3 > strong {
     text-decoration: none;
-    color: var(--link);
+    color: color-mix(in srgb, var(--bs-primary) 95%, black);
 }
 a {
     text-decoration: none;
+}
+#footer a {
+    color: color-mix(in srgb, var(--bs-primary) 90%, black);
 }
