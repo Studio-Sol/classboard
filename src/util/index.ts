@@ -22,9 +22,15 @@ export function choice(a: string, k = 1) {
     return return_array;
 }
 export async function getUserById(id: any) {
-    const user = await userEntity.findOne({ _id: new ObjectId(String(id)) });
-    if (!user) throw Error(`User Not Found : ${id}`);
-    else return user;
+    try {
+        const user = await userEntity.findOne({
+            _id: new ObjectId(String(id)),
+        });
+        if (!user) return null;
+        else return user;
+    } catch (_) {
+        return null;
+    }
 }
 export function formatDate(date: Date) {
     return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");

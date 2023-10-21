@@ -15,9 +15,9 @@ import calanderRouter from "./calander.js";
 import commentRouter from "./comment.js";
 import postRouter from "./post.js";
 import neisRouter from "./neis.js";
-import interceptRouter from "./intercept.js";
 import tokenRouter from "./token.js";
 import { logger } from "../config/winston.js";
+import classEntity from "../models/class.entity.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
@@ -26,8 +26,18 @@ router.get("/api/client", async (req, res) => {
         return res.json({ user: await getUserById(req.session.user_id) });
     else return res.json({ user: null });
 });
+router.get("/api/class", async (req, res) => {
+    if (req.session.user_id)
+        return res.json({
+            class: await classEntity.findById(
+                (
+                    await getUserById(req.session.user_id)
+                ).class
+            ),
+        });
+    else return res.json({ class: null, session: req.session });
+});
 router.use("/api/*", async (req, res, next) => {
-    if (req.originalUrl.startsWith("/api/intercept")) return next();
     var user = await getUserById(req.session.user_id);
     if (!user.class) return res.sendStatus(400);
     next();
@@ -150,6 +160,5 @@ router.use(calanderRouter);
 router.use(commentRouter);
 router.use(postRouter);
 router.use(neisRouter);
-router.use(interceptRouter);
 router.use(tokenRouter);
 export default router;

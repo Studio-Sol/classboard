@@ -8,9 +8,11 @@ import dotenv from "dotenv";
     const httpServer = new http.Server(app);
     const allow_hosts = [
         "classboard.kr",
-        "localhost",
         "dev.classboard.kr",
         "192.168.0.10",
+        "192.168.0.19",
+        "127.0.0.1",
+        "localhost",
     ];
     const inspecting = false;
 
