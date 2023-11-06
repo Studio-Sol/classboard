@@ -62,6 +62,27 @@ router.get("/api/post", async (req, res) => {
         });
     }
 });
+router.get("/api/post/:id", async (req, res) => {
+    var user = await getUserById(req.session.user_id);
+    try {
+        let post = await Post.findOne({
+            _id: new ObjectId(req.params.id),
+            class: user?.class,
+        });
+        if (post) {
+            res.json({
+                post: {
+                    ...post.toObject(),
+                    author: (await getUserById(post.author)).toObject(),
+                },
+            });
+        } else {
+            res.json({});
+        }
+    } catch (e) {
+        res.json({});
+    }
+});
 router.post("/api/post/:id", async (req, res) => {
     let post = await Post.findById(req.params.id);
     if (String(req.session.user_id) != String(post.author)) {

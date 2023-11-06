@@ -1,3 +1,4 @@
+import { ObjectId } from "bson";
 import {
     Schema,
     StringExpressionOperatorReturningBoolean,
@@ -36,6 +37,7 @@ interface Meal {
      * 영양정보
      */
     NTR_INFO?: string;
+    favorites: ObjectId[][];
 }
 const mealSchema = new Schema<Meal>({
     date: Date,
@@ -46,6 +48,7 @@ const mealSchema = new Schema<Meal>({
     ORPLC_INFO: String,
     CAL_INFO: String,
     NTR_INFO: String,
+    favorites: Array<Array<ObjectId>>,
 });
 
 export default model("Meal", mealSchema);

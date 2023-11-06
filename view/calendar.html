@@ -194,7 +194,6 @@
                     googleCalendarApiKey:
                         "AIzaSyAcJQF_u9VFzqrhDJ2B-Roj-7XTIH0o1N8",
 
-                    // US Holidays
                     eventSources: [
                         {
                             googleCalendarId:
@@ -260,6 +259,10 @@
                 });
                 calendar.setOption("locale", "ko");
                 calendar.render();
+                calendar.select({
+                    start: new Date(new URL(location).searchParams.start),
+                    resourceId: new URL(location).searchParams.id,
+                });
             });
         </script>
     </head>

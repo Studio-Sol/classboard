@@ -204,7 +204,6 @@ export default async ({
     // ERRORs
     // 404 NOT FOUND
     app.use((req, res) => {
-        console.log(req.originalUrl);
         res.status(404).render("404.html", { user_id: req.session.user_id });
     });
     app.use(

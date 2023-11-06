@@ -231,7 +231,6 @@ router.get("/login/t/:token", async (req, res) => {
         var token = await Token.findOne({
             token: req.params.token,
         });
-        console.log(token);
         var user = await getUserById(JSON.parse(token.payload).user_id);
         req.session.user_id = user._id;
         req.session.user_type = user.type;

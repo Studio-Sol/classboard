@@ -10,8 +10,9 @@ router.get("/api/comment", async (req, res) => {
     }
     var raw = await Comment.find({
         id: req.query.id,
-        reply: req.query.reply ?? null,
+        reply: req.query.reply ?? "",
     })
+        .sort({ _id: -1 })
         .limit(30)
         .skip(parseInt(req.query.skip as string))
         .exec();
@@ -71,11 +72,15 @@ router.post("/api/comment", async (req, res) => {
 
 router.delete("/api/comment/:id", async (req, res) => {
     const comment = await Comment.findById(req.params.id).exec();
+    if (!comment) return res.status(403).json({ status: "failed" });
     if (
         String(comment.author) == req.session.user_id ||
         req.session.user_type == "teacher"
     ) {
         comment.deleteOne();
+        Comment.deleteMany({
+            reply: req.params.id,
+        });
         res.json({ status: "success" });
     } else {
         res.status(403).json({ status: "failed" });

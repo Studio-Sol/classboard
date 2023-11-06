@@ -5,6 +5,8 @@ import Neis from "../modules/neis.js";
 import express from "express";
 import { getUserById } from "../util/index.js";
 import { formatDate } from "../util/index.js";
+import e from "express";
+import { ObjectId } from "bson";
 const router = express.Router();
 const neis = new Neis(process.env.NEIS_API_KEY);
 router.get("/api/meal", async (req, res) => {
@@ -31,16 +33,86 @@ router.get("/api/meal", async (req, res) => {
                     pSize: 10,
                 }
             );
-            if (meals) await mealEntity.insertMany(meals);
+
+            if (meals) {
+                meals = meals.map((e) => {
+                    return {
+                        ...e,
+                        favorites: Array(e.DDISH_NM.split("<br").length).fill(
+                            []
+                        ),
+                    };
+                });
+                await mealEntity.insertMany(meals);
+            }
         } catch {}
 
     if (meals?.length ?? 0 != 0) {
-        res.json({ success: true, meal: meals });
+        res.json({
+            success: true,
+            meal: Array.from(
+                meals.map((e) => {
+                    if (e._id) e = e.toObject();
+                    return {
+                        ...e,
+                        favorites: Array.from(e.favorites.map((a) => a.length)),
+                        myFavorites: Array.from(
+                            e.favorites.map(
+                                (a) =>
+                                    !a.every(
+                                        (j: ObjectId) =>
+                                            String(j) != String(user._id)
+                                    )
+                            )
+                        ),
+                    };
+                })
+            ),
+        });
     } else {
         res.json({ success: true, meal: [] });
     }
 });
-
+router.post("/api/meal/favorite", async (req, res) => {
+    if (isNaN(parseInt(req.body.line))) {
+        return res.json({ success: false, message: "line" });
+    }
+    let user = await getUserById(req.session.user_id);
+    let classroom = await Class.findOne({
+        _id: user.class,
+    });
+    let meal = await mealEntity.findOne({
+        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+        MLSV_YMD: req.body.date,
+        MMEAL_SC_NM: req.body.mealname,
+    });
+    if (!meal) {
+        return res.json({ success: false, message: "nope" });
+    }
+    let newFavorites = meal.favorites;
+    console.log(meal.favorites);
+    let idx = -1;
+    for (let i = 0; i < newFavorites[parseInt(req.body.line)].length; i++)
+        if (
+            newFavorites[parseInt(req.body.line)][i].toString() ==
+            user._id.toString()
+        )
+            idx = i;
+    if (idx > -1) newFavorites[parseInt(req.body.line)].splice(idx, 1);
+    else newFavorites[parseInt(req.body.line)].push(user._id);
+    await mealEntity.updateOne(
+        { _id: meal._id },
+        {
+            $set: {
+                favorites: newFavorites,
+            },
+        }
+    );
+    res.json({
+        success: true,
+        favorite: newFavorites[parseInt(req.body.line)].length,
+    });
+});
 router.get("/api/timetable", async (req, res) => {
     const refine = (data: any[]) => {
         var result = [];

@@ -39,7 +39,7 @@ router.get("/api/class", async (req, res) => {
 });
 router.use("/api/*", async (req, res, next) => {
     var user = await getUserById(req.session.user_id);
-    if (!user.class) return res.sendStatus(400);
+    if (!user?.class) return res.sendStatus(400);
     next();
 });
 router.use("/api/teacher/*", async (req, res, next) => {
