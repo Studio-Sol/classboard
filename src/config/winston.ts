@@ -1,6 +1,5 @@
 import winston from "winston";
 import WinstonGraylog2 from "@eximius/winston-graylog2";
-
 const logger = winston.createLogger({
     format: winston.format.json(),
     transports: [

@@ -22,6 +22,9 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
 router.get("/api/client", async (req, res) => {
+    if (req.hostname != "127.0.0.1") {
+        return res.status(404);
+    }
     if (req.session.user_id)
         return res.json({ user: await getUserById(req.session.user_id) });
     else return res.json({ user: null });
@@ -46,7 +49,13 @@ router.use("/api/teacher/*", async (req, res, next) => {
     if (req.session.user_type != "teacher") return res.sendStatus(403);
     next();
 });
-
+router.post("/api/log", (req, res) => {
+    if (req.hostname != "127.0.0.1") {
+        return res.status(404);
+    }
+    logger.info(req.body.content);
+    res.status(200);
+});
 router.post("/api/upload-img", async (req, res) => {
     if (req.files) {
         var uid = UID.sync(64);

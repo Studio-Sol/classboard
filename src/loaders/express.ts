@@ -146,7 +146,7 @@ export default async ({
     app.set("trust proxy", 1);
     app.use(
         cors({
-            origin: ["sol-studio.ga", "discord.com"],
+            origin: [],
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials: true, // enable set cookie
         })
