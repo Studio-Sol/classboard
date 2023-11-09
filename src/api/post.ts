@@ -22,6 +22,13 @@ router.post("/api/post", async (req, res) => {
 router.get("/api/post", async (req, res) => {
     try {
         var user = await getUserById(req.session.user_id);
+        let limit = parseInt(req.query.limit as string);
+        if (isNaN(limit)) {
+            limit = 5;
+        }
+        if (limit > 10) {
+            limit = 10;
+        }
         if (isNaN(parseInt(req.query.skip as string))) {
             res.json({ success: false });
             return;
@@ -31,7 +38,7 @@ router.get("/api/post", async (req, res) => {
         })
             .sort({ _id: -1 })
             .skip(parseInt(req.query.skip as string))
-            .limit(5)
+            .limit(limit)
             .exec();
 
         var result = [];

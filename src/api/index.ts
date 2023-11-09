@@ -22,9 +22,6 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
 router.get("/api/client", async (req, res) => {
-    if (req.hostname != "127.0.0.1") {
-        return res.status(404);
-    }
     if (req.session.user_id)
         return res.json({ user: await getUserById(req.session.user_id) });
     else return res.json({ user: null });
