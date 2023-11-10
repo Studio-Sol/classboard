@@ -48,10 +48,10 @@ router.use("/api/teacher/*", async (req, res, next) => {
 });
 router.post("/api/log", (req, res) => {
     if (req.hostname != "127.0.0.1") {
-        return res.status(404);
+        return res.sendStatus(404);
     }
     logger.info(req.body.content);
-    res.status(200);
+    res.sendStatus(200);
 });
 router.post("/api/upload-img", async (req, res) => {
     if (req.files) {
