@@ -21,6 +21,7 @@ import classEntity from "../models/class.entity.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const router = express.Router();
+router.use(allNoticeRouter);
 router.get("/api/client", async (req, res) => {
     if (req.session.user_id)
         return res.json({ user: await getUserById(req.session.user_id) });
@@ -160,7 +161,6 @@ router.post("/api/setting/save", async (req, res) => {
 });
 
 router.use(noticeRouter);
-router.use(allNoticeRouter);
 router.use(teacherRouter);
 router.use(calanderRouter);
 router.use(commentRouter);

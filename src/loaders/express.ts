@@ -173,12 +173,12 @@ export default async ({
                 req.path == "/" ||
                 req.path.startsWith("/login") ||
                 req.path.startsWith("/static") ||
-                req.path.startsWith("/api/intercept") ||
                 req.path == "/terms" ||
                 req.path == "/privacy" ||
                 req.path == "/favicon.ico" ||
                 req.path == "/jobs" ||
-                req.path == "/api/client"
+                req.path == "/api/client" ||
+                req.path == "/api/all-notice"
             ) {
                 next();
             } else {
