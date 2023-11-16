@@ -56,7 +56,7 @@ router.get("/post/:id", async (req, res) => {
         serviceURL: process.env.SERVICE_URL,
     });
 });
-router.get("/post/:id/edit", async (req, res) => {
+router.get("/edit-post/:id", async (req, res) => {
     let post = await Post.findById(req.params.id);
     if (String(req.session.user_id) != String(post.author)) {
         res.redirect("/");

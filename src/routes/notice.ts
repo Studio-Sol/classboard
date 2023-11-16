@@ -103,7 +103,7 @@ router.get("/notice/:id", async (req, res) => {
         serviceURL: process.env.SERVICE_URL,
     });
 });
-router.get("/notice/:id/edit", async (req, res) => {
+router.get("/edit-notice/:id", async (req, res) => {
     let notice = await Notice.findOne({ _id: new ObjectId(req.params.id) });
     if (String(req.session.user_id) != String(notice.author)) {
         res.redirect("/");

@@ -1,3 +1,16 @@
+# 2023/11/16
+
+> Good Bye, Classboard 1.0
+
+-   이 프로젝트의 API, ADMIN 부분을 제외한 모든 코드를 legacy로 전환합니다.
+-   이제부터 view, static resource, 기타 routing은 모두 유지보수되지 않으며 Next.js로 다시 작성될 예정입니다.
+    -   최종 목표는 API를 제외한 모든 기능을 포팅하는 것입니다.
+-   프로젝트 전체의 개발 종료가 아닌, API만을 위한 프로젝트로의 전환입니다.
+
+> R.I.P<br>
+> Classboard 1.0<br>
+> 2022.03.14 ~ 2023.10.21
+
 # 2023/06/19
 
 -   캘린더 등 style 깨지는 현상 해결 (adsense, GA로드방식 변경)

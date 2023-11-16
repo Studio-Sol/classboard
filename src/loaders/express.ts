@@ -15,7 +15,6 @@ import { fileURLToPath } from "url";
 import ejs from "ejs";
 import { stream } from "../config/winston.js";
 import all_noticeEntity from "../models/all_notice.entity.js";
-import all_notice_noagainEntity from "../models/all_notice_noagain.entity.js";
 import calanderEntity from "../models/calander.entity.js";
 import classEntity from "../models/class.entity.js";
 import commentEntity from "../models/comment.entity.js";
@@ -49,7 +48,6 @@ export default async ({
         new AdminJS({
             resources: [
                 all_noticeEntity,
-                all_notice_noagainEntity,
                 calanderEntity,
                 classEntity,
                 commentEntity,
