@@ -259,8 +259,11 @@
                     "theme",
                     theme == "dark" ? "light" : "dark"
                 );
+                document.cookie =
+                    "theme=" + (theme == "dark" ? "light" : "dark");
                 theme = localStorage.getItem("theme");
                 switchTheme();
+                location.reload();
             });
             var original_name = "<%= user.name %>";
             var original_avatar = "<%= user.avatar %>";

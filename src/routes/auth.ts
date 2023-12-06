@@ -39,7 +39,7 @@ router.get("/login/google", (req, res) => {
     res.render("login/google.html");
 });
 
-router.get("/login/callback/google", async (req, res) => {
+router.get("/api/login/google", async (req, res) => {
     const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     try {
         var ticket = await googleClient.verifyIdToken({
@@ -80,12 +80,10 @@ router.get("/login/callback/google", async (req, res) => {
     }
 });
 
-router.get("/login/callback/naver", async (req, res) => {
+router.get("/api/login/naver", async (req, res) => {
     var client_id = process.env.NAVER_CLIENT_ID;
     var client_secret = process.env.NAVER_SECRET;
-    var redirectURI = encodeURI(
-        `${process.env.SERVICE_URL}/login/callback/naver`
-    );
+    var redirectURI = encodeURI(`${process.env.SERVICE_URL}/api/login/naver`);
     var api_url = "";
     var code = req.query.code;
     var state = req.query.state;

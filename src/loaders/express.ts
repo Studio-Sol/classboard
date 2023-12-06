@@ -176,7 +176,8 @@ export default async ({
                 req.path == "/favicon.ico" ||
                 req.path == "/jobs" ||
                 req.path == "/api/client" ||
-                req.path == "/api/all-notice"
+                req.path == "/api/all-notice" ||
+                req.path.startsWith("/api/login")
             ) {
                 next();
             } else {
