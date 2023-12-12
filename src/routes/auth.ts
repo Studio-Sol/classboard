@@ -74,7 +74,7 @@ router.get("/api/login/google", async (req, res) => {
         req.session.user_id = user._id;
         req.session.user_type = user.type;
         req.session.save(() => {
-            res.redirect("/main");
+            res.redirect("/register-class");
         });
     }
 });
@@ -152,7 +152,7 @@ router.get("/api/login/naver", async (req, res) => {
                         req.session.user_id = user._id;
                         req.session.user_type = user.type;
                         req.session.save(() => {
-                            res.redirect("/main");
+                            res.redirect("/register-class");
                         });
                     }
                 } else {
