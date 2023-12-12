@@ -124,25 +124,6 @@ router.post("/register-class", async (req, res) => {
         return;
     }
     var ay = classroom.AY;
-    var tmp = await Class.findOne({
-        "school.SD_SCHUL_CODE": school.SD_SCHUL_CODE,
-        "school.ATPT_OFCDC_SC_CODE": school.ATPT_OFCDC_SC_CODE,
-        "school.SCHUL_NM": school.SCHUL_NM,
-        "class.GRADE": classroom.GRADE,
-        "class.CLASS_NM": classroom.CLASS_NM,
-        ay: ay,
-    });
-    if (tmp != null) {
-        if (req.body.select_school) {
-            res.json({
-                success: false,
-                redirect: "/register-class?error=alreadyexist",
-            });
-            return;
-        }
-        res.redirect("/register-class?error=alreadyexist");
-        return;
-    }
     var i = await new Class({
         school: {
             SD_SCHUL_CODE: school.SD_SCHUL_CODE,

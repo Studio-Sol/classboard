@@ -13,9 +13,7 @@ router.get("/login", (req, res) => {
 
 router.get("/login/naver", (req, res) => {
     var client_id = process.env.NAVER_CLIENT_ID;
-    var redirectURI = encodeURI(
-        `${process.env.SERVICE_URL}/login/callback/naver`
-    );
+    var redirectURI = encodeURI(`${process.env.SERVICE_URL}/api/login/naver`);
     var state = Math.round(Math.random() * 1000);
     var url =
         "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=" +
@@ -46,7 +44,8 @@ router.get("/api/login/google", async (req, res) => {
             idToken: req.query.token as string,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
-    } catch {
+    } catch (e) {
+        console.log(e);
         res.send("오류");
         return;
     }
@@ -63,7 +62,7 @@ router.get("/api/login/google", async (req, res) => {
         res.redirect(next);
     } else {
         let user = await new User({
-            type: null,
+            type: "teacher",
             auth: "google",
             email: payload.email,
             name: payload.name,
@@ -75,7 +74,7 @@ router.get("/api/login/google", async (req, res) => {
         req.session.user_id = user._id;
         req.session.user_type = user.type;
         req.session.save(() => {
-            res.redirect("/login/type");
+            res.redirect("/main");
         });
     }
 });
@@ -141,7 +140,7 @@ router.get("/api/login/naver", async (req, res) => {
                         res.redirect(next);
                     } else {
                         let user = await new User({
-                            type: null,
+                            type: "teacher",
                             auth: "naver",
                             email: payload.email,
                             name: payload.name,
@@ -153,7 +152,7 @@ router.get("/api/login/naver", async (req, res) => {
                         req.session.user_id = user._id;
                         req.session.user_type = user.type;
                         req.session.save(() => {
-                            res.redirect("/login/type");
+                            res.redirect("/main");
                         });
                     }
                 } else {
@@ -177,7 +176,7 @@ router.get("/login/type", async (req, res) => {
     }
 });
 
-router.get("/login/type/callback", async (req, res) => {
+router.get("/api/login/type", async (req, res) => {
     var user = await User.findOne({
         _id: new ObjectId(req.session.user_id),
     });
@@ -196,11 +195,8 @@ router.get("/login/type/callback", async (req, res) => {
                 { _id: new ObjectId(req.session.user_id) },
                 { $set: { type: "student" } }
             );
-            var next = req.cookies.next ?? "/main";
-            if (next.startsWith("/login")) next = "/main";
-            res.clearCookie("next");
             req.session.user_type = "student";
-            res.redirect(next);
+            res.redirect("/invite");
         }
     }
 });

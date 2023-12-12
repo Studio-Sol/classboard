@@ -43,8 +43,7 @@
         </div>
         <script>
             function handleCredentialResponse(data) {
-                location.href =
-                    "/login/callback/google?token=" + data.credential;
+                location.href = "/api/login/google?token=" + data.credential;
             }
         </script>
         <script src="/static/common.js"></script>
