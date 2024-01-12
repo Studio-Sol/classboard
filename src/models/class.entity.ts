@@ -10,7 +10,6 @@ interface Class {
         GRADE: string;
         CLASS_NM: string;
     };
-    ay: string;
     invite: string;
 }
 const classSchema = new Schema<Class>({
@@ -24,7 +23,6 @@ const classSchema = new Schema<Class>({
         GRADE: String,
         CLASS_NM: String,
     },
-    ay: String,
     invite: String,
 });
 

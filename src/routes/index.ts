@@ -8,55 +8,6 @@ import authRouter from "./auth.js";
 import noticeRouter from "./notice.js";
 import postRouter from "./post.js";
 const router = express.Router();
-router.get("/", async (req, res) => {
-    let user = null;
-    if (req.session.user_id) user = await getUserById(req.session.user_id);
-    return res.render("index.html", { user });
-});
-// MAIN
-router.get("/main", async (req, res) => {
-    var user = await getUserById(req.session.user_id);
-    if (!user.class) {
-        if (user.type == "teacher") {
-            res.redirect("/register-class");
-        } else if (user.type == "student") {
-            res.redirect("/invite");
-        } else {
-            res.redirect("/login/type");
-        }
-        return;
-    }
-    var classroom = await Class.findOne({
-        _id: user.class,
-    });
-    if (user.waiting) {
-        return res.render("wait.html", { waiting: user.class });
-    }
-    var monday = getMondayDate(new Date());
-    res.render("main.html", {
-        monday: monday,
-        grade: classroom.class.GRADE,
-        classroom: classroom.class.CLASS_NM,
-        school_name: classroom.school.SCHUL_NM,
-        user: user,
-        sidebar: ["notice", "post", "calander"],
-    });
-});
-
-router.get("/invite", async (req, res) => {
-    var user = await User.findOne({
-        _id: new ObjectId(req.session.user_id),
-    });
-    if (user.class) {
-        res.redirect("/");
-        return;
-    }
-    if (user.type != "student") {
-        res.redirect("/");
-        return;
-    }
-    res.render("invite.html", { error: req.query.error ?? "" });
-});
 
 router.get("/invite/:code", async (req, res) => {
     var user = await User.findOne({
@@ -83,23 +34,6 @@ router.get("/invite/:code", async (req, res) => {
     } else {
         res.redirect("/invite?error=noinvite");
     }
-});
-
-// 소셜 기능
-router.get("/user/:id", async (req, res) => {
-    try {
-        new ObjectId(req.params.id);
-    } catch {
-        res.sendStatus(404);
-        return;
-    }
-    var user = await User.findOne({ _id: new ObjectId(req.params.id) });
-    if (!user) {
-        res.sendStatus(404);
-        return;
-    }
-    var classroom = await Class.findOne({ _id: user.class });
-    res.render("user.html", { user: user, classroom: classroom });
 });
 
 // POST and NOTICE

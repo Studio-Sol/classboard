@@ -123,7 +123,6 @@ router.post("/register-class", async (req, res) => {
         res.redirect("/register-class?error=noclass");
         return;
     }
-    var ay = classroom.AY;
     var i = await new Class({
         school: {
             SD_SCHUL_CODE: school.SD_SCHUL_CODE,
@@ -135,7 +134,6 @@ router.post("/register-class", async (req, res) => {
             GRADE: classroom.GRADE,
             CLASS_NM: classroom.CLASS_NM,
         },
-        ay: ay,
         invite: choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6).join(""),
     }).save();
     await User.updateOne(

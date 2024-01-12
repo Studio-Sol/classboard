@@ -7,35 +7,6 @@ import { getUserById } from "../util/index.js";
 import Token from "../models/token.entity.js";
 import UID from "uid-safe";
 const router = express.Router();
-router.get("/login", (req, res) => {
-    res.render("login/login.html");
-});
-
-router.get("/login/naver", (req, res) => {
-    var client_id = process.env.NAVER_CLIENT_ID;
-    var redirectURI = encodeURI(`${process.env.SERVICE_URL}/api/login/naver`);
-    var state = Math.round(Math.random() * 1000);
-    var url =
-        "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=" +
-        client_id +
-        "&redirect_uri=" +
-        redirectURI +
-        "&state=" +
-        state;
-    if (req.query.error) {
-        res.render("login/naver.html", {
-            url: url,
-            error: req.query.error,
-        });
-        return;
-    } else {
-        res.redirect(url);
-    }
-});
-
-router.get("/login/google", (req, res) => {
-    res.render("login/google.html");
-});
 
 router.get("/api/login/google", async (req, res) => {
     const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

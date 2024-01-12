@@ -3,8 +3,8 @@ import Timetable from "../models/timetable.entity.js";
 import Class from "../models/class.entity.js";
 import Neis from "../modules/neis.js";
 import express from "express";
-import { getUserById } from "../util/index.js";
-import { formatDate } from "../util/index.js";
+import { NeisDate2Date, getUserById } from "../util/index.js";
+import { Date2NeisDate } from "../util/index.js";
 import e from "express";
 import { ObjectId } from "bson";
 const router = express.Router();
@@ -118,46 +118,43 @@ router.get("/api/timetable", async (req, res) => {
         var result = [];
         for (const d of data) {
             result.push({
-                ITRT_CNTNT: d.ITRT_CNTNT,
+                ITRT_CNTNT: shortSubjectName(d.ITRT_CNTNT),
                 PERIO: d.PERIO,
                 ALL_TI_YMD: d.ALL_TI_YMD,
             });
         }
         return result;
     };
-    var m = req.query.monday as string;
-    var monday = new Date(`${m.slice(0, 4)}-${m.slice(4, 6)}-${m.slice(6, 8)}`);
+    const shortSubjectName = (sub: string) => {
+        switch (sub) {
+            case "과학탐구실험":
+                return "과탐실";
+            case "통합과학":
+                return "통과";
+            case "통합사회":
+                return "통사";
+            case "자율활동":
+                return "자율";
+            case "진로활동":
+                return "진로";
+            case "봉사활동":
+                return "봉사";
+            case "재량휴업일":
+                return "휴업일";
+            case "동아리활동":
+                return "동아리";
+            case "기독탄신일(성탄절)":
+                return "크리스마스";
+            default:
+                return sub;
+        }
+    };
+    var monday = NeisDate2Date(req.query.monday as string);
     var friday = new Date(monday);
     friday.setDate(monday.getDate() + 4);
 
     var user = await getUserById(req.session.user_id);
-    var classroom = await Class.findOne({
-        _id: user.class,
-    });
-    if (req.query.refresh != "true") {
-        var cache = await Timetable.find({
-            ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-            CLASS_NM: classroom.class.CLASS_NM,
-            GRADE: classroom.class.GRADE,
-            date: { $lte: friday, $gte: monday },
-        }).exec();
-        if (cache.length > 0) {
-            return res.json({
-                success: true,
-                table: refine(cache),
-                friday: formatDate(friday),
-            });
-        }
-    } else {
-        await Timetable.deleteMany({
-            ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
-            CLASS_NM: classroom.class.CLASS_NM,
-            GRADE: classroom.class.GRADE,
-            date: { $lte: friday },
-        }).exec();
-    }
+    var classroom = await Class.findById(user.class);
     try {
         var timetable = await neis.getTimetable(
             {
@@ -165,8 +162,8 @@ router.get("/api/timetable", async (req, res) => {
                 SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
             },
             {
-                TI_FROM_YMD: formatDate(monday),
-                TI_TO_YMD: formatDate(friday),
+                TI_FROM_YMD: Date2NeisDate(monday),
+                TI_TO_YMD: Date2NeisDate(friday),
                 CLASS_NM: classroom.class.CLASS_NM,
                 GRADE: classroom.class.GRADE,
             },
@@ -175,35 +172,22 @@ router.get("/api/timetable", async (req, res) => {
             }
         );
     } catch {
-        res.json({ success: false, message: "NEIS API ERROR" });
-        return;
+        return res.json({ success: false, message: "NEIS API ERROR" });
     }
     var result = [];
     for (let t of timetable) {
         result.push({
-            date: new Date(
-                `${t.ALL_TI_YMD.slice(0, 4)}-${t.ALL_TI_YMD.slice(
-                    4,
-                    6
-                )}-${t.ALL_TI_YMD.slice(6, 8)}`
-            ),
-            ATPT_OFCDC_SC_CODE: t.ATPT_OFCDC_SC_CODE,
-            SD_SCHUL_CODE: t.SD_SCHUL_CODE,
             ALL_TI_YMD: t.ALL_TI_YMD,
-            CLASS_NM: t.CLASS_NM,
-            GRADE: t.GRADE,
-            ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
             PERIO: t.PERIO,
+            ITRT_CNTNT: t.ITRT_CNTNT?.replace("-", "") ?? "알 수 없음",
         });
     }
-
-    Timetable.insertMany(result);
     res.json({
         success: true,
         table: refine(result),
-        friday: formatDate(friday),
-        TI_FROM_YMD: formatDate(monday),
-        TI_TO_YMD: formatDate(friday),
+        friday: Date2NeisDate(friday),
+        TI_FROM_YMD: Date2NeisDate(monday),
+        TI_TO_YMD: Date2NeisDate(friday),
     });
 });
 export default router;

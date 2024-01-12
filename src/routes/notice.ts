@@ -18,20 +18,6 @@ router.get("/new-notice", async (req, res) => {
     res.render("new_notice.html", { mode: "new", notice: null });
 });
 
-router.get("/notice", async (req, res) => {
-    var user = await User.findOne({
-        _id: new ObjectId(req.session.user_id),
-    });
-    var classroom = await Class.findOne({
-        _id: user.class,
-    });
-    res.render("notice_list.html", {
-        grade: classroom.class.GRADE,
-        classroom: classroom.class.CLASS_NM,
-        school_name: classroom.school.SCHUL_NM,
-    });
-});
-
 router.get("/notice/:id", async (req, res) => {
     var user = await User.findOne({
         _id: new ObjectId(req.session.user_id),

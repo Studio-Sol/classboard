@@ -32,6 +32,13 @@ export async function getUserById(id: any) {
         return null;
     }
 }
-export function formatDate(date: Date) {
-    return date.toISOString().slice(0, 10).replace("-", "").replace("-", "");
+export function Date2NeisDate(date: Date) {
+    return `${date.getFullYear()}${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}`;
+}
+export function NeisDate2Date(date: string) {
+    return new Date(
+        `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`
+    );
 }
