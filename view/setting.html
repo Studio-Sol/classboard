@@ -259,9 +259,12 @@
                     "theme",
                     theme == "dark" ? "light" : "dark"
                 );
-                document.cookie =
-                    "theme=" + (theme == "dark" ? "light" : "dark");
+                var date = new Date();
+                date.setTime(date.getTime() + 365 * 24 * 60 * 60 * 1000);
+                var expires = "; expires=" + date.toGMTString();
                 theme = localStorage.getItem("theme");
+                document.cookie = `theme=${theme}${expires}; path=/`;
+
                 switchTheme();
                 location.reload();
             });

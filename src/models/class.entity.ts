@@ -1,28 +1,20 @@
 import { ObjectId, Schema, model } from "mongoose";
 interface Class {
-    school: {
-        SD_SCHUL_CODE: string;
-        ATPT_OFCDC_SC_CODE: string;
-        SCHUL_NM: string;
-    };
-    class: {
-        MADE: ObjectId;
-        GRADE: string;
-        CLASS_NM: string;
-    };
+    SD_SCHUL_CODE: string;
+    ATPT_OFCDC_SC_CODE: string;
+    SCHUL_NM: string;
+    MADE: ObjectId;
+    GRADE: string;
+    CLASS_NM: string;
     invite: string;
 }
 const classSchema = new Schema<Class>({
-    school: {
-        SD_SCHUL_CODE: String,
-        ATPT_OFCDC_SC_CODE: String,
-        SCHUL_NM: String,
-    },
-    class: {
-        MADE: Schema.Types.ObjectId,
-        GRADE: String,
-        CLASS_NM: String,
-    },
+    SD_SCHUL_CODE: String,
+    ATPT_OFCDC_SC_CODE: String,
+    SCHUL_NM: String,
+    MADE: Schema.Types.ObjectId,
+    GRADE: String,
+    CLASS_NM: String,
     invite: String,
 });
 

@@ -5,6 +5,10 @@ const router = express.Router();
 
 router.get("/api/all-notice", async (req, res) => {
     let allNotices = await AllNotice.find().exec();
-    res.json(allNotices);
+    let result = [];
+    for (let e of allNotices) {
+        result.push({ color: e.color, html: e.html });
+    }
+    res.json(result);
 });
 export default router;

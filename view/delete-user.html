@@ -71,10 +71,9 @@
                         ><br />
                         클래스 :
                         <a
-                            ><% if (classroom) { %><%= classroom.school.SCHUL_NM
-                            + " " + classroom.class.GRADE + "학년 " +
-                            classroom.class.CLASS_NM + "반" %><% } else {
-                            %>해당없음<% } %></a
+                            ><% if (classroom) { %><%= classroom.SCHUL_NM + " "
+                            + classroom.GRADE + "학년 " + classroom.CLASS_NM +
+                            "반" %><% } else { %>해당없음<% } %></a
                         ><br />
                         가입 일시 : <a id="date"><%= user.signup_at %></a> |
                         <a id="moment"></a><br />
@@ -87,9 +86,9 @@
                     </div>
                     <hr />
                     <% if (user.type == "teacher" && classroom) { %> 선생님께서
-                    탈퇴하시면 '<%= classroom.school.SCHUL_NM + " " +
-                    classroom.class.GRADE + "학년 " + classroom.class.CLASS_NM +
-                    "반" %>' 클래스는 더이상 사용되지 못합니다.<br />
+                    탈퇴하시면 '<%= classroom.SCHUL_NM + " " + classroom.GRADE +
+                    "학년 " + classroom.CLASS_NM + "반" %>' 클래스는 더이상
+                    사용되지 못합니다.<br />
                     <% } %>
                     <a href="/privacy" target="__blank">개인정보 처리방침</a>에
                     따라서 탈퇴하신 이후 개인정보는 3년간 보존됩니다.

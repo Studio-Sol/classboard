@@ -6,7 +6,6 @@ interface User {
     name: string;
     avatar: string;
     class: ObjectId | null;
-    waiting: boolean;
     signup_at: number;
 }
 const userSchema = new Schema<User>({
@@ -16,7 +15,6 @@ const userSchema = new Schema<User>({
     name: String,
     avatar: String,
     class: Schema.Types.ObjectId,
-    waiting: Boolean,
     signup_at: Number,
 });
 

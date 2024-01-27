@@ -92,8 +92,8 @@
                             <th class="col-1">이름</th>
 
                             <th class="col-1 email">이메일</th>
-                            <% if (String(user._id) ==
-                            String(classroom.class.MADE)) { %>
+                            <% if (String(user._id) == String(classroom.MADE)) {
+                            %>
                             <th class="col-1">학급 관리 권한</th>
                             <% } %>
                             <th class="col-1">추방</th>
@@ -113,7 +113,7 @@
                                 </td>
                                 <td class="email"><%= student.email %></td>
                                 <% if (String(user._id) ==
-                                String(classroom.class.MADE)) { %>
+                                String(classroom.MADE)) { %>
                                 <td>
                                     <% if (student.type == "teacher") { %>
                                     <button
@@ -144,48 +144,6 @@
                                         onclick="ban(event, '<%= student._id %>')"
                                     >
                                         <i class="fa fa-ban" title="추방"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col pt-4 pb-4 p-lg-4 mt-3 m-lg-3 shadow box">
-                    <h2>가입 요청</h2>
-                    <table class="table">
-                        <thead>
-                            <th class="col-1">이름</th>
-                            <th class="col-1">이메일</th>
-                            <th class="col-1">수락/거절</th>
-                        </thead>
-                        <tbody id="join-request">
-                            <% for (const student of join_request) { %>
-                            <tr data-id="<%= student._id %>">
-                                <td
-                                    onclick="openProfile(event, '<%= student._id %>')"
-                                >
-                                    <img
-                                        style="width: 2rem"
-                                        src="<%= student.avatar %>"
-                                    />
-                                    <%= student.name ?? "실명 없음" %>
-                                </td>
-                                <td><%= student.email %></td>
-                                <td>
-                                    <button
-                                        class="btn btn-sm bg-primary"
-                                        onclick="accept(event, '<%= student._id %>')"
-                                    >
-                                        <i class="fa fa-check" title="거절"></i>
-                                    </button>
-                                    <button
-                                        class="btn btn-sm bg-danger"
-                                        onclick="reject(event, '<%= student._id %>')"
-                                    >
-                                        <i class="fa fa-x" title="거절"></i>
                                     </button>
                                 </td>
                             </tr>

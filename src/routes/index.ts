@@ -2,41 +2,11 @@ import express from "express";
 import { ObjectId } from "bson";
 import Class from "../models/class.entity.js";
 import User from "../models/user.entity.js";
-import { getMondayDate, getUserById } from "../util/index.js";
 import teacherRouter from "./teacher.js";
 import authRouter from "./auth.js";
 import noticeRouter from "./notice.js";
 import postRouter from "./post.js";
 const router = express.Router();
-
-router.get("/invite/:code", async (req, res) => {
-    var user = await User.findOne({
-        _id: new ObjectId(req.session.user_id),
-    });
-    if (user.class) {
-        res.redirect("/");
-        return;
-    }
-    if (user.type != "student") {
-        res.redirect("/");
-        return;
-    }
-    var classroom = await Class.findOne({
-        invite: req.params.code.toUpperCase(),
-    });
-
-    if (classroom) {
-        await User.updateOne(
-            { _id: new ObjectId(req.session.user_id) },
-            { $set: { class: classroom._id, waiting: true } }
-        );
-        res.redirect("/main");
-    } else {
-        res.redirect("/invite?error=noinvite");
-    }
-});
-
-// POST and NOTICE
 
 router.get("/calendar", (req, res) => {
     res.render("calendar.html");

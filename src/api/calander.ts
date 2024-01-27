@@ -20,6 +20,12 @@ router.post("/api/calendar", async (req, res) => {
     });
 });
 router.get("/api/calendar", async (req, res) => {
+    try {
+        new Date(req.query.start as string);
+        new Date(req.query.end as string);
+    } catch {
+        return res.json({}).status(400);
+    }
     var user = await getUserById(req.session.user_id);
     let limit = parseInt(req.query.limit as string);
     if (isNaN(limit)) {

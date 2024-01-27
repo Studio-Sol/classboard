@@ -1,11 +1,9 @@
 import mealEntity from "../models/meal.entity.js";
-import Timetable from "../models/timetable.entity.js";
 import Class from "../models/class.entity.js";
 import Neis from "../modules/neis.js";
 import express from "express";
 import { NeisDate2Date, getUserById } from "../util/index.js";
 import { Date2NeisDate } from "../util/index.js";
-import e from "express";
 import { ObjectId } from "bson";
 const router = express.Router();
 const neis = new Neis(process.env.NEIS_API_KEY);
@@ -17,7 +15,7 @@ router.get("/api/meal", async (req, res) => {
 
     let meals: any[] = await mealEntity
         .find({
-            SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+            SD_SCHUL_CODE: classroom.SD_SCHUL_CODE,
             MLSV_YMD: req.query.date as string,
         })
         .exec();
@@ -25,8 +23,8 @@ router.get("/api/meal", async (req, res) => {
         try {
             meals = await neis.getMealInfo(
                 {
-                    ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                    ATPT_OFCDC_SC_CODE: classroom.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: classroom.SD_SCHUL_CODE,
                     MLSV_YMD: req.query.date as string,
                 },
                 {
@@ -82,7 +80,7 @@ router.post("/api/meal/favorite", async (req, res) => {
         _id: user.class,
     });
     let meal = await mealEntity.findOne({
-        SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+        SD_SCHUL_CODE: classroom.SD_SCHUL_CODE,
         MLSV_YMD: req.body.date,
         MMEAL_SC_NM: req.body.mealname,
     });
@@ -158,14 +156,14 @@ router.get("/api/timetable", async (req, res) => {
     try {
         var timetable = await neis.getTimetable(
             {
-                ATPT_OFCDC_SC_CODE: classroom.school.ATPT_OFCDC_SC_CODE,
-                SD_SCHUL_CODE: classroom.school.SD_SCHUL_CODE,
+                ATPT_OFCDC_SC_CODE: classroom.ATPT_OFCDC_SC_CODE,
+                SD_SCHUL_CODE: classroom.SD_SCHUL_CODE,
             },
             {
                 TI_FROM_YMD: Date2NeisDate(monday),
                 TI_TO_YMD: Date2NeisDate(friday),
-                CLASS_NM: classroom.class.CLASS_NM,
-                GRADE: classroom.class.GRADE,
+                CLASS_NM: classroom.CLASS_NM,
+                GRADE: classroom.GRADE,
             },
             {
                 pSize: 100,

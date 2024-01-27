@@ -138,15 +138,6 @@ router.get("/api/login/naver", async (req, res) => {
     });
 });
 
-router.get("/login/type", async (req, res) => {
-    var user = await getUserById(req.session.user_id);
-    if (user.class) {
-        res.redirect("/");
-    } else {
-        res.render("login/type.html", { id: req.session.user_id });
-    }
-});
-
 router.get("/api/login/type", async (req, res) => {
     var user = await User.findOne({
         _id: new ObjectId(req.session.user_id),
@@ -177,31 +168,5 @@ router.get("/logout", (req, res) => {
     res.clearCookie("connect.sid");
     res.redirect("/");
 });
-router.get("/login/qrcode", async (req, res) => {
-    res.render("login/qrcode_scan.html");
-});
-router.get("/auth/qrcode", async (req, res) => {
-    let token = await UID(16);
-    await new Token({
-        token,
-        payload: JSON.stringify({
-            user_id: req.session.user_id,
-        }),
-        expireAt: new Date(Date.now() + 1000 * 60 * 3),
-    }).save();
-    res.render("login/qrcode.html", { token });
-});
-router.get("/login/t/:token", async (req, res) => {
-    try {
-        var token = await Token.findOne({
-            token: req.params.token,
-        });
-        var user = await getUserById(JSON.parse(token.payload).user_id);
-        req.session.user_id = user._id;
-        req.session.user_type = user.type;
-        return res.redirect("/main");
-    } catch (e) {
-        return res.sendStatus(400);
-    }
-});
+
 export default router;
