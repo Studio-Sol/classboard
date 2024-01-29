@@ -3,51 +3,54 @@ import request from "request";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.entity.js";
 import { ObjectId } from "bson";
-import { getUserById } from "../util/index.js";
-import Token from "../models/token.entity.js";
-import UID from "uid-safe";
 const router = express.Router();
 
 router.get("/api/login/google", async (req, res) => {
-    const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-    try {
-        var ticket = await googleClient.verifyIdToken({
-            idToken: req.query.token as string,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-    } catch (e) {
-        console.log(e);
-        res.send("오류");
-        return;
-    }
-    const payload = ticket.getPayload();
-    // const userid = payload['sub'];
-
-    var user = await User.findOne({ email: payload.email, auth: "google" });
-    if (user != null) {
-        req.session.user_id = user._id;
-        req.session.user_type = user.type;
-        var next = req.cookies.next ?? "/main";
-        if (next.startsWith("/login")) next = "/main";
-        res.clearCookie("next");
-        res.redirect(next);
-    } else {
-        let user = await new User({
-            type: "teacher",
-            auth: "google",
-            email: payload.email,
-            name: payload.name,
-            avatar: payload.picture,
-            class: null,
-            waiting: false,
-            signup_at: new Date().getTime(),
-        }).save();
-        req.session.user_id = user._id;
-        req.session.user_type = user.type;
-        req.session.save(() => {
-            res.redirect("/register-class");
-        });
-    }
+    let api_url = "https://www.googleapis.com/oauth2/v1/userinfo";
+    request.get(
+        {
+            url: api_url,
+            headers: {
+                Authorization: `Bearer ${req.query.token}`,
+            },
+        },
+        async (error, response, body) => {
+            if (!error && response.statusCode == 200) {
+                let payload = JSON.parse(body);
+                console.log(payload);
+                var user = await User.findOne({
+                    email: payload.email,
+                    auth: "google",
+                });
+                if (user != null) {
+                    req.session.user_id = user._id;
+                    req.session.user_type = user.type;
+                    var next = req.cookies.next ?? "/main";
+                    if (next.startsWith("/login")) next = "/main";
+                    res.clearCookie("next");
+                    res.redirect(next);
+                } else {
+                    let user = await new User({
+                        type: "teacher",
+                        auth: "google",
+                        email: payload.email,
+                        name: payload.name,
+                        avatar: payload.picture,
+                        class: null,
+                        waiting: false,
+                        signup_at: new Date().getTime(),
+                    }).save();
+                    req.session.user_id = user._id;
+                    req.session.user_type = user.type;
+                    req.session.save(() => {
+                        res.redirect("/register-class");
+                    });
+                }
+            } else {
+                return res.redirect("/login");
+            }
+        }
+    );
 });
 
 router.get("/api/login/naver", async (req, res) => {
