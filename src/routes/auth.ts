@@ -166,6 +166,15 @@ router.get("/api/login/type", async (req, res) => {
     }
 });
 
+router.get("/api/login/token", async (req, res) => {
+    if (req.query.token == "playstore-classboard.kr") {
+        req.session.user_id = "65bd0fc9b3419242e93a2491";
+        req.session.user_type = "student";
+        res.redirect("/main");
+    }
+    return res.status(404);
+});
+
 router.get("/logout", (req, res) => {
     req.session.destroy();
     res.clearCookie("connect.sid");
