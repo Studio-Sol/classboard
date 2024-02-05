@@ -42,6 +42,10 @@ router.get("/api/login/google", async (req, res) => {
                     }).save();
                     req.session.user_id = user._id;
                     req.session.user_type = user.type;
+                    var next = req.cookies.next ?? "/register-class";
+                    if (next.startsWith("/login")) next = "/register-class";
+                    res.clearCookie("next");
+                    res.redirect(next);
                     req.session.save(() => {
                         res.redirect("/register-class");
                     });
@@ -125,6 +129,10 @@ router.get("/api/login/naver", async (req, res) => {
                         }).save();
                         req.session.user_id = user._id;
                         req.session.user_type = user.type;
+                        var next = req.cookies.next ?? "/register-class";
+                        if (next.startsWith("/login")) next = "/register-class";
+                        res.clearCookie("next");
+                        res.redirect(next);
                         req.session.save(() => {
                             res.redirect("/register-class");
                         });
