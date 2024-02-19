@@ -162,14 +162,14 @@ router.get("/api/login/type", async (req, res) => {
                 { $set: { type: "teacher" } }
             );
             req.session.user_type = "teacher";
-            res.redirect("/register-class");
+            res.json({ status: "success" });
         } else if (req.query.type == "student") {
             await User.updateOne(
                 { _id: new ObjectId(req.session.user_id) },
                 { $set: { type: "student" } }
             );
             req.session.user_type = "student";
-            res.redirect("/invite");
+            res.json({ status: "success" });
         }
     }
 });
