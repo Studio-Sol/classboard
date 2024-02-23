@@ -23,11 +23,9 @@ import noticeEntity from "../models/notice.entity.js";
 import postEntity from "../models/post.entity.js";
 import replyEntity from "../models/reply.entity.js";
 import sessionEntity from "../models/session.entity.js";
-import timetableEntity from "../models/timetable.entity.js";
 import userEntity from "../models/user.entity.js";
 import apiRouter from "../api/index.js";
 import pageRouter from "../routes/index.js";
-import tokenEntity from "../models/token.entity.js";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const DEFAULT_ADMIN = { email: "sol762@classboard.kr", password: "sol762!" };
 export default async ({
@@ -51,14 +49,12 @@ export default async ({
                 calanderEntity,
                 classEntity,
                 commentEntity,
-                deleted_userEntity,
                 noticeEntity,
                 postEntity,
                 replyEntity,
                 sessionEntity,
-                timetableEntity,
                 userEntity,
-                tokenEntity,
+                deleted_userEntity,
             ],
             rootPath: "/admin",
         }),

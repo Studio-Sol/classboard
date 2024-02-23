@@ -30,14 +30,14 @@ router.get("/api/comment", async (req, res) => {
             content: r.content,
             timestamp: r.timestamp,
             reply: r.reply,
-            reply_count: await Comment.count({ reply: String(r._id) }),
+            reply_count: await Comment.countDocuments({ reply: String(r._id) }),
         });
     }
 
     res.json({
         success: true,
         comment: comments,
-        total: await Comment.count({
+        total: await Comment.countDocuments({
             id: req.query.id,
             reply: req.query.reply ?? null,
         }),

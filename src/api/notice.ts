@@ -90,7 +90,7 @@ router.post("/api/notice/question/reply", async (req, res) => {
             }
             if (q.items[answer].limit != null) {
                 if (
-                    (await Reply.count({
+                    (await Reply.countDocuments({
                         id: req.body.id,
                         answer: req.body.answer,
                     })) >= q.items[answer].limit

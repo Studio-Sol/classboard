@@ -1,7 +1,6 @@
 import expressLoader from "./express.js";
 import mongooseLoader from "./mongoose.js";
 import express from "express";
-import cron from "./cron.js";
 
 export default async (
     expressApp: express.Application,
@@ -19,7 +18,4 @@ export default async (
         inspecting: inspecting,
     });
     console.log("[LOADER] Express Intialized");
-
-    cron();
-    console.log("[LOADER] CRON registered");
 };

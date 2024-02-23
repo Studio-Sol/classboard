@@ -1,8 +1,8 @@
 diff --git a/node_modules/@types/express-session/index.d.ts b/node_modules/@types/express-session/index.d.ts
-index 4a10788..2f793c1 100644
+index 0d302e3..4877225 100644
 --- a/node_modules/@types/express-session/index.d.ts
 +++ b/node_modules/@types/express-session/index.d.ts
-@@ -26,7 +26,7 @@ declare global {
+@@ -14,7 +14,7 @@ declare global {
               *
               * @see SessionData
               */
