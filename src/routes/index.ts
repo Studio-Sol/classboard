@@ -14,18 +14,6 @@ router.get("/calendar", (req, res) => {
 router.get("/how-to-install-app", (req, res) => {
     res.render("how_to_install_app.html");
 });
-// ETC
-router.get("/privacy", (req, res) => {
-    res.render("privacy.html");
-});
-
-router.get("/terms", (req, res) => {
-    res.render("terms.html");
-});
-
-router.get("/jobs", (req, res) => {
-    res.render("jobs.html");
-});
 
 router.get("/delete-user", async (req, res) => {
     var user = await User.findOne({
@@ -39,18 +27,11 @@ router.get("/delete-user", async (req, res) => {
     });
 });
 router.get("/contact", (req, res) => {
-    res.redirect("mailto:dev.sol.studio@gmail.com");
+    res.redirect("mailto:contact@classboard.kr");
 });
 
 router.get("/redirect", async (req, res) => {
     res.redirect("/invite/" + req.query.url);
-});
-
-router.get("/setting", async (req, res) => {
-    var user = await User.findOne({
-        _id: new ObjectId(req.session.user_id),
-    });
-    res.render("setting.html", { user: user });
 });
 
 router.use(teacherRouter);

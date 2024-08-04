@@ -1,3 +1,20 @@
+# 2024/08/04
+
+-   Next.js로 구현이 완료되었거나 사용하지 않는 페이지에 대한 라우팅 및 파일 제거
+
+    -   /setting
+    -   /teacher
+    -   /privacy
+    -   /terms
+    -   /jobs
+    -   user.html
+    -   select-school.html
+    -   wait.html
+    -   find-school.html
+    -   pwa구현을 위한 service worker, manifest, icons
+
+-   변경된 플레이스토어 앱 패키지명 적용 (kr.classboard.sol -> kr.classboard.twa)
+
 # 2023/11/16
 
 > Good Bye, Classboard 1.0
